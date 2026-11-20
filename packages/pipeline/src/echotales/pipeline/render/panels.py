@@ -68,6 +68,7 @@ from echotales.pipeline.render.contract import (
 )
 from echotales.pipeline.render.direction import direct_beat, sanitize_prompt
 from echotales.pipeline.render.factions import qualify_role, scene_faction
+from echotales.pipeline.render.framing import FramingState, apply_framing, plan_framing, staging_set
 from echotales.pipeline.render.palette import Palette, PaletteSpec, apply_palette
 from echotales.pipeline.render.plan import (
     PANEL_PLAN_FILE,
@@ -1871,6 +1872,9 @@ def render_panels(
         #: Shot sizes of the panels already directed, newest last, shown to the director so it varies the shot itself
         #: (a flipped `shot` field would no longer match the camera its paragraph describes).
         _recent_shots: list[str] = []
+        #: Framing decided from each passage (`render/framing.py`); rebuilt from the same inputs by both phases.
+        _framing_state = FramingState()
+        _prev_panel_set = ""
         _carried_locales = carry_locales([
             scene_locale(novel_id, " ".join(by_index[b].text for b in sc.blocks if b in by_index), strict=True)
             for sc in scenes
@@ -2110,6 +2114,7 @@ def render_panels(
                     _crowd_slot = None
 
             slot_images: dict[int, PanelImage] = {}
+            _scene_panel_n = 0
             for slot in needed_slots:
                 lead = slot_lead[slot]
                 block = by_index[lead]
@@ -2807,6 +2812,19 @@ def render_panels(
                     if _last_panel_direction is not None and not _direction.composition:
                         from echotales.pipeline.render.direction import enforce_shot_variety
                         _direction = enforce_shot_variety([_last_panel_direction, _direction])[1]
+                    # The shot and angle come from the passage, not the director: gemma2:9b said "medium" for 16 of 16 LotM panels
+                    # and the compiled prompt never named a shot at all (round 3, EVOLUTION 4.171).
+                    _cast_labels = list(_beat_entity_labels.values()) or list(_scene_last_present_entity_labels.values())
+                    _set_now = staging_set(_direction.staging)
+                    _framing = plan_framing(
+                        beat_prose, expression=_direction.expression, names=_cast_labels,
+                        director_props=[*_direction.props, *_direction.key_objects], spoken=_speech, crowd=is_crowd_cut,
+                        new_place=_scene_panel_n == 0 and bool(_set_now) and _set_now != _prev_panel_set,
+                        state=_framing_state,
+                    )
+                    _direction = apply_framing(_direction, _framing, _cast_labels[0] if _cast_labels else "")
+                    _scene_panel_n += 1
+                    _prev_panel_set = _set_now or _prev_panel_set
                     _last_panel_direction = _direction
                     _recent_shots.append(_direction.shot)
                 # **The negative prompt's style bucket must follow the

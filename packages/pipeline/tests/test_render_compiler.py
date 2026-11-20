@@ -26,6 +26,10 @@ FANG = dict(
 )
 
 
+#: These tests are about the SDXL tag profile; the compiler default is the configured model (Z-Image), no longer this one.
+SDXL = model_profile("noobai-xl-1.1")
+
+
 def cliff(mode: OutputMode = OutputMode.MANGA, **over) -> PanelBrief:
     art, wardrobe, manhua = genre_direction("")  # "" is the xianxia profile; RI is registered with its genre only at runtime
     fields = dict(
@@ -52,23 +56,23 @@ def test_cliff_scene_carries_setting_crowd_demeanour_and_style(key: str) -> None
 
 
 def test_colour_mode_has_no_monochrome_and_manga_mode_rejects_colour() -> None:
-    col = compile_prompt(cliff(OutputMode.COLOUR))
+    col = compile_prompt(cliff(OutputMode.COLOUR), SDXL)
     assert "monochrome" not in col.positive and "colorful" not in col.negative
     assert "guofeng" in col.positive
-    manga = compile_prompt(cliff(OutputMode.MANGA))
+    manga = compile_prompt(cliff(OutputMode.MANGA), SDXL)
     assert "colorful" in manga.negative and "chinese manhua" in manga.positive
 
 
 def test_single_quiet_scene_says_one_person_and_rejects_crowd() -> None:
     quiet = cliff(crowd=None, mood="quiet", tension=0.0, shot="medium", action="reading a letter")
-    out = compile_prompt(quiet)
+    out = compile_prompt(quiet, SDXL)
     assert "1boy" in out.positive and "solo" in out.positive
     assert "crowd" in out.negative
 
 
 def test_two_characters_never_solo() -> None:
     other = CharacterBrief(name="Gu Yue", gender="female")
-    out = compile_prompt(cliff(crowd=None, characters=[CharacterBrief(**FANG), other]))
+    out = compile_prompt(cliff(crowd=None, characters=[CharacterBrief(**FANG), other]), SDXL)
     assert "solo" not in out.positive
     assert "girl" in out.positive
 
@@ -88,14 +92,14 @@ def test_sections_ordered_per_format_and_text_is_their_join() -> None:
 
 def test_never_truncates_a_long_brief() -> None:
     long = cliff(setting=", ".join(f"detail_{i}" for i in range(120)))
-    out = compile_prompt(long)
+    out = compile_prompt(long, SDXL)
     assert all(f"detail {i}" in out.positive for i in range(120))
 
 
 def test_appearance_switch() -> None:
-    off = compile_prompt(cliff(), appearance=AppearanceInText.OFF)
-    short = compile_prompt(cliff())
-    full = compile_prompt(cliff(), appearance=AppearanceInText.FULL)
+    off = compile_prompt(cliff(), SDXL, appearance=AppearanceInText.OFF)
+    short = compile_prompt(cliff(), SDXL)
+    full = compile_prompt(cliff(), SDXL, appearance=AppearanceInText.FULL)
     assert off.appearance_written == {"Fang Yuan": False} and "black hair" not in off.positive
     assert short.appearance_written == {"Fang Yuan": True} and "black hair" in short.positive
     assert "pale" not in short.positive and "pale" in full.positive

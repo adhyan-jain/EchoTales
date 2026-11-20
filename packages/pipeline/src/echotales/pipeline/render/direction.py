@@ -293,6 +293,10 @@ class PanelDirection(BaseModel):
     #: "text" when the panel's own text shows what is drawn, "inferred" when the passage showed nothing and the director
     #: chose a visual from its referents (rule 13). Kept so `audit` can count how many panels were not text-grounded.
     visual_source: str = Field(default="text")
+    #: The framing sentence and focus (`render/framing.py`), set by code from the passage and never by the model: the director's
+    #: own `shot` was "medium" for 16 of 16 LotM panels and never reached the Z-Image prompt.
+    frame: str = Field(default="")
+    frame_focus: str = Field(default="")
     #: What `_validate_direction` removed from the paragraph (names and groups the text does not contain), not a model field.
     grounding_rejects: list[str] = Field(default_factory=list)
 
@@ -1089,9 +1093,89 @@ def _validate_composition(
                 lone = next(iter(cast)) if len(cast) == 1 else ""
                 who = lone if lone and lone.lower() not in text.lower() else "a figure"
                 text = text[: span.start] + who + text[span.start + len(bare):]
+    if text:
+        lead = next(iter(cast)) if cast else ""
+        text, scrubbed = scrub_unstated(text, allowed=f"{beat_text} {d.staging} {' '.join(cast)}", lead=lead)
+        rejects.extend(scrubbed)
     updates["composition"] = text
     updates["grounding_rejects"] = rejects
     return d.model_copy(update=updates)
+
+
+# An unnamed person the paragraph adds beside the named lead. gemma2:9b opened 6 of 13 RI cliff paragraphs with "A lone figure stands
+# on the mountaintop ..." and the picture grew a silhouetted figure on a distant cliff top in 9 of 13 (round 3, EVOLUTION 4.171).
+_FIGURE_RE = re.compile(
+    r"\b(?:a|an|the|one)\s+(?:(?:lone|solitary|single|distant|small|tiny|dark|shadowy|silhouetted|mysterious|faint|hooded|cloaked|"
+    r"robed|solitary)\s+){0,2}(?:figure|silhouette|stranger|shape)\b", re.I)
+
+#: Sky and weather families: (name, how the paragraph words it, how the passage or staging may word it). A paragraph's sky that
+#: neither states is the model's own: the rebirth room was lit "by moonlight" while the sheet said rain (a full moon in heavy rain).
+_SKY: list[tuple[str, re.Pattern[str], re.Pattern[str]]] = [
+    ("sun", re.compile(r"\b(?:sun|sunset|sunrise|sunlight|sundown|dusk|dawn|twilight|golden hour|setting sun|rising sun)\b", re.I),
+     re.compile(r"\b(?:sun\w*|dusk|dawn|twilight|evening|morning|noon|daylight|afternoon|day)\b", re.I)),
+    ("moon", re.compile(r"\b(?:moon\w*|full moon|crescent)\b", re.I), re.compile(r"\bmoon\w*\b", re.I)),
+    ("stars", re.compile(r"\b(?:stars?|starry|starlit|starlight)\b", re.I), re.compile(r"\b(?:stars?|starry|starlit|starlight)\b", re.I)),
+    ("rain", re.compile(r"\b(?:rain\w*|drizzl\w*|downpour|raindrops?)\b", re.I), re.compile(r"\b(?:rain\w*|drizzl\w*|downpour|storm\w*)\b", re.I)),
+    ("snow", re.compile(r"\b(?:snow\w*|blizzard|frost\w*)\b", re.I), re.compile(r"\b(?:snow\w*|blizzard|frost\w*|winter)\b", re.I)),
+    ("storm", re.compile(r"\b(?:storm\w*|thunder\w*|lightning)\b", re.I), re.compile(r"\b(?:storm\w*|thunder\w*|lightning)\b", re.I)),
+    ("mist", re.compile(r"\b(?:fog\w*|mist\w*|haze|hazy)\b", re.I), re.compile(r"\b(?:fog\w*|mist\w*|haze|hazy|cloud\w*)\b", re.I)),
+    ("silhouette", re.compile(r"\bsilhouett\w*", re.I), re.compile(r"\bsilhouett\w*", re.I)),
+]
+_SEG_SPLIT = re.compile(r"(,\s*|;\s*|\s+(?:as|while|under|beneath|against|lit by|bathed in|with|and|casting)\s+)")
+_TRAILING_PREP = re.compile(r"^(?:against|under|beneath|above|over|in)\b", re.I)
+
+
+def _drop_segments(sentence: str, cue: re.Pattern[str]) -> str:
+    """The sentence without the comma, 'as' or preposition segments that match `cue` (and a preposition segment right after one);
+    '' when nothing of it is left."""
+    parts = _SEG_SPLIT.split(sentence)
+    segs = [("", parts[0])] + [(parts[i], parts[i + 1]) for i in range(1, len(parts) - 1, 2)]
+    kept: list[tuple[str, str]] = []
+    dropped_last = False
+    for delim, seg in segs:
+        dropped_last = bool(cue.search(seg)) or (dropped_last and bool(_TRAILING_PREP.match(seg.strip())))
+        if not dropped_last:
+            kept.append((delim, seg))
+    if not kept:
+        return ""
+    text = "".join(seg if j == 0 else delim + seg for j, (delim, seg) in enumerate(kept)).strip(" ,;")
+    if kept[0] != segs[0]:  # the opening segment went ("Under the pale moon, Fang smirks."): the next one opens the sentence
+        text = text[:1].upper() + text[1:]
+    return text + ("." if sentence.rstrip().endswith(".") and not text.endswith(".") else "")
+
+
+def scrub_unstated(text: str, *, allowed: str, lead: str) -> tuple[str, list[str]]:
+    """Remove from the director's paragraph an unnamed extra person and any sky or weather that neither the passage nor the
+    staging sheet (`allowed`) states. Returns the new text and one reject label per fault.
+
+    An unstated "a lone figure" next to a named lead is that lead (renamed); an unstated silhouette, moon, sun or rain is cut out
+    with only its own clause, so the faces and wounds around it survive. Conservative on purpose: an object the text states is
+    never touched, and with no lead named a figure is left alone (it may be the CAST-free scenery shot's own subject)."""
+    rejects: list[str] = []
+    low_allowed = allowed.lower()
+    sentences = re.split(r"(?<=[.!?])\s+", text.strip())
+    if lead and not re.search(r"\b(?:figure|silhouette|stranger|shape)\b", low_allowed):
+        fixed: list[str] = []
+        for sent in sentences:
+            def _who(m: re.Match[str], _sent: str = sent) -> str:
+                rejects.append(f"figure:{m.group(0).lower()}")
+                return lead
+            fixed.append(_FIGURE_RE.sub(_who, sent))
+        sentences = fixed
+    out_sentences: list[str] = []
+    for sent in sentences:
+        for name, in_text, in_allowed in _SKY:
+            if in_text.search(sent) and not in_allowed.search(allowed):
+                cleaned = _drop_segments(sent, in_text)
+                tag = f"sky:{name}"
+                if tag not in rejects:
+                    rejects.append(tag)
+                sent = cleaned
+                if not sent:
+                    break
+        if sent:
+            out_sentences.append(sent)
+    return " ".join(out_sentences), rejects
 
 
 def _validate_character_names(

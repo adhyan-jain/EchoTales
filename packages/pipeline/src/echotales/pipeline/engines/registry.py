@@ -91,6 +91,11 @@ ENGINES: tuple[EngineSpec, ...] = (
     EngineSpec("z-image-turbo", "image", "local-low", "Apache-2.0", True, "compiler", role="model", where="gpu",
                setup_label="Z-Image Turbo",
                note="Tongyi-MAI/Z-Image-Turbo, loaded by the compiled-route image worker; weights placed by hand"),
+    EngineSpec("noobai-xl-1.1", "image", "local-low", "fair-ai-public-license-1.0-sd (non-commercial, card metadata)", False,
+               "compiler", role="model", where="gpu", note="Laxhar/noobai-XL-1.1, the compiler's SDXL-tag profile; comparison only (D58)"),
+    EngineSpec("anima", "image", "local-low",
+               "CircleStone Labs Non-Commercial License (derivative of Cosmos-Predict2-2B, NVIDIA Open Model License)", False,
+               "compiler", role="model", where="gpu", note="circlestone-labs/Anima-Base-v1.0-Diffusers; weights not downloaded, never measured"),
     # ---- language models ----
     EngineSpec("ollama", "llm", "local-low", "MIT (ollama server)", True, "llm-provider", role="provider", where="gpu"),
     EngineSpec("runpod", "llm", "cloud", "hosted service terms", None, "llm-provider", role="provider", where="hosted"),
@@ -194,6 +199,11 @@ def studio_local_engines() -> list[str]:
 def seconds_per_image() -> dict[str, float | None]:
     """Seconds per image where a figure exists (was `compute.SECONDS_PER_PANEL`)."""
     return {e.name: e.speed_seconds for e in select(kind="image", surface="render-image") if e.speed_seconds is not None}
+
+
+def compiler_profiles() -> tuple[str, ...]:
+    """The image models the prompt compiler has a profile for, in declaration order (what `render.image_model` may name)."""
+    return names("image", surface="compiler", role="model")
 
 
 def llm_providers() -> tuple[str, ...]:

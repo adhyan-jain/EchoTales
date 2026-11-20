@@ -116,15 +116,25 @@ PROFILES["z-image-turbo"] = ModelProfile(
     negative_base="",
     licence="Apache-2.0 (model card, https://huggingface.co/Tongyi-MAI/Z-Image-Turbo)",
 )
-DEFAULT_MODEL = "noobai-xl-1.1"
+
+
+def default_model() -> str:
+    """The configured image model (`render.image_model`: Z-Image Turbo since D58). This used to be a constant "noobai-xl-1.1",
+    so a bare `compile_prompt(brief)` wrote NoobAI tags although every real render is Z-Image (EVOLUTION 4.171)."""
+    from echotales.pipeline.config import get_settings
+
+    return get_settings().render_image_model
 
 
 def model_profile(key: str | None = None) -> ModelProfile:
-    """The profile for `key`; an unknown key raises, because a typo silently rendering with another model would make a
-    model comparison meaningless."""
-    chosen = (key or DEFAULT_MODEL).strip().lower()
-    if chosen not in PROFILES:
-        raise ValueError(f"unknown image model {key!r}; expected one of {sorted(PROFILES)}")
+    """The profile for `key`, or for the configured image model when none is given. A key the engine registry
+    (`pipeline/engines/registry.py`) does not list on the compiler surface raises, because a typo silently rendering with another
+    model would make a model comparison meaningless."""
+    from echotales.pipeline.engines import registry
+
+    chosen = (key or default_model()).strip().lower()
+    if chosen not in registry.compiler_profiles() or chosen not in PROFILES:
+        raise ValueError(f"unknown image model {key!r}; expected one of {sorted(registry.compiler_profiles())}")
     return PROFILES[chosen]
 
 
@@ -218,6 +228,12 @@ class PanelBrief:
     composition: str = ""
     #: The scene's staging sheet text (set, blocking, light), identical on every panel of the scene.
     staging: str = ""
+    #: The framing sentence (`render/framing.py`) written right after the style lead, and its focus ("prop" is an insert with
+    #: nobody in it, "eyes" and "hands" are crops of the lead).
+    framing: str = ""
+    frame_focus: str = ""
+    #: The lead's face as drawn parts (`render/face.py`), written right after the identity so it is not the paragraph's last words.
+    face: str = ""
     #: "text" when the panel's own text shows something; "inferred" when the director chose a visual from the text's
     #: referents because nothing visible was stated. Carried so `audit` can count them.
     visual_source: str = ""
@@ -697,8 +713,14 @@ def _compile_composed(b: PanelBrief, profile: ModelProfile, appearance: Appearan
 
     lead = _MANGA_LEAD if b.mode is OutputMode.MANGA else style_lead(b.novel_id)
     s = [PromptSection("style", lead)]
-    stage = PromptSection("staging", b.staging.strip()) if b.staging else None
-    comp = PromptSection("composition", b.composition.strip())
+    # The framing comes straight after the style lead: Z-Image has no CFG, so the shot named first and plainly is the shot drawn.
+    # Before this the compiled prompt never named a shot (16 of 16 LotM panels were one medium shot, EVOLUTION 4.171).
+    if b.framing:
+        s.append(PromptSection("framing", b.framing))
+    insert = b.frame_focus == "prop"
+    staging_text = trim_staging(b.staging.strip(), b.frame_focus, b.shot) if b.staging else ""
+    stage = PromptSection("staging", staging_text) if staging_text else None
+    comp = None if insert else PromptSection("composition", b.composition.strip())
     written: dict[str, bool] = {}
     fields: dict[str, list[str]] = {}
     # Identity right after the style lead, before the scene: Z-Image has no CFG, so what the prompt says first and fixedly is
@@ -708,10 +730,14 @@ def _compile_composed(b: PanelBrief, profile: ModelProfile, appearance: Appearan
         s.append(PromptSection(f"character:{c.name}", identity_sentence(c, appearance)))
         written[c.name] = appearance is not AppearanceInText.OFF
         fields[c.name] = derive_demeanour(c, b.mood, b.tension).fields_used
+    # The lead's face as drawn parts, straight after the identity and before the scene: said once, last and in three words
+    # ("cold mocking smile") it drew a mild smile; "mocking" must read as mocking (round 3, defect 7).
+    if b.face and b.characters and not insert:
+        s.append(PromptSection("face", f"{b.characters[0].name}'s face: {b.face}."))
     # A close shot leads with its own paragraph: staging first drew a second small hero at the cliff edge behind the
     # foreground one (2 of 2 seeds, 2026-11-19); paragraph first drew one (2 of 2).
-    s += [comp, stage] if (stage and b.shot == "close") else [x for x in (stage, comp) if x]
-    said = f"{b.composition} {b.staging}".lower()
+    s += [x for x in ((comp, stage) if (stage and b.shot == "close") else (stage, comp)) if x]
+    said = f"{b.composition} {staging_text}".lower()
     clauses: list[str] = []
     # A staging sheet that names a Set is the one statement of the place (and "Light:" of the light): the genre locale and the
     # director's own setting are guesses from cue words, and appended after it they drew a timber hall and an open field on
@@ -731,6 +757,28 @@ def _compile_composed(b: PanelBrief, profile: ModelProfile, appearance: Appearan
         positive=" ".join(x.text for x in s), negative="", sections=s, negative_sections=[], family=profile.family,
         mode=b.mode, appearance_written=written, demeanour_fields=fields,
     )
+
+
+_STAGE_PART = re.compile(r"\b(Set|Blocking|Light):\s*(.*?)(?=\s+(?:Set|Blocking|Light):|\Z)", re.S)
+
+
+def trim_staging(staging: str, focus: str, shot: str) -> str:
+    """The staging sheet cut to what the shot can see. The sheet's Blocking line ("stands alone facing right; the others stand in
+    rows") is a full-body, wide arrangement: left in a close-up it drew the crowd and the whole body again, and in an insert it
+    drew the people. An insert keeps the Set (the room the object is in); an eye or hand crop keeps only the Light; a close-up
+    keeps Set and Light; every other shot keeps the whole sheet."""
+    parts = {m.group(1): f"{m.group(1)}: {m.group(2).strip()}" for m in _STAGE_PART.finditer(staging)}
+    if not parts:
+        return staging
+    if focus == "prop":
+        keep: tuple[str, ...] = ("Set",)
+    elif focus in ("eyes", "hands"):
+        keep = ("Light",)
+    elif shot == "close":
+        keep = ("Set", "Light")
+    else:
+        return staging
+    return " ".join(parts[k] for k in keep if k in parts)
 
 
 def _style_sentence(b: PanelBrief) -> str:
@@ -1018,6 +1066,8 @@ def brief_from_direction(
                            stance=(getattr(d, "layout", "") or "around the lead").replace("_", " "))
     mood = getattr(d, "mood", "") or ""
     composition = (getattr(d, "composition", "") or "").strip()
+    passage = beat_text
+    frame_focus = getattr(d, "frame_focus", "") or ""
     if composition:
         # The paragraph carries the beat's clothing and wounds; the identity sentence must stay the interval's fixed
         # wording, so beat prose is not allowed to rewrite attire or condition (it put "deep green robes" on the reborn
@@ -1048,6 +1098,19 @@ def brief_from_direction(
             )
             chars.append(cb)
 
+    if frame_focus == "prop":
+        # An insert of an object has nobody in it: the vision check must not expect a lead, nor the compiler draw one.
+        chars, crowd = [], None
+    lead_face = ""
+    if chars and composition:
+        from echotales.pipeline.render.face import infer_expression
+
+        lead_dir = dir_chars[0] if dir_chars else None
+        said = (getattr(lead_dir, "expression", "") if lead_dir is not None else "") or (getattr(d, "expression", "") or "")
+        # An over-the-shoulder panel's lead is the listener: the line's emotion belongs to the speaker, so only the director's
+        # own reading of the reaction is used there (render/speech.py, rule 15).
+        lead_face = said if frame_focus == "over-shoulder" else infer_expression(said, passage)
+
     camera = getattr(d, "camera_angle", "") or getattr(d, "camera", "") or ""
     loc_detail = getattr(d, "location_detail", "") or ""
     props = list(getattr(d, "props", []) or []) + list(getattr(d, "key_objects", []) or [])
@@ -1064,4 +1127,11 @@ def brief_from_direction(
         era_wardrobe=wardrobe, manhua=manhua, is_indoor=is_indoor,
         composition=composition, staging=(getattr(d, "staging", "") or "") if composition else "",
         visual_source=getattr(d, "visual_source", "") or "",
+        framing=getattr(d, "frame", "") or "", frame_focus=frame_focus, face=_drawn(lead_face),
     )
+
+
+def _drawn(expression: str) -> str:
+    from echotales.pipeline.render.face import drawn_face
+
+    return drawn_face(expression) if expression else ""

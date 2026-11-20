@@ -62,6 +62,42 @@ def test_the_style_lead_follows_the_genre_and_manga_mode_swaps_it_for_ink() -> N
     assert out.positive.startswith("Black and white manga")
 
 
+STAGING = ("Set: a mountaintop, the ground covered in blood. Blocking: Fang Yuan stands alone facing right; the others stand in "
+           "rows on one side of the frame. Light: sunset.")
+
+
+def test_the_shot_is_named_straight_after_the_style_lead_and_the_face_straight_after_the_identity() -> None:
+    """Round 3: the compiled prompt never named a shot, and the face was the paragraph's last three words."""
+    out = compile_prompt(
+        brief(framing="Close-up portrait of Fang Yuan, head and shoulders filling the frame.", shot="close", frame_focus="",
+              face="a cold mocking smirk: one corner of the mouth pulled up", staging=STAGING),
+        model_profile("z-image-turbo"))
+    labels = [s.label for s in out.sections]
+    assert labels[:4] == ["style", "framing", "character:Fang Yuan", "face"]
+    assert "Fang Yuan's face: a cold mocking smirk" in out.positive
+
+
+def test_a_close_up_drops_the_full_body_blocking_line_but_keeps_set_and_light() -> None:
+    out = compile_prompt(brief(shot="close", staging=STAGING, framing="Close-up."), model_profile("z-image-turbo"))
+    assert "Set: a mountaintop" in out.positive and "Light: sunset" in out.positive and "Blocking" not in out.positive
+    wide = compile_prompt(brief(shot="wide", staging=STAGING), model_profile("z-image-turbo"))
+    assert "Blocking" in wide.positive
+
+
+def test_an_insert_has_nobody_in_it_and_only_the_set() -> None:
+    out = compile_prompt(
+        brief(characters=[], frame_focus="prop", shot="close", staging=STAGING,
+              framing="Insert shot: a close view of the revolver alone, filling the frame, nobody in the picture."),
+        model_profile("z-image-turbo"))
+    assert "revolver" in out.positive and "Fang Yuan" not in out.positive and "Blocking" not in out.positive
+    assert not any(s.label.startswith("character") or s.label == "composition" for s in out.sections)
+
+
+def test_a_prompt_with_no_framing_keeps_its_old_sections() -> None:
+    a = compile_prompt(brief(), model_profile("z-image-turbo"))
+    assert [s.label for s in a.sections] == ["style", "character:Fang Yuan", "composition"]
+
+
 def test_noobai_profile_ignores_the_composition() -> None:
     plain = compile_prompt(brief(composition=""), model_profile("noobai-xl-1.1"))
     composed = compile_prompt(brief(), model_profile("noobai-xl-1.1"))
