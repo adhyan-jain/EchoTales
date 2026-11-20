@@ -297,6 +297,8 @@ class PanelDirection(BaseModel):
     #: own `shot` was "medium" for 16 of 16 LotM panels and never reached the Z-Image prompt.
     frame: str = Field(default="")
     frame_focus: str = Field(default="")
+    #: The prop an insert shows, so the staging Set is cut to the clauses that name it.
+    frame_subject: str = Field(default="")
     #: What `_validate_direction` removed from the paragraph (names and groups the text does not contain), not a model field.
     grounding_rejects: list[str] = Field(default_factory=list)
 
@@ -793,7 +795,9 @@ def direct_beat(
             fixed.grounding_rejects = [*fixed.grounding_rejects, "place retried"]
             direction = fixed
         else:
-            direction = direction.model_copy(update={"grounding_rejects": [*direction.grounding_rejects, "place:" + ",".join(bad)]})
+            direction = direction.model_copy(update={
+                "composition": drop_place_conflicts(direction.composition, bad),
+                "grounding_rejects": [*direction.grounding_rejects, "place:" + ",".join(bad)]})
     return Direction(
         direction=direction, cast=cast, novel_style=novel_style, conditions=conditions or {},
         novel_id=novel_id,
@@ -1126,6 +1130,11 @@ def _validate_composition(
         text, scrubbed = scrub_unstated(text, allowed=f"{beat_text} {d.staging} {' '.join(cast)}", lead="")
         rejects.extend(scrubbed)
     updates["composition"] = text
+    allowed_all = f"{beat_text} {d.staging} {' '.join(cast)}"
+    props, objects = unstated_weapon_props(list(d.props), allowed_all), unstated_weapon_props(list(d.key_objects), allowed_all)
+    if len(props) != len(d.props) or len(objects) != len(d.key_objects):
+        rejects.append("weapon prop not in the text")
+        updates["props"], updates["key_objects"] = props, objects
     updates["grounding_rejects"] = rejects
     return d.model_copy(update=updates)
 
@@ -1175,6 +1184,35 @@ def _drop_segments(sentence: str, cue: re.Pattern[str]) -> str:
     return text + ("." if sentence.rstrip().endswith(".") and not text.endswith(".") else "")
 
 
+_WEAPON_RE = re.compile(r"\b(sword|blade|dagger|knife|spear|axe|halberd|saber|sabre|rapier|bow|arrow|gun|revolver|pistol|rifle|musket|cannon)s?\b", re.I)
+
+
+def unstated_weapon_props(items: list[str], allowed: str) -> list[str]:
+    """`items` without any prop that names a weapon the passage and staging never name."""
+    low = allowed.lower()
+    keep = []
+    for item in items:
+        m = _WEAPON_RE.search(item)
+        if m is None or re.search(rf"\b{re.escape(m.group(1).lower())}", low):
+            keep.append(item)
+    return keep
+
+
+def drop_place_conflicts(text: str, bad: list[str]) -> str:
+    """The paragraph without the clauses that name a place the staging sheet does not have. A retry that still wrote "a dark damp
+    cave" against a staged mountaintop only flagged it (round 4), so the cave reached the prompt."""
+    if not bad:
+        return text
+    cue = re.compile(r"\b(?:" + "|".join(re.escape(b) for b in bad) + r")s?\b", re.I)
+    out = []
+    for sent in re.split(r"(?<=[.!?])\s+", text.strip()):
+        if cue.search(sent):
+            sent = _drop_segments(sent, cue)
+        if sent:
+            out.append(sent)
+    return " ".join(out)
+
+
 def scrub_unstated(text: str, *, allowed: str, lead: str, sky: bool = True) -> tuple[str, list[str]]:
     """Remove from the director's paragraph an unnamed extra person and any sky or weather that neither the passage nor the
     staging sheet (`allowed`) states. Returns the new text and one reject label per fault.
@@ -1195,6 +1233,18 @@ def scrub_unstated(text: str, *, allowed: str, lead: str, sky: bool = True) -> t
         sentences = fixed
     out_sentences: list[str] = []
     for sent in sentences:
+        # A held or worn weapon the passage never names is the model's prior for the genre (RI cliff r4: a sword in the hand or at
+        # the hip in 5 of 13 panels, the text gave him none). Only the clause is cut.
+        for m in _WEAPON_RE.finditer(sent):
+            word = m.group(1).lower()
+            if sent and not re.search(rf"\b{re.escape(word)}", low_allowed):
+                cleaned = _drop_segments(sent, re.compile(rf"\b{re.escape(word)}", re.I))
+                tag = f"weapon:{word}"
+                if tag not in rejects:
+                    rejects.append(tag)
+                sent = cleaned
+        if not sent:
+            continue
         for name, in_text, in_allowed in (_SKY if sky else []):
             if in_text.search(sent) and not in_allowed.search(allowed):
                 cleaned = _drop_segments(sent, in_text)

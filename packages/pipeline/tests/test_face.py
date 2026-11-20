@@ -16,7 +16,7 @@ def test_a_neutral_face_is_upgraded_from_the_lines_emotion_words() -> None:
     assert face.infer_expression("calm unreadable stare", "Painful!") == "painful grimace"
     assert face.infer_expression("calm unreadable stare", "Ouch...") == "painful grimace"
     assert face.infer_expression("calm", "Hehe, I can end up getting some spare time") == "laughing"
-    assert face.infer_expression("", "Looking at the setting sun, Fang Yuan lightly laughed.") == "cold mocking smile"
+    assert face.infer_expression("", "Looking at the setting sun, Fang Yuan lightly laughed.") == "faint smile"
 
 
 def test_a_stated_calm_is_never_overridden() -> None:

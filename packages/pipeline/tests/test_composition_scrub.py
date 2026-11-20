@@ -83,7 +83,7 @@ def test_an_invented_item_name_is_never_turned_into_the_lead() -> None:
     assert "holds a vial" in out.composition
     out = _fabricated("Fang Yuan stands by the window. He holds his Spring Sword in one hand.")
     assert "holds his Fang Yuan" not in out.composition and "Spring Sword" not in out.composition
-    assert "a small object in one hand" in out.composition
+    assert "Spring Sword" not in out.composition
 
 
 def test_an_invented_person_name_in_a_one_person_cast_still_becomes_the_lead() -> None:

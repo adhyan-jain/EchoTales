@@ -95,7 +95,7 @@ def test_inserts_are_not_back_to_back() -> None:
 
 def test_the_sentence_names_the_shot_and_the_insert_has_nobody_in_it() -> None:
     insert = fr.Framing("close", focus="prop", subject="revolver")
-    assert "revolver" in fr.framing_sentence(insert, "Zhou Mingrui") and "nobody" in fr.framing_sentence(insert, "Zhou Mingrui")
+    assert "revolver" in fr.framing_sentence(insert, "Zhou Mingrui") and "empty of people" in fr.framing_sentence(insert, "Zhou Mingrui")
     assert "natural realistic proportions" in fr.framing_sentence(fr.Framing("close"), "Ada")
     assert fr.framing_sentence(fr.Framing("close", focus="eyes"), "Ada").startswith("Extreme close-up on Ada's eyes")
     assert fr.framing_sentence(fr.Framing("wide", focus="establishing"), "Ada").startswith("Wide establishing")
