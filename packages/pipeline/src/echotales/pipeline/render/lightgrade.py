@@ -37,6 +37,11 @@ def _hits(text: str, words: tuple[str, ...]) -> bool:
     return any(re.search(r"\b" + re.escape(w.strip()), text) for w in words)
 
 
+def light_kind(text: str) -> str:
+    """The light category a text states ("low", "dusk", "soft", "day", "bright") or "" when it states none."""
+    return _kind(text)
+
+
 def _kind(text: str) -> str:
     low = text.lower() + " "
     # A time of day outranks a source ("a lamp at dusk" is dusk); a low-key source outranks plain weather.

@@ -102,8 +102,21 @@ def validate_staging(
         blocking = " ".join(kept).rstrip(",; ")
         lead = cast[0] if cast else "the lead"
         blocking = (blocking + "; " if blocking else "") + f"the others stand packed close in a dense uneven crowd on one side of the frame, at different depths, all facing {lead}"
+    # A light the scene never states is the staging model's guess from the genre label: pride-and-prejudice, stored as "Victorian
+    # gothic", was staged "a room lit by a gas lamp, Light: Gaslight" in 5 of 5 scenes about a morning conversation, and every panel
+    # came out as a dark night room (round 4, 2026-11-20). A time of day or source the scene text has no word for is dropped.
+    from echotales.pipeline.render.lightgrade import light_kind  # type: ignore[import-untyped]
+
+    set_text, light = s.set, s.light
+    if not light_kind(scene_text):
+        if light_kind(light):
+            rejects.append("light not stated by the text")
+            light = ""
+        if light_kind(set_text):
+            rejects.append("lit-by clause not stated by the text")
+            set_text = re.sub(r",?\s*\b(?:lit|lighted|illuminated) by [^,;.]*", "", set_text).strip(" ,")
     if rejects:
-        return SceneStaging(set=s.set, blocking=blocking, light=s.light), rejects
+        return SceneStaging(set=set_text, blocking=blocking, light=light), rejects
     return s, rejects
 
 

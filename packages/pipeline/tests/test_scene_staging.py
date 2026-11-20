@@ -49,7 +49,7 @@ def test_validate_staging_rejects_a_ring_the_text_never_states_and_names_outside
     assert "Gu Yue Fang Zheng" not in ok.blocking
     # the text itself says they surround him: leave it alone
     ring = SceneStaging(set="a cliff", blocking="fighters surround Fang Yuan", light="dusk")
-    kept, rj = validate_staging(ring, scene_text="The fighters stood in a circle around Fang Yuan.", cast=["Fang Yuan"])
+    kept, rj = validate_staging(ring, scene_text="At dusk the fighters stood in a circle around Fang Yuan.", cast=["Fang Yuan"])
     assert kept.blocking == ring.blocking and not rj
     # "surrounded" is prose for outnumbered: on a cliff edge it is still staged as one side of the frame
     prose, rj2 = validate_staging(ring, scene_text="Enemies surrounded him all around.", cast=["Fang Yuan"])

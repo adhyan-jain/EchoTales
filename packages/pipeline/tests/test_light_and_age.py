@@ -69,3 +69,13 @@ def test_a_stated_adult_age_makes_an_adult_and_a_stated_teen_age_stays_young() -
     teen = identity_sentence(CharacterBrief(name="Fang Yuan", gender="male", age_band="youth", age_years=15))
     assert "adult face" in adult and "youthful" not in adult
     assert "15-year-old boy" in teen and "youthful" in teen
+
+
+def test_a_light_the_scene_text_never_states_is_dropped_from_the_staging_sheet() -> None:
+    from echotales.pipeline.render.staging import SceneStaging, validate_staging
+
+    guess = SceneStaging(set="a room lit by a gas lamp, a desk on the right", blocking="Mr. Bennet sits at the desk", light="Gaslight")
+    cleaned, rejects = validate_staging(guess, scene_text="Mr. Bennet replied that he had not.", cast=["Mr. Bennet"])
+    assert cleaned.light == "" and "gas lamp" not in cleaned.set and "a desk on the right" in cleaned.set and rejects
+    kept, none = validate_staging(guess, scene_text="The gas lamp hissed in the study.", cast=["Mr. Bennet"])
+    assert kept.light == "Gaslight" and not none
