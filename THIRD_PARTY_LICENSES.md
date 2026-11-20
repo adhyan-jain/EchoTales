@@ -19,6 +19,7 @@ relicensed (decision D7 in `docs/design/decisions.md`).
 | Component | Used for | Licence | Status |
 |---|---|---|---|
 | NoobAI XL 1.1 (Laxhar/noobai-XL-1.1) | comparison image engine (`--image-engine noobai`); the default was Z-Image Turbo from 2026-11-19 | non-commercial; the licence also covers images it generates | **stated here** (D7) |
+| Anima (circlestone-labs/Anima-Base-v1.0-Diffusers) | prompt-compiler profile `anima`; weights not downloaded, never measured | CircleStone Labs non-commercial (derivative of Cosmos-Predict2-2B, NVIDIA Open Model License) | **stated here** (`engines/registry.py`) |
 | Illustrious | alternative image engine | non-commercial | **stated here** (D7) |
 | Z-Image Turbo (Tongyi-MAI/Z-Image-Turbo) | default image model, loaded by the compiled-route worker | Apache-2.0 | **stated here** (`docs/design/decisions.md` D58; EVOLUTION 4.161 setup line; `engines/registry.py`). Weights are placed by hand and are not in this repository |
 | Chatterbox TTS (Resemble AI) | speech synthesis | permissive (MIT) | **verify** |
