@@ -107,3 +107,13 @@ def test_depth_parallax_changes_the_frames_but_not_the_timeline(tmp_path: Path) 
     deep = build_episode(und, [PageImage(0, "p.png", _page())], timings, tmp_path / "b", depth=_FakeDepth(), **kw)
     assert deep.duration == flat.duration and deep.video.is_file()
     assert deep.video.read_bytes() != flat.video.read_bytes()
+
+
+def test_shot_frames_keep_every_shot_on_its_audio_start() -> None:
+    """60 shots of 2.31 s: per-shot rounding ended ~1 s early against audio placed in seconds (EVOLUTION 4.183)."""
+    from echotales.pipeline.comic.build import Shot, shot_frame_counts
+
+    shots = [Shot(0, i, (0, 0, 1, 1), 2.31) for i in range(60)]
+    counts = shot_frame_counts(shots, 24)
+    assert abs(sum(counts) - round(60 * 2.31 * 24)) <= 1
+    assert all(n >= 1 for n in counts)
