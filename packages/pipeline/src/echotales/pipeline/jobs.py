@@ -142,7 +142,7 @@ def pipeline_stage_digest(source_digest: str, name: str, params: dict[str, Any])
     key = f"{source_digest}|{name}|v{PIPELINE_VERSION}"
     if params.get("chapters"):
         key += f"|ch={params['chapters']}"
-    return digest_text(key)
+    return str(digest_text(key))
 
 
 def new_job_id(novel_id: str, kind: str) -> str:
@@ -218,7 +218,10 @@ def _missing_panel_images(out_dir: Path, chapters: list[float], version: str) ->
     """Panels the version's plan names whose picture is not on disk. The image worker skips a panel that fails alone
     (`compiled_route.generate_compiled_batch`) and the render still returns, so without this check the job read
     SUCCEEDED over a chapter with holes that pages and the video then fail on."""
-    from echotales.pipeline.render.plan import PANEL_PLAN_FILE, load_panel_plan
+    from echotales.pipeline.render.plan import (  # type: ignore[import-untyped]
+        PANEL_PLAN_FILE,
+        load_panel_plan,
+    )
 
     missing: list[str] = []
     for c in chapters:

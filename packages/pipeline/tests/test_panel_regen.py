@@ -159,7 +159,7 @@ def test_routes_list_queue_and_choose(server):
 def test_a_redraw_that_fails_midway_does_not_block_the_next_one(rendered):
     """An engine error on the second candidate left r1c0.png on disk with no index line; the next redraw reused
     round 1 and refused to overwrite, so the panel could never be redrawn again."""
-    store, vdir = rendered
+    _store, vdir = rendered
     row = load_panel_plan(vdir)[0]
 
     class Flaky:
