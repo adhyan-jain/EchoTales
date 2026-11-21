@@ -77,6 +77,10 @@ _LOW = re.compile(r"\b(towering|loom\w*|looked down|looking down|overlook\w*|dom
 _SAYS = re.compile(r"^- (?P<who>.+?) says(?: to (?P<to>[^:]+))?:", re.M)
 
 
+#: Sentence boundary that does not cut after an honorific's full stop. "Mr. Bennet stands by a window" was cut to the sentence "Mr."
+#: by a plain `(?<=[.!?])\s+` split, so a close-up kept "Mr." and lost the paragraph (P&P ch1: the prompt read "Mr. Set: ...").
+SENTENCE_SPLIT = re.compile(r"(?<=[.!?])(?<!\bMr\.)(?<!\bMrs\.)(?<!\bMs\.)(?<!\bDr\.)(?<!\bSt\.)\s+")
+
 _QUOTED = re.compile(r'"[^"]*"|\u201c[^\u201d]*\u201d')
 
 
@@ -87,7 +91,7 @@ def _unquoted(text: str) -> str:
 
 def _first_sentence(text: str) -> str:
     """The first sentence, plus the second when the first is a fragment of four words or fewer ("A gun? A revolver?")."""
-    parts = re.split(r"(?<=[.!?])\s+", text.strip())
+    parts = SENTENCE_SPLIT.split(text.strip())
     if not parts or not parts[0]:
         return ""
     return " ".join(parts[:2]) if len(parts[0].split()) <= 4 and len(parts) > 1 else parts[0]
@@ -400,7 +404,7 @@ def crop_composition(text: str, focus: str) -> str:
     sentence. A close-up whose paragraph still said "stands amidst the carnage, the battlefield littered with corpses" drew a huge
     head on a small full body (a chibi, 3 of 3 RI close-ups in the first round-3 render); an eye crop keeps only eye and gaze
     sentences, or nothing."""
-    sentences = [s for s in re.split(r"(?<=[.!?])\s+", text.strip()) if s]
+    sentences = [s for s in SENTENCE_SPLIT.split(text.strip()) if s]
     if focus == "eyes":
         return " ".join(s for s in sentences if re.search(r"\b(eyes?|gaze|stares?|stared|glare\w*|brows?)\b", s, re.I))
     keep = [s for s in sentences if _FACE_SENTENCE.search(s)]

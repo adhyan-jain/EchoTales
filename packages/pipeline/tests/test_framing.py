@@ -133,3 +133,10 @@ def test_the_first_panel_of_a_mid_chapter_slice_is_not_a_chapter_opening() -> No
     f = fr.plan_framing("At the very same moment, a pair of clear eyes quietly looked at the lights.", names=NAMES,
                         opens_chapter=False, state=state)
     assert f.focus == "eyes"
+
+
+def test_a_close_up_crop_does_not_cut_the_paragraph_at_an_honorific_full_stop() -> None:
+    """P&P ch1: "Mr. Bennet stands by a window, his gaze fixed" was cut to the sentence "Mr." and the close-up prompt read "Mr. Set:"."""
+    text = "Mr. Bennet stands by a window, his gaze fixed on the street. The room is otherwise empty."
+    assert fr.crop_composition(text, "") == "Mr. Bennet stands by a window, his gaze fixed on the street."
+    assert fr.SENTENCE_SPLIT.split("Mrs. Bennet sat. Dr. Who left! Ms. Lee came?") == ["Mrs. Bennet sat.", "Dr. Who left!", "Ms. Lee came?"]

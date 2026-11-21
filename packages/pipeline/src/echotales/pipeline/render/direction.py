@@ -32,6 +32,7 @@ import re
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
+from echotales.pipeline.render.framing import SENTENCE_SPLIT
 from echotales.pipeline.spans.scene import _MOB_ROLE_NOUNS
 from pydantic import BaseModel, Field
 
@@ -689,7 +690,7 @@ def scene_setting_note(passages: list[str], *, max_chars: int = 420) -> str:
     scored: list[tuple[int, int, str]] = []
     order = 0
     for passage in passages:
-        for sentence in re.split(r"(?<=[.!?])\s+", passage.strip()):
+        for sentence in SENTENCE_SPLIT.split(passage.strip()):
             words = set(re.findall(r"[a-z]+", sentence.lower()))
             score = len(words & _PLACE_WORDS) + len(words & _TIME_WORDS)
             if score and len(sentence) > 12:
@@ -1213,7 +1214,7 @@ def drop_place_conflicts(text: str, bad: list[str]) -> str:
         return text
     cue = re.compile(r"\b(?:" + "|".join(re.escape(b) for b in bad) + r")s?\b", re.I)
     out = []
-    for sent in re.split(r"(?<=[.!?])\s+", text.strip()):
+    for sent in SENTENCE_SPLIT.split(text.strip()):
         if cue.search(sent):
             sent = _drop_segments(sent, cue)
         if sent:
@@ -1230,7 +1231,7 @@ def scrub_unstated(text: str, *, allowed: str, lead: str, sky: bool = True) -> t
     never touched, and with no lead named a figure is left alone (it may be the CAST-free scenery shot's own subject)."""
     rejects: list[str] = []
     low_allowed = allowed.lower()
-    sentences = re.split(r"(?<=[.!?])\s+", text.strip())
+    sentences = SENTENCE_SPLIT.split(text.strip())
     if lead and not re.search(r"\b(?:figure|silhouette|stranger|shape)\b", low_allowed):
         fixed: list[str] = []
         for sent in sentences:
