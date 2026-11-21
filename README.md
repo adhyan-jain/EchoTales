@@ -25,6 +25,10 @@ In the studio (http://127.0.0.1:8787): create a project, upload an EPUB, then us
 audiobook" panel. Language models run locally through ollama; speech and image generation need a GPU. The stub
 modes (`ECHOTALES_LLM_MODE=stub`) run everything without one.
 
+Pages: `echotales pages` lays the panels out as a vertical **webtoon** strip by default (`--format manga` or
+`comic` for paged layouts) and letters the bubbles in code, placed off the picture's subject where it can find a
+spot (EVOLUTION 4.185).
+
 ## Measured results
 
 Every number below comes from a committed record and names it. Where nothing was measured the cell says so.
@@ -33,7 +37,7 @@ that comparison needs the public benchmark (below) to be filled in by other peop
 
 | What | Result | Measured on | Source |
 |---|---|---|---|
-| Speaker attribution, reader on `gemma2:9b` | Lord of the Mysteries 95.4%, Omniscient Reader 77.9%, Reverend Insanity 76.2% | ch 1-3 (and held-out ch 21) of each volume, against **model-drafted** references | `docs/EVOLUTION.md` 4.124 |
+| Speaker attribution, reader on `gemma2:9b` | Lord of the Mysteries 96.5% (167/173), Reverend Insanity 96.4% (81/84), Omniscient Reader 89.7% (130/145) | the reference chapters of each volume (rerun 2026-11-20), against **model-drafted** silver references; the 8 GB card spills about 21% of the model to CPU at the reader's context, so a run is slow | `data/eval/reader/bakeoff-gemma2-9b.json`, `docs/design/decisions.md` D62, `docs/EVOLUTION.md` 4.171 |
 | Image model, Z-Image Turbo vs NoobAI XL | Z-Image better in 11 of 12 scene categories; 32.3 s vs 21.7 s per image, peak 5.78 vs 5.42 GiB | 24 briefs, 160 images, 8-GB laptop GPU; scored by one reviewer by eye | `docs/EVOLUTION.md` 4.165 |
 | Local video, LTX-Video 2B distilled | about 12 s denoise plus 6 s decode per 4 s clip, 7.0 GB peak (torch) with the model warm; 27-70 s per clip with reloads | 512x768, 97 frames, 8-GB laptop GPU | `docs/EVOLUTION.md` 4.146 |
 | Speaker attribution on the public benchmark | not measured yet | Pride and Prejudice, Sherlock Holmes | `data/eval/benchmark/` holds the references |
@@ -154,7 +158,7 @@ not need to understand the novel" is a claim the paper makes.
 ## Setup
 
 ```bash
-uv sync --python 3.12          # 3.12 exactly: ML wheels lag newer
+uv sync --python 3.12          # 3.12 exactly: ML wheels lag newer; installs librosa (the voice quality check, `voice/qa.py`); pyyaml is a dev dependency
 uv run pytest
 make verify                    # tests, then the ruff and mypy ratchet (a count may fall, never rise)
 ```

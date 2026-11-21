@@ -26,7 +26,7 @@ alone — read the source doc for the thing you're touching:
   current-state-of-the-world doc — read those before starting render or
   persona work. The permanent, append-only numbered session log (every
   real bug found, every fix shipped, in chronological sections, currently
-  past 4.99) now lives in [`docs/EVOLUTION.md`](docs/EVOLUTION.md), not here — a
+  past 4.185) now lives in [`docs/EVOLUTION.md`](docs/EVOLUTION.md), not here — a
   resolved/superseded HANDOFF item moves there instead of being deleted.
 - [`docs/EVOLUTION.md`](docs/EVOLUTION.md) — architecture decisions and reversals over
   time, with the measured reason each one happened.
@@ -88,7 +88,7 @@ source .venv/bin/activate      # uv-managed venv already present at repo root
 python3 -m pytest packages/core/tests packages/pipeline/tests   # no GPU needed
 ```
 
-core+pipeline suite: 1,612 passed (2026-10-31, run with `-o addopts=""`); webview jest: 136 (18 suites); research: 29 is as of 2026-10-19 and was not re-run). Root `pyproject` testpaths lists only
+core+pipeline suite: 2,820 passed, 2 skipped (2026-11-21, run with `-o addopts=""`); webview jest: 251 (28 suites); research: 29 is as of 2026-10-19 and was not re-run). Root `pyproject` testpaths lists only
 core and pipeline; pass `packages/research/tests` explicitly (and `-o addopts=""`) to include research.
 
 Everything is stub-first: `ECHOTALES_LLM_MODE=stub` and `--image-engine
@@ -172,7 +172,7 @@ real data without touching the canonical `data/db/<novel-id>.db`.
 
 ## Current known issues
 
-Product track (2026-10-31, EVOLUTION 4.131, decisions D29-D32): reviewer speaker decisions are stored as attribution method `HUMAN` and final everywhere; `voice` defaults to engine `chatterbox` (`--allow-unlocked`, `--allow-stub-m4b`; stub warns and `--m4b` refuses it); `render --density beat|dense`; `webview-server --source` is optional; job kinds `pipeline` (whole build, resumable) and `export_m4b` added. `scripts/setup.sh` and `.github/workflows/ci.yml` exist but CI has never run on GitHub. Title rule decided: `comparison_key` keeps a title only after a family name (`derive_family_tokens`), bare surname separate. Real runs default to the NoobAI image worker (`compute.default_image_engine()`; stub only under `ECHOTALES_LLM_MODE=stub`). OPEN (HANDOFF "Pick up here - 2026-10-31"): Lizzy/Elizabeth split, no blind listen (real Chatterbox speech and an M4B were produced and checked by tool on P&P ch1, 2026-10-31), narrator `p227` is a placeholder (LibriTTS bank wanted), reference images ignored by the local worker and identity QA is a colour histogram, three novels not re-scored, no LICENSE. Nothing committed since 1583fdb.
+Product track (2026-11-21, EVOLUTION 4.168-4.186, decisions D60-D66): reviewer speaker decisions are stored as attribution method `HUMAN` and final everywhere (D29-D32); `voice` defaults to engine `chatterbox`; `render --density beat|dense`; one locked identity per character body plus a local vision check (D61); reader stays on `gemma2:9b` (D62: LotM 96.5, RI 96.4, ORV 89.7 on model-drafted silver references); colour webtoon look, `echotales pages` defaults to `--format webtoon`; single-panel redraw and candidates (4.179); cloud (RunPod worker packages, spend ledger) is mock-tested only and has never run for real (D65); `LICENSE` (Apache-2.0) exists. OPEN and owner-dependent items are in HANDOFF "Pick up here - 2026-11-21": panel round 7 in progress, no real end-to-end run on P&P ch1-3 or RI ch1 with current code, no blind listen, narrator `p227` a placeholder, benchmark references not human-checked, gemma2:9b CPU spill, the RunPod run and deploy need the owner. CI exists (`.github/workflows/ci.yml`) but has never run on GitHub.
 
 Research track: `docs/research/DECISION_LOG.md` is the state of record (EVOLUTION 4.101).
 
@@ -184,7 +184,7 @@ renders need a current bible lock; `data/db/` DBs are unstamped (409). See docs/
 
 See docs/HANDOFF.md's "Pick up here" section for the actual current state — it
 changes every session (the numbered session log itself moved to
-docs/EVOLUTION.md, latest section 4.133). The NER-windowing re-run (EVOLUTION
+docs/EVOLUTION.md, latest section 4.186; 4.175 and 4.182 are reserved for other branches). The NER-windowing re-run (EVOLUTION
 4.76) that an earlier session left unmeasured did run (4.84): the
 "`ollama` unreachable" blocker was a misdiagnosis — the daemon was simply
 not started — and the fix is now measured on real data (CEAF-e recall

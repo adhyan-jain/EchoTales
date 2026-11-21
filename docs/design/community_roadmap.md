@@ -61,14 +61,14 @@ What that means concretely:
 | Part | State | Evidence |
 |---|---|---|
 | Story graph (ingest, resolve, reader, `state_of`) | Works, tested, audited per stage | 2,051 tests; `echotales audit` |
-| Who speaks each line | 95% on Lord of the Mysteries, 82% ORV, 69% Reverend Insanity (model-drafted references) | EVOLUTION 4.157 |
+| Who speaks each line | As of 2026-11-16: 95% LotM, 82% ORV, 69% RI. As of 2026-11-20 (gemma2:9b rerun, model-drafted silver references): LotM 96.5, RI 96.4, ORV 89.7 | EVOLUTION 4.157, 4.171, decisions D62 |
 | Full-cast audio | Produces speech and an M4B; never listened to critically; a quality check is being built | worktree `audio-qa` |
 | Panel images | Two local models behind one compiler: Z-Image Turbo (scenes) and NoobAI (anime look). Hand-written scene briefs look good; the real director path does not | EVOLUTION 4.160 to 4.164 |
 | Director (scene to shot list) | The weak link: repeated portraits, lost crowds, wrong locations | EVOLUTION 4.164 |
 | Video | Pan-and-zoom motion comic works; local LTX clips work with a quality gate; subtle motion only | EVOLUTION 4.148 to 4.154 |
 | Studio (web app) | Works for build, review, lock, voice, render; hand-written server; several screens thin | `webview/` |
-| Manga pages (layout, speech bubbles) | Not built: output is loose panels | |
-| Manga/manhwa as input | Not built | |
+| Manga pages (layout, speech bubbles) | Built 2026-11-21 (`pages/`, webtoon default) | EVOLUTION 4.185 |
+| Manga/manhwa as input | Built 2026-11-21 (`comic/`), not shown on a real chapter end to end | EVOLUTION 4.181, 4.183 |
 | Cloud tier | Mock-tested only; needs a RunPod key | EVOLUTION 4.106 |
 
 Work that was in flight is described in section 0.
@@ -97,6 +97,8 @@ These come from what actually went wrong in the first three months.
 Order matters. Each milestone lists what to build, how to know it is done, and what it unlocks.
 
 ### M0. One chapter that is good, end to end (finish the wrap-up)
+
+**Status 2026-11-21: built; "Done when" NOT met.** Director v2, batching, compiler fixes, the voice bank and prosody, and the narration pruner are on master (EVOLUTION 4.160-4.167, panel rounds 4.186, 4.172, 4.173, 4.177; round 7 on shot variety is in progress). No public-domain chapter has been run from upload to M4B, panels and video with current code and watched; real Chatterbox speech and an M4B were checked by tool on P&P ch1 (2026-10-31), not by ear. No screen capture exists and the README demo link is deliberately empty. Waiting on the owner to listen and watch.
 
 The project has no showable output yet. Nothing below starts until this exists.
 
@@ -145,6 +147,8 @@ The project has no showable output yet. Nothing below starts until this exists.
 
 ### M1. Novel to manga: real pages, not loose panels
 
+**Status 2026-11-21: built; "Done when" NOT met (owner look pending).** Page composer, code-drawn lettering with bubbles placed off the subject, PNG/PDF/CBZ/webtoon export (`pages/`, `echotales pages`, webtoon default; EVOLUTION 4.183, 4.185), identity lock and local vision check (4.170, D61), and single-panel redraw with candidates (4.179) exist. Measured only by eye on scratch panels and by overlap numbers; the "same character recognisable in a blind look" test has not been done, a redraw does not use the director or compiled Z-Image route, and a vision check that did not run leaves no record (HANDOFF).
+
 Fans share pages. This is the cheapest mode to compute and the most shareable output.
 
 - **Page composer.** Panel layout templates chosen from the shot list (splash for a reveal, wide for an
@@ -164,6 +168,8 @@ Fans share pages. This is the cheapest mode to compute and the most shareable ou
   recognisable on every page in a blind look by someone who has not read the prompts.
 
 ### M2. Manga and manhwa to anime
+
+**Status 2026-11-21: built; "Done when" NOT shown.** `comic/` ingests a folder, CBZ or PDF, detects panels and bubbles, reads text, maps speakers into the graph, inpaints clean plates and builds a motion-comic video (`echotales comic`; reviewed in EVOLUTION 4.181, 4.183). No openly licensed or self-drawn chapter has been turned into a two-to-three-minute episode that was watched.
 
 The art already exists and is professional, so this mode sidesteps the hardest problem (drawing) and gives
 the biggest reaction for the least generation. Likely the mode fans care about most.
@@ -191,6 +197,8 @@ the biggest reaction for the least generation. Likely the mode fans care about m
 
 ### M3. Novel to anime
 
+**Status 2026-11-21: partly built; "Done when" NOT met.** `echotales anime` composes from panels with the local motion ladder and an episode timeline (4.114, 4.153, 4.154). The cloud tier is code only: `wan-runpod`, multi-reference keyframes and the LoRA job are mock-tested, never run against a real endpoint, and `wan-runpod` is not wired into the anime composer (4.174, 4.180, D65). Waiting on the owner's RunPod run.
+
 Built from M0 to M2: the director's shot list, panels as keyframes, the motion ladder from M2, voices and
 subtitles. New work:
 
@@ -206,6 +214,8 @@ subtitles. New work:
 
 ### M4. Features only a story graph can give (the community hooks)
 
+**Status 2026-11-21: built; local features done, nothing tested by community use.** Adaptation packs (`packs.py`, `echotales pack`, refused if text shares 8 words with the book), spoiler-safe companion with a measured spoiler check (4.169), long-series chapter-scoped rebuild and run-time estimates (`long_series.py`), the English-only statement (README "Languages"), voice audition (4.169) and single-panel redraw and candidates (4.179). The candidate path runs no vision check and was stub-tested only.
+
 - **Adaptation packs.** A shareable file holding the cast, descriptions per time interval, voice casting, shot
   lists, approved reference prompts and corrections, keyed to chapter hashes, with no book text and no quotes.
   Someone who owns the same book loads the pack and renders the community's adaptation locally. This is the
@@ -220,6 +230,8 @@ subtitles. New work:
   delivery. Done 2026-11-21 (EVOLUTION 4.179): regenerate one panel with edited direction, pick among candidates (stub-tested, not on a real engine; no vision check on candidates yet).
 
 ### M5. Make it the repository people point to
+
+**Status 2026-11-21: mostly done; one item needs the owner.** `scripts/setup.sh`, Dockerfile and `compose.yaml`, the engine registry (4.168), the public benchmark (`eval/public/`, D60), README as product page, `LICENSE` (Apache-2.0), `CONTRIBUTING.md`, dead code removal and a lint ratchet exist. NOT done: the benchmark references are still model drafts (`checked_by_human: false`; the roadmap asks for hand-checked ones), there is no demo video, and CI has never run on GitHub. `render/panels.py` was not split.
 
 - **Install in one command.** A setup script that detects the GPU, downloads only the models that fit, shows
   each model's licence, and runs the sample book. A Docker image. Hardware presets: 8 GB laptop, 12 to 24 GB

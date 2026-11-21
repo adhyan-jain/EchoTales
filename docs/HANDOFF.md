@@ -23,15 +23,32 @@ conflated.
 | `docs/design/consistency_plan.md` | Approved-reference identity and location consistency plan (2026-10-18). Superseded 2026-11-19 by `community_roadmap.md` M1. |
 | `docs/archive/COMPLETION_PLAN.md` | *What to build next and why*, across research/patent/product. The old multi-track plan (2026-09-23). Superseded 2026-11-19 by `community_roadmap.md`; history only. |
 
-**Last updated:** 2026-11-07 (EVOLUTION 4.134).
+**Last updated:** 2026-11-21 (EVOLUTION 4.186).
 
-## Pick up here - 2026-11-20 (panel quality round 2; EVOLUTION 4.140)
+## Pick up here - 2026-11-21 (state of master at 5f33ad4; EVOLUTION 4.168-4.186)
 
-Branch `worktree-agent-a72828ac5e4ad4e85`, local, not merged. Full detail and evidence in EVOLUTION 4.140; scratch renders in `data/scratch/panel_quality/out_r2_*` (not `data/novels`).
-- **Fixed and verified by re-render:** cliff scenes no longer become a timber hall (12 of 13 cliff panels on rock); the self-detonation is no longer a child (a `--block-range` preview artifact); LotM block 24 no longer has a red-glowing extra person; scene-break blocks end scenes; reborn Fang Yuan at blocks 83 and 85 is a 15-year-old with the same face.
-- **Fixed, only partly verified:** per-line speaker and addressee reach the director (unit-tested; on real renders the lead still often shows a mocking smile on enemy lines); crowd gap by depth framing (4 seeds each, encoded as staging guidance; gemma2:9b rarely chooses it, a crowd shows in 3 of 13 cliff panels).
-- **Director bake-off (item 7):** qwen3:8b download stalled (181 MB of 5.2 GB, about 0 KB/s). Z-Image-Engineer-V6 as `z-engineer` stage-two writer on 9 RI cliff panels: 4.5 s per panel, 0 blanked paragraphs, 7 of 9 polished (2 fell back to the facts), crowds in rows or silhouettes in 5 of 9 against 3 of 9 for the plain prompt, but a softer, greyer look (crowd turns into fog silhouettes, panel 6 muddy, one costume changed to white). Not adopted; `out_r2_bake/sheet.png`.
-- **OPEN:** persona epoch for Fang Yuan's rebirth starts at block 82; block 80 (already reborn) is drawn as the adult (`persona/split.py`). LotM: 6 of 16 panels show a daylight window for a night scene. The rain-night scene (RI b31) inherits the cliff's blood and a crowd from the carried staging. Gemma2:9b still writes swords, armour and "a figure" into compositions. RI blocks 36-61 (clan hall) were rendered once before the scene-break fix and not re-rendered.
+Master carries everything below; core+pipeline 2,820 passed, 2 skipped (`-o addopts=""`, as reported for this run), webview jest 251. The older dated sections below this one are history: where one conflicts with this section, this one wins, and the numbered log is `docs/EVOLUTION.md`. The 2026-11-20 round-2 entry that stood here was moved into EVOLUTION 4.186 (it was numbered 4.140 by mistake; the real 4.140 is the 2026-11-13 direction entry). Numbers 4.175 and 4.182 are reserved for other branches.
+
+**Done this run (details in EVOLUTION):** engine registry, companion check (4.168, 4.169); M1 identity lock and vision check (4.170, D61); speaker push and reader bake-offs, gemma2:9b kept, qwen3:8b, qwen2.5:7b and ministral-3:8b lost (4.171, D62: LotM 96.5, RI 96.4, ORV 89.7 on silver references); panel rounds 2 to 6 (4.186, 4.172, 4.173, 4.177; D63, D64, D66); cloud phase, mock only, and RunPod worker packages (4.174, 4.180; D65); security review of the Studio server (4.176); Studio walkthrough fixes (4.178); single-panel redraw and candidates (4.179); code-review fixes (4.181, 4.183); fresh-clone fixes, `pyyaml` and `librosa` declared (4.184); pages polish, webtoon default (4.185); test isolation from `.env`.
+
+**Open:**
+- Panel round 7 (shot variety) is in progress in a separate worktree; it will add EVOLUTION 4.182.
+- No real end-to-end run yet on Pride and Prejudice ch1-3 or RI ch1 with the current code (upload to M4B, panels, video).
+- A redraw draws from the panel's recorded prompt through `engine.generate`; it does not re-run the director or the Z-Image compiled route (`render/compiled_route.py`) (4.179).
+- `render/panels.py` CLI render with undrawn panels returns success; only Studio jobs catch it (4.181 findings, not fixed in 4.183).
+- A vision check that did not run leaves no record, so an unchecked panel is not visible afterwards (4.181 findings, not fixed in 4.183).
+- The dead-code / `py.typed` branch is pending, not merged.
+- gemma2:9b spills about 21% to CPU at the reader's 8192 context on the 8 GB card; the owner allowed it for 2026-11-20 only (D62).
+- Pride and Prejudice stores the genre label "Victorian gothic" (a data fact, not a code default).
+- The RI hardcase gold notes quote RI verbatim; trim before the repository goes public.
+- `npm audit`: 0 critical, 16 high remain, all in react-scripts build tooling (4.184).
+- From earlier sections and still open: Lizzy and Elizabeth are separate entities; narrator `p227` is a placeholder; the local image worker ignores reference images; benchmark references are model drafts (`checked_by_human: false`).
+
+**Needs the owner:**
+1. Pick the narrator by ear (`config.json` `voice.narrator`) and do the blind listen and watch.
+2. Hand-check the benchmark references (`echotales benchmark check`).
+3. The RunPod run (runbook: README "Run on RunPod"); nothing has run against a real endpoint.
+4. The deploy go.
 
 ## Pick up here - 2026-11-07 (voice: chunked synthesis, narrator excluded from casting, EARS licence gate; EVOLUTION 4.134)
 
