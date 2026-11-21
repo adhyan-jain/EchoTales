@@ -84,3 +84,14 @@ def test_trusted_speakers_get_their_character_voice(tmp_path: Path) -> None:
     report, lines = _voice(tmp_path, trust=True)
     assert report.character_lines == 2 and report.unconfirmed_lines == 0
     assert len(lines) == 4
+
+
+def test_rebuilding_from_a_changed_understanding_leaves_no_stale_spans(tmp_path: Path) -> None:
+    """A second understand that finds fewer or differently numbered bubbles left the first run's spans behind, and
+    the voice stage then spoke them too (EVOLUTION 4.183)."""
+    store = Store(str(tmp_path / "c.db"))
+    comic_to_store(store, _und(), "pc", "Pepper and Carrot", chapter=1.0)
+    fewer = _und()
+    fewer.pages[0].panels[0].bubbles = [_b(7, "Only this.", "speech", "Character A")]
+    comic_to_store(store, fewer, "pc", "Pepper and Carrot", chapter=1.0)
+    assert [s.text for s in store.get_spans("pc", 1.0)] == ["Only this."]

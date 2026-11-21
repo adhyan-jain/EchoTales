@@ -85,6 +85,9 @@ def comic_to_store(
             report.unattributed += 1
     store.add_chapter(Chapter(novel_id=novel_id, number=chapter, title=chapter_title or f"Episode {chapter:g}",
                               source_href=source or "comic", blocks=blocks))
+    # `add_spans` only overwrites ids the new batch produces; a re-understand with fewer or renumbered bubbles left the
+    # old run's spans in the chapter and the voice stage spoke them too.
+    store.delete_spans_for_chapter(novel_id, chapter)
     store.add_spans(spans)
 
     first_block = {}
