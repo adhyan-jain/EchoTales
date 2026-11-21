@@ -165,6 +165,25 @@ def test_video_fallback_to_path_1(
     assert fb_rep is not None and fb_rep.passed is False
 
 
+def test_the_qa_samples_span_the_whole_clip_not_its_first_second(tmp_path: Path) -> None:
+    """1 s red then 3 s blue: the first-second sampler saw only red (EVOLUTION 4.183)."""
+    import subprocess
+    import shutil
+
+    if shutil.which("ffmpeg") is None:
+        pytest.skip("ffmpeg not installed")
+    from echotales.pipeline.video.qa import sample_8_video_frames
+
+    clip = tmp_path / "c.mp4"
+    subprocess.run(
+        ["ffmpeg", "-v", "error", "-y", "-f", "lavfi", "-i", "color=c=red:s=64x64:r=24:d=1", "-f", "lavfi",
+         "-i", "color=c=blue:s=64x64:r=24:d=3", "-filter_complex", "[0][1]concat=n=2:v=1[v]", "-map", "[v]",
+         "-pix_fmt", "yuv420p", str(clip)], check=True)
+    frames = sample_8_video_frames(clip, 8)
+    assert len(frames) == 8
+    assert frames[-1].getpixel((32, 32))[2] > 150 and frames[-1].getpixel((32, 32))[0] < 100  # the last one is blue
+
+
 def test_wan_frame_count_is_always_a_valid_4n_plus_1() -> None:
     """The worker refuses anything but 4n+1 in 5..161; `round(dur * fps)` was sent raw (EVOLUTION 4.183)."""
     from echotales.pipeline.video.wan import valid_wan_frames
