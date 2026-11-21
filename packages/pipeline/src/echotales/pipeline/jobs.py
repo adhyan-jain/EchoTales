@@ -158,8 +158,8 @@ def _output_inputs_fingerprint(store: Store, novel_id: str, kind: str) -> str:
     unchanged request over unchanged inputs still resumes, and a changed input reruns."""
     import json
 
-    from echotales.pipeline.config import _load_config_json  # type: ignore[import-untyped]
-    from echotales.pipeline.review_gate import fact_digests  # type: ignore[import-untyped]
+    from echotales.pipeline.config import _load_config_json
+    from echotales.pipeline.review_gate import fact_digests
 
     locks = store.list_bible_locks(novel_id)
     facts, _, _ = fact_digests(store, novel_id)
@@ -245,7 +245,7 @@ def _missing_panel_images(out_dir: Path, chapters: list[float], version: str) ->
     """Panels the version's plan names whose picture is not on disk. The image worker skips a panel that fails alone
     (`compiled_route.generate_compiled_batch`) and the render still returns, so without this check the job read
     SUCCEEDED over a chapter with holes that pages and the video then fail on."""
-    from echotales.pipeline.render.plan import (  # type: ignore[import-untyped]
+    from echotales.pipeline.render.plan import (
         PANEL_PLAN_FILE,
         load_panel_plan,
     )

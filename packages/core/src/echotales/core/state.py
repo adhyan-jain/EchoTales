@@ -626,12 +626,12 @@ class GenerationState:
             observer_id=str(d["observer_id"]),
             story_position=float("inf") if pos == "inf" else float(pos),  # type: ignore[arg-type]
             knowledge_pos=DiscoursePosition(chapter=int(d["knowledge_chapter"])),  # type: ignore[call-overload]
-            visible_identities=tuple(d["visible_identities"]),  # type: ignore[call-overload]
-            persona_bindings=tuple(d["persona_bindings"]),  # type: ignore[call-overload]
-            allowed_facts=tuple(d["allowed_facts"]),  # type: ignore[call-overload]
-            forbidden_facts=tuple(d["forbidden_facts"]),  # type: ignore[call-overload]
-            provenance_refs=tuple(d["provenance_refs"]),  # type: ignore[call-overload]
-            read_set=tuple(d["read_set"]),  # type: ignore[call-overload]
+            visible_identities=tuple(d["visible_identities"]),
+            persona_bindings=tuple(d["persona_bindings"]),
+            allowed_facts=tuple(d["allowed_facts"]),
+            forbidden_facts=tuple(d["forbidden_facts"]),
+            provenance_refs=tuple(d["provenance_refs"]),
+            read_set=tuple(d["read_set"]),
             targets=tuple(
                 TargetState(
                     self_id=t["self_id"],

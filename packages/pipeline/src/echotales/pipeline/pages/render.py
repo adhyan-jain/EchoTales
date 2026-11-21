@@ -5,14 +5,14 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 
 import numpy as np
-from echotales.pipeline.pages.composer import PageLayout  # type: ignore[import-untyped]
-from echotales.pipeline.pages.lettering import (  # type: ignore[import-untyped]
+from echotales.pipeline.pages.composer import PageLayout
+from echotales.pipeline.pages.lettering import (
     INK,
     LetterItem,
     LetterResult,
     letter_panel,
 )
-from echotales.pipeline.pages.placement import estimate_subject  # type: ignore[import-untyped]
+from echotales.pipeline.pages.placement import estimate_subject
 from PIL import Image, ImageDraw, ImageOps
 
 BORDER = 4

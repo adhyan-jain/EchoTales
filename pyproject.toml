@@ -71,6 +71,10 @@ strict = true
 warn_unreachable = true
 plugins = ["pydantic.mypy"]
 exclude = ["^data/", "^\\.venv/"]
+# echotales is a namespace package split over packages/*/src; without explicit bases the py.typed markers make mypy see
+# each file under two module names ("core.x" and "echotales.core.x"), and mypy_path pins the source it reads to this checkout.
+explicit_package_bases = true
+mypy_path = "packages/core/src:packages/pipeline/src"
 
 [[tool.mypy.overrides]]
 module = [

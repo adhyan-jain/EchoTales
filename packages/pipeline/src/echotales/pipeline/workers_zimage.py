@@ -134,7 +134,7 @@ class LocalZImageWorker:
         return self._root
 
     def _check_gpu(self) -> None:
-        import torch  # type: ignore[import-not-found]
+        import torch
 
         if not torch.cuda.is_available():
             raise RuntimeError("the Z-Image worker needs a CUDA GPU")
@@ -146,11 +146,11 @@ class LocalZImageWorker:
 
     def _load_encoder(self) -> object:
         """Qwen3-4B from GGUF, tensor by tensor onto the GPU as nf4, so no full-precision copy ever sits in RAM."""
-        import gguf  # type: ignore[import-not-found]
+        import gguf
         import numpy as np
-        import torch  # type: ignore[import-not-found]
-        from bitsandbytes.nn import Linear4bit, Params4bit  # type: ignore[import-not-found]
-        from gguf.quants import dequantize  # type: ignore[import-not-found]
+        import torch
+        from bitsandbytes.nn import Linear4bit, Params4bit
+        from gguf.quants import dequantize
         from transformers import AutoConfig, Qwen3Model
         from transformers.models.qwen3.modeling_qwen3 import Qwen3RotaryEmbedding
 
@@ -193,7 +193,7 @@ class LocalZImageWorker:
     ) -> tuple[list[object], list[dict[str, object]]]:
         """Stage 1: one embedding per prompt (second-to-last hidden state of the chat-templated prompt, as the pipeline
         does), computed with only the encoder on the card and freed before the transformer loads."""
-        import torch  # type: ignore[import-not-found]
+        import torch
         from transformers import AutoTokenizer
 
         tok = AutoTokenizer.from_pretrained(str(self.root / "base/tokenizer"))
@@ -219,8 +219,8 @@ class LocalZImageWorker:
 
     def _ensure_pipe(self) -> object:
         if self._pipe is None:
-            import torch  # type: ignore[import-not-found]
-            from diffusers import (  # type: ignore[import-not-found]
+            import torch
+            from diffusers import (
                 AutoencoderKL,
                 FlowMatchEulerDiscreteScheduler,
                 GGUFQuantizationConfig,
@@ -258,7 +258,7 @@ class LocalZImageWorker:
     ) -> list[ImageWorkerResponse]:
         """Encode every prompt once, then denoise each. `negative_prompt` is ignored (no CFG on Turbo); `greyscale` runs
         the same INK palette pass as the NoobAI worker so manga mode is monochrome whatever the model leaked."""
-        import torch  # type: ignore[import-not-found]
+        import torch
 
         if self._pipe is not None:
             self.close()  # sequential residency: the encoder must not share the card with the transformer
@@ -289,7 +289,7 @@ class LocalZImageWorker:
                 "load_encode_s": getattr(self, "_encode_seconds", 0.0), "load_pipe_s": getattr(self, "_pipe_seconds", 0.0),
             })
             buf = io.BytesIO()
-            image.save(buf, format="PNG")  # type: ignore[attr-defined]
+            image.save(buf, format="PNG")
             responses.append(ImageWorkerResponse(
                 image_b64=base64.b64encode(buf.getvalue()).decode("ascii"), seed=r.seed, duration_s=duration,
             ))
@@ -300,7 +300,7 @@ class LocalZImageWorker:
         self._pipe = None
         gc.collect()
         try:
-            import torch  # type: ignore[import-not-found]
+            import torch
 
             torch.cuda.empty_cache()
         except Exception:

@@ -14,7 +14,6 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass, field
-from typing import Protocol
 
 from echotales.pipeline.bible.schema import StoryBibleSnapshot
 
@@ -39,11 +38,6 @@ class SpeakerAttributionResult:
     confidence: float = 1.0
     method: str = "llm"  # "llm" | "explicit" | "proximal" | "tiebreak"
     reasoning: str = ""
-
-
-class AttributionLLM(Protocol):
-    def complete(self, prompt: str, system: str | None = None) -> str:
-        ...
 
 
 def build_attribution_prompt(

@@ -19,7 +19,7 @@ stored span drifting off the surface form the reader sees.
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Iterator
+from collections.abc import Iterable
 from dataclasses import dataclass
 
 import ahocorasick
@@ -252,14 +252,3 @@ def seed_from_lexicon(gazetteer: Gazetteer, lexicon: object) -> None:
     for deictic in lexicon.relational_deictics:
         gazetteer.add(deictic, AliasType.RELATIONAL_DEICTIC)
 
-
-def iter_windows(chapters: Iterable[float], size: int) -> Iterator[list[float]]:
-    """Group chapter numbers into processing windows."""
-    window: list[float] = []
-    for number in chapters:
-        window.append(number)
-        if len(window) >= size:
-            yield window
-            window = []
-    if window:
-        yield window

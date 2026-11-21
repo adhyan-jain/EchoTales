@@ -106,16 +106,16 @@ class ChatterboxEngine:
 
     def _ensure_model(self) -> object:
         if self._model is None:
-            from chatterbox.tts import ChatterboxTTS  # type: ignore[import-not-found]
+            from chatterbox.tts import ChatterboxTTS
 
             self._model = ChatterboxTTS.from_pretrained(device=self.device)
             self.sample_rate = getattr(self._model, "sr", self.sample_rate)
         return self._model
 
     def synthesize(self, request: SynthesisRequest) -> Path:
-        import torchaudio  # type: ignore[import-not-found]
+        import torchaudio
 
-        import torch  # type: ignore[import-not-found]
+        import torch
 
         from echotales.pipeline.voice.delivery import split_for_tts, strip_enclosing_quotes
 
@@ -171,9 +171,9 @@ def get_engine(name: str = "stub", **kwargs: object) -> TTSEngine:
     if name == "chatterbox":
         return ChatterboxEngine(**kwargs)  # type: ignore[arg-type]
     if name == "elevenlabs":
-        from echotales.pipeline.voice import elevenlabs  # type: ignore[import-untyped]
+        from echotales.pipeline.voice import elevenlabs
 
-        return elevenlabs.ElevenLabsEngine(**kwargs)  # type: ignore[no-any-return]
+        return elevenlabs.ElevenLabsEngine(**kwargs)
     from echotales.pipeline.engines import registry
 
     raise ValueError(f"unknown TTS engine {name!r}; expected {registry.expected(registry.names('tts'))}")

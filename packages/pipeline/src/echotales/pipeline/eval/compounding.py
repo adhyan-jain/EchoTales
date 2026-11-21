@@ -80,8 +80,8 @@ class CompoundingCurve:
         return cls(
             novel_id=data.get("novel_id", novel_id),
             window_size=data.get("window_size", 0),
-            detection=[tuple(row) for row in data.get("detection", [])],  # type: ignore[misc]
-            resolution=[tuple(row) for row in data.get("resolution", [])],  # type: ignore[misc]
+            detection=[tuple(row) for row in data.get("detection", [])],
+            resolution=[tuple(row) for row in data.get("resolution", [])],
             detection_written_at=data.get("detection_written_at", 0.0),
             resolution_written_at=data.get("resolution_written_at", 0.0),
         )

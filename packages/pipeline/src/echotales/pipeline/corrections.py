@@ -156,7 +156,7 @@ class Correction:
             id=str(row["id"]),
             novel_id=str(row["novel_id"]),
             type=CorrectionType(str(row["type"])),
-            payload=dict(row["payload"]),  # type: ignore[arg-type]
+            payload=dict(row["payload"]),
             created_at=float(row["created_at"]),  # type: ignore[arg-type]
             applied=bool(row.get("applied", False)),
             error=str(row.get("error", "") or ""),

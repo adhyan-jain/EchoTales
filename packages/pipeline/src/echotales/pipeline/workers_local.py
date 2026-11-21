@@ -122,7 +122,7 @@ class LocalNoobAIWorker:
         self.stats: list[dict[str, object]] = []
 
     def _check_gpu(self) -> None:
-        import torch  # type: ignore[import-not-found]
+        import torch
 
         if not torch.cuda.is_available():
             raise RuntimeError("the local image worker needs a CUDA GPU (ECHOTALES_IMAGE_WORKER=noobai)")
@@ -139,9 +139,9 @@ class LocalNoobAIWorker:
 
         With `sections` the prompt is the compiler's finished text (its own quality tags), otherwise the legacy prompt gets
         `QUALITY_PREFIX`. Nothing is dropped either way; length costs chunks, not clauses."""
-        import torch  # type: ignore[import-not-found]
-        from compel import CompelForSDXL  # type: ignore[import-not-found]
-        from diffusers import StableDiffusionXLPipeline  # type: ignore[import-not-found]
+        import torch
+        from compel import CompelForSDXL
+        from diffusers import StableDiffusionXLPipeline
 
         enc = StableDiffusionXLPipeline.from_pretrained(
             _snapshot(self.model_id), unet=None, vae=None, torch_dtype=torch.float16, use_safetensors=True, device_map="cuda"
@@ -171,8 +171,8 @@ class LocalNoobAIWorker:
     def _ensure_pipe(self) -> object:
         """Stage 2 pipeline: UNet and VAE only, tiled decode, resident until `close()`."""
         if self._pipe is None:
-            import torch  # type: ignore[import-not-found]
-            from diffusers import StableDiffusionXLPipeline  # type: ignore[import-not-found]
+            import torch
+            from diffusers import StableDiffusionXLPipeline
 
             pipe = StableDiffusionXLPipeline.from_pretrained(
                 _snapshot(self.model_id), text_encoder=None, text_encoder_2=None, tokenizer=None, tokenizer_2=None,
@@ -195,7 +195,7 @@ class LocalNoobAIWorker:
 
         `greyscale` is manga mode's last step: the prompt asks for monochrome, but a checkpoint leaks colour (tinted paper,
         a coloured robe), so every image is converted through `palette.apply_palette(INK)` and none can come out coloured."""
-        import torch  # type: ignore[import-not-found]
+        import torch
 
         self._check_gpu()
         torch.cuda.reset_peak_memory_stats()
@@ -224,7 +224,7 @@ class LocalNoobAIWorker:
                 "encode_peak_gib": round(encode_peak, 3), "width": width, "height": height,
             })
             buf = io.BytesIO()
-            image.save(buf, format="PNG")  # type: ignore[attr-defined]
+            image.save(buf, format="PNG")
             responses.append(ImageWorkerResponse(
                 image_b64=base64.b64encode(buf.getvalue()).decode("ascii"), seed=r.seed, duration_s=duration,
             ))
@@ -235,7 +235,7 @@ class LocalNoobAIWorker:
         self._pipe = None
         gc.collect()
         try:
-            import torch  # type: ignore[import-not-found]
+            import torch
 
             torch.cuda.empty_cache()
         except Exception:

@@ -184,7 +184,7 @@ renders need a current bible lock; `data/db/` DBs are unstamped (409). See docs/
 
 See docs/HANDOFF.md's "Pick up here" section for the actual current state — it
 changes every session (the numbered session log itself moved to
-docs/EVOLUTION.md, latest section 4.186; 4.175 and 4.182 are reserved for other branches). The NER-windowing re-run (EVOLUTION
+docs/EVOLUTION.md, latest section 4.186; 4.182 is reserved for another branch). The NER-windowing re-run (EVOLUTION
 4.76) that an earlier session left unmeasured did run (4.84): the
 "`ollama` unreachable" blocker was a misdiagnosis — the daemon was simply
 not started — and the fix is now measured on real data (CEAF-e recall

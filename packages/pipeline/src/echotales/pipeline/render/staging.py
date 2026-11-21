@@ -105,7 +105,7 @@ def validate_staging(
     # A light the scene never states is the staging model's guess from the genre label: pride-and-prejudice, stored as "Victorian
     # gothic", was staged "a room lit by a gas lamp, Light: Gaslight" in 5 of 5 scenes about a morning conversation, and every panel
     # came out as a dark night room (round 4, 2026-11-20). A time of day or source the scene text has no word for is dropped.
-    from echotales.pipeline.render.lightgrade import light_kind  # type: ignore[import-untyped]
+    from echotales.pipeline.render.lightgrade import light_kind
 
     set_text, light = s.set, s.light
     if not light_kind(scene_text):

@@ -262,7 +262,7 @@ def _prefix_trait_revisions(
         if evidence is None or idx < EVIDENCE_CHAPTERS:
             evidence = _gather_evidence(store, novel_id, entity.id, upto=chapter)  # type: ignore[attr-defined]
             anchors = (
-                _gather_anchors(store, novel_id, entity.id, upto=chapter, variant=anchored[2] if len(anchored) > 2 else "v1")  # type: ignore[attr-defined,misc]
+                _gather_anchors(store, novel_id, entity.id, upto=chapter, variant=anchored[2] if len(anchored) > 2 else "v1")  # type: ignore[attr-defined]
                 if anchored else None
             )
         dialogue, narration, surfaces, dialogue_total = evidence
@@ -364,7 +364,7 @@ def build_personas(
                 prominence=prominence,
                 pronoun_passages=narration,
                 anchor_windows=(
-                    _gather_anchors(store, novel_id, entity.id, variant=anchored_gender[2] if len(anchored_gender) > 2 else "v1")  # type: ignore[misc]
+                    _gather_anchors(store, novel_id, entity.id, variant=anchored_gender[2] if len(anchored_gender) > 2 else "v1")
                     if anchored_gender else None
                 ),
                 anchor_min_obs=anchored_gender[0] if anchored_gender else 2,

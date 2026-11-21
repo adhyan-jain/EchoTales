@@ -44,7 +44,7 @@ of the system under test — not gold at any amount of review).
 from __future__ import annotations
 
 import json
-from collections.abc import Iterable, Iterator
+from collections.abc import Iterator
 from dataclasses import dataclass, field
 from enum import StrEnum
 from pathlib import Path
@@ -245,7 +245,7 @@ class GoldMention:
         return cls(
             novel_id=str(row["novel_id"]),
             chapter=float(row["chapter"]),  # type: ignore[arg-type]
-            offset=int(row["offset"]),  # type: ignore[arg-type]
+            offset=int(row["offset"]),
             surface=str(row["surface"]),
             identity=str(row.get("identity", "")),
             kind=MentionKind(str(row.get("kind", MentionKind.CHARACTER.value))),
@@ -400,19 +400,3 @@ def read_gold(path: Path | str, novel_id: str = "") -> GoldSet:
     ]
     return GoldSet(novel_id or (mentions[0].novel_id if mentions else ""), mentions)
 
-
-def merge_gold(base: GoldSet, incoming: Iterable[GoldMention]) -> GoldSet:
-    """Fold new drafts into an existing set without losing human work.
-
-    A human-confirmed record always wins over an incoming draft for the same
-    position. Re-drafting after a pipeline change must not silently revert
-    decisions a person already made — that would make the annotation effort
-    unrepeatable, which is the fastest way to lose it.
-    """
-    by_key = {m.key: m for m in base.mentions}
-    for candidate in incoming:
-        existing = by_key.get(candidate.key)
-        if existing is not None and existing.confirmed:
-            continue
-        by_key[candidate.key] = candidate
-    return GoldSet(base.novel_id, sorted(by_key.values(), key=lambda m: (m.chapter, m.offset)))

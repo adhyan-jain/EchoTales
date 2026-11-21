@@ -18,7 +18,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
-from echotales.pipeline import paths  # type: ignore[import-untyped]
+from echotales.pipeline import paths
 
 #: Assumed GPU seconds per job kind, used only for the pre-submit estimate. Unmeasured.
 JOB_SECONDS: dict[str, float] = {"video": 150.0, "edit": 25.0, "lora": 1800.0}
@@ -57,7 +57,7 @@ def estimate_job_usd(kind: str, units: int = 1, usd_per_hour: float | None = Non
     if kind not in JOB_SECONDS:
         raise ValueError(f"unknown cloud job kind {kind!r}; use one of {', '.join(JOB_SECONDS)}")
     if usd_per_hour is None:
-        from echotales.pipeline.config import get_settings  # type: ignore[import-untyped]
+        from echotales.pipeline.config import get_settings
 
         usd_per_hour = float(get_settings().cloud_gpu_usd_per_hour)
     return round(estimate_gpu_usd(JOB_SECONDS[kind], usd_per_hour) * max(0, units), 4)

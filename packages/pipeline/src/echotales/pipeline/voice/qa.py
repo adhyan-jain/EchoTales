@@ -329,7 +329,7 @@ def _spread(values: Sequence[float]) -> dict[str, float]:
 
 def pause_check(timings: Sequence[LineTiming], metrics: Sequence[LineMetrics]) -> dict[str, Any]:
     """Effective pause a listener hears = previous line's tail silence + inserted gap + next line's head silence."""
-    nominal = gaps_for(timings)  # type: ignore[arg-type]
+    nominal = gaps_for(timings)
     kinds: dict[str, list[float]] = defaultdict(list)
     wrong_record: list[str] = []
     long_: list[str] = []

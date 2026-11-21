@@ -1236,29 +1236,6 @@ def present_beat_entities_with_reveals(
     return out
 
 
-def present_entity_ids(mentions: list[Mention], block_index: int) -> list[str]:
-    """Resolved entity ids physically present in one block.
-
-    `spans/scene.py`'s `active_selves` cannot be used for this: it comes
-    from `anaphora/local.py::present_cast`, which returns mention *surface
-    text* ("he", "his uncle"), not entity ids -- fine for counting who is in
-    a scene, useless for looking up a persona's reference sheet. Reading the
-    mentions directly is both correct and no more expensive.
-
-    Ordered by first appearance in the block so the character the prose
-    introduces first is the one that survives `max_references` capping.
-    """
-    out: list[str] = []
-    for mention in mentions:
-        if mention.block_index != block_index:
-            continue
-        if mention.reference_mode is not ReferenceMode.PRESENT:
-            continue
-        if mention.target_id and mention.target_id not in out:
-            out.append(mention.target_id)
-    return out
-
-
 #: `SceneState.default_severity` -> the condition tag it stands in for when
 #: a beat's own local text has nothing to say. Mirrors
 #: `render/scene_state.py::_SEVERITY_TIERS`'s vocabulary -- this is the one
