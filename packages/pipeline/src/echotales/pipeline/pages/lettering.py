@@ -24,9 +24,9 @@ from functools import lru_cache
 from pathlib import Path
 
 from echotales.pipeline.compositor.manga import (
-    render_onomatopoeia_overlay,  # type: ignore[import-untyped]
+    render_onomatopoeia_overlay,
 )
-from echotales.pipeline.pages.placement import (  # type: ignore[import-untyped]
+from echotales.pipeline.pages.placement import (
     SPILL_LIMIT,
     SubjectMap,
     estimate_subject,

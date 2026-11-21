@@ -194,8 +194,8 @@ class SVDEngine:
 
     def _ensure_pipe(self) -> object:
         if self._pipe is None:
-            import torch  # type: ignore[import-not-found]
-            from diffusers import StableVideoDiffusionPipeline  # type: ignore[import-not-found]
+            import torch
+            from diffusers import StableVideoDiffusionPipeline
 
             self._pipe = StableVideoDiffusionPipeline.from_pretrained(
                 self.model_id, torch_dtype=torch.float16
@@ -210,7 +210,7 @@ class SVDEngine:
         return self._pipe
 
     def generate(self, request: MotionClipRequest) -> Path:
-        from diffusers.utils import load_image  # type: ignore[import-not-found]
+        from diffusers.utils import load_image
 
         if request.seed_image is None:
             raise ValueError("SVDEngine requires request.seed_image")

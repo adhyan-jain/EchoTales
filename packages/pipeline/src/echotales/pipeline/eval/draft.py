@@ -57,13 +57,13 @@ def _assert_unambiguous(path: Path | str, raw: dict[str, object]) -> None:
     owners: dict[str, list[str]] = {}
     flagged: list[tuple[str, str]] = []
 
-    for entry in raw.get("identity", []):  # type: ignore[union-attr]
+    for entry in raw.get("identity", []):
         identity = entry["name"]
         for surface in entry["surfaces"]:
             owners.setdefault(surface, []).append(identity)
             if entry.get("ambiguous"):
                 flagged.append((surface, identity))
-    for entry in raw.get("not_entity", []):  # type: ignore[union-attr]
+    for entry in raw.get("not_entity", []):
         for surface in entry["surfaces"]:
             owners.setdefault(surface, []).append("(not_entity)")
             if entry.get("ambiguous"):

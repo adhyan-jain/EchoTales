@@ -577,7 +577,7 @@ def generate_references(
     # for the overwhelming majority of the cast, so this loop costs nothing
     # for characters who never change.
     for entity, prominence in eligible:
-        bodies = [pid for pid, _interval in bodies_of(store, str(entity.id))]  # type: ignore[attr-defined]
+        bodies = [pid for pid, _interval in bodies_of(store, str(entity.id))]
         # Only relevant in img2img mode: the previous body's own image path,
         # threaded body-to-body so the second body transforms the first, the
         # third transforms the second, and so on. Populated from whatever
@@ -585,7 +585,7 @@ def generate_references(
         # not re-read from the store, since a cache hit and a fresh
         # generation both leave `image_path` valid on disk either way.
         prior_image: Path | None = None
-        for persona_id in bodies or [f"{entity.id}:body1"]:  # type: ignore[attr-defined]
+        for persona_id in bodies or [f"{entity.id}:body1"]:
             written = _generate_one(
                 store,
                 novel_id,

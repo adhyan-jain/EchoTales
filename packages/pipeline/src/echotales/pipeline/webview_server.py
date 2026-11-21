@@ -927,7 +927,7 @@ LANGUAGE_SUPPORT = {
 
 
 def _project_status(handle: NovelHandle) -> dict:  # type: ignore[type-arg]
-    from echotales.pipeline.voice.export import engine_of  # type: ignore[import-untyped]
+    from echotales.pipeline.voice.export import engine_of
 
     novel_row = handle.store.get_novel(handle.source.novel_id) or {}
     chapters = handle.store.chapter_numbers(handle.source.novel_id)
@@ -1568,10 +1568,10 @@ def make_handler(
                 if len(parts) == 5 and parts[:2] == ["api", "projects"] and parts[3:] == ["voices", "audition"]:
                     if parts[2] not in registry.handles:
                         return self._json(404, {"error": f"unknown project {parts[2]!r}"})
-                    from echotales.pipeline.config import (  # type: ignore[import-untyped]
+                    from echotales.pipeline.config import (
                         get_settings,
                     )
-                    from echotales.pipeline.voice import (  # type: ignore[import-untyped]
+                    from echotales.pipeline.voice import (
                         audition as voice_audition,
                     )
 
@@ -1939,7 +1939,7 @@ def make_handler(
                     if registry.handles.get(parts[2]) is None:
                         return self._json(404, {"error": f"unknown novel {parts[2]!r}"})
                     query = parse_qs(urlparse(self.path).query)
-                    from echotales.pipeline.render import regen  # type: ignore[import-untyped]
+                    from echotales.pipeline.render import regen
 
                     try:
                         listing = regen.list_panels(
@@ -2823,10 +2823,10 @@ def make_handler(
                         voice_engine = str(params.get("engine") or "chatterbox")
                         if voice_engine not in engine_registry.names("tts"):
                             return self._json(400, {"error": f"voice engine {voice_engine!r} is not allowed; use stub or chatterbox"})
-                        from echotales.pipeline.reader.delivery_pass import (  # type: ignore[import-untyped]
+                        from echotales.pipeline.reader.delivery_pass import (
                             LABELS,
                         )
-                        from echotales.pipeline.voice.audition import (  # type: ignore[import-untyped]
+                        from echotales.pipeline.voice.audition import (
                             MAX_SAMPLE_CHARS,
                         )
 

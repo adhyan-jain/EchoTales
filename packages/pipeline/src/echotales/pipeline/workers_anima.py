@@ -40,7 +40,7 @@ class LocalAnimaWorker:
         self.stats: list[dict[str, object]] = []
 
     def _check_gpu(self) -> None:
-        import torch  # type: ignore[import-not-found]
+        import torch
 
         if not torch.cuda.is_available():
             raise RuntimeError("the Anima worker needs a CUDA GPU")
@@ -49,10 +49,10 @@ class LocalAnimaWorker:
             raise RuntimeError(f"only {free_gib:.1f} GiB of GPU memory is free (need {MIN_FREE_GIB}); another job has the card")
 
     def _encode(self, requests: list[ImageWorkerRequest]) -> tuple[list[dict[str, object]], list[dict[str, object]]]:
-        import torch  # type: ignore[import-not-found]
-        from diffusers import ModularPipeline  # type: ignore[import-not-found]
+        import torch
+        from diffusers import ModularPipeline
         from diffusers.modular_pipelines.anima.encoders import (
-            AnimaTextEncoderStep,  # type: ignore[import-not-found]
+            AnimaTextEncoderStep,
         )
 
         pipe = ModularPipeline.from_pretrained(self.repo)
@@ -74,8 +74,8 @@ class LocalAnimaWorker:
 
     def _ensure_pipe(self) -> object:
         if self._pipe is None:
-            import torch  # type: ignore[import-not-found]
-            from diffusers import ModularPipeline  # type: ignore[import-not-found]
+            import torch
+            from diffusers import ModularPipeline
 
             pipe = ModularPipeline.from_pretrained(self.repo)
             pipe.load_components(names=["text_conditioner", "transformer", "vae", "scheduler"], torch_dtype=torch.bfloat16)
@@ -88,7 +88,7 @@ class LocalAnimaWorker:
         self, requests: list[ImageWorkerRequest], sections: list[list[tuple[str, str]]] | None = None, *,
         greyscale: bool = False,
     ) -> list[ImageWorkerResponse]:
-        import torch  # type: ignore[import-not-found]
+        import torch
 
         self._check_gpu()
         profile = model_profile("anima")
@@ -126,7 +126,7 @@ class LocalAnimaWorker:
         self._pipe = None
         gc.collect()
         try:
-            import torch  # type: ignore[import-not-found]
+            import torch
 
             torch.cuda.empty_cache()
         except Exception:

@@ -15,15 +15,15 @@ import base64
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from echotales.pipeline import cloud_ledger  # type: ignore[import-untyped]
-from echotales.pipeline.render import contract  # type: ignore[import-untyped]
-from echotales.pipeline.render.runpod import (  # type: ignore[import-untyped]
+from echotales.pipeline import cloud_ledger
+from echotales.pipeline.render import contract
+from echotales.pipeline.render.runpod import (
     RunPodClient,
     _first_b64,
 )
 
 if TYPE_CHECKING:
-    from echotales.pipeline.render.panels import PanelImageRequest  # type: ignore[import-untyped]
+    from echotales.pipeline.render.panels import PanelImageRequest
 
 MAX_REFERENCES = 3
 

@@ -18,11 +18,11 @@ from pathlib import Path
 from typing import Any
 
 import httpx
-from echotales.pipeline.cloud_ledger import (  # type: ignore[import-untyped]
+from echotales.pipeline.cloud_ledger import (
     ELEVENLABS_USD_PER_1K_CHARS,
     CloudLedger,
 )
-from echotales.pipeline.voice.engine import SynthesisRequest  # type: ignore[import-untyped]
+from echotales.pipeline.voice.engine import SynthesisRequest
 
 API_URL = "https://api.elevenlabs.io/v1/text-to-speech"
 SAMPLE_RATE = 24000
@@ -41,7 +41,7 @@ class ElevenLabsEngine:
     def _config(self) -> tuple[str, str]:
         key, voice = self.api_key, self.voice_id
         if not (key and voice):
-            from echotales.pipeline.config import get_settings  # type: ignore[import-untyped]
+            from echotales.pipeline.config import get_settings
 
             s = get_settings()
             key, voice = key or s.elevenlabs_api_key, voice or s.elevenlabs_voice_id

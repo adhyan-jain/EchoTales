@@ -72,7 +72,7 @@ def capture_evidence(
             flush()
         return vector
 
-    resolve_runner.score_evidence = traced  # type: ignore[assignment]
+    resolve_runner.score_evidence = traced
     try:
         yield stats
     finally:
@@ -80,7 +80,7 @@ def capture_evidence(
         # mid-volume must not leave a traced `score_evidence` installed for
         # the rest of the process, which would keep appending to a table the
         # caller believes it finished writing.
-        resolve_runner.score_evidence = original  # type: ignore[assignment]
+        resolve_runner.score_evidence = original
         flush()
 
 

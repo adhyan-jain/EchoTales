@@ -168,7 +168,7 @@ class RunPodClient:
 
     @classmethod
     def from_settings(cls, endpoint_field: str, env_name: str, **kw: Any) -> RunPodClient:
-        from echotales.pipeline.config import get_settings  # type: ignore[import-untyped]
+        from echotales.pipeline.config import get_settings
 
         s = get_settings()
         return cls(endpoint=str(getattr(s, endpoint_field) or ""), api_key=str(s.runpod_api_key or ""),
@@ -186,7 +186,7 @@ class RunPodClient:
     def submit(self, payload: dict[str, Any], *, kind: str, estimated_usd: float, note: str = "") -> RunPodJob:
         headers = self._check()
         if self.ledger is None:
-            from echotales.pipeline.cloud_ledger import CloudLedger  # type: ignore[import-untyped]
+            from echotales.pipeline.cloud_ledger import CloudLedger
 
             self.ledger = CloudLedger()
         entry = self.ledger.reserve("runpod", kind, estimated_usd, note)  # raises BudgetExceeded before any request

@@ -57,9 +57,9 @@ def get_video_engine(name: str = "stub") -> VideoEngine:
     if normalized == "ltx":
         return LTXVideoEngine()
     if normalized == "wan-runpod":
-        from echotales.pipeline.video import runpod_video  # type: ignore[import-untyped]
+        from echotales.pipeline.video import runpod_video
 
-        return runpod_video.RunPodVideoEngine()  # type: ignore[no-any-return]
+        return runpod_video.RunPodVideoEngine()
     return StubVideoEngine()
 
 

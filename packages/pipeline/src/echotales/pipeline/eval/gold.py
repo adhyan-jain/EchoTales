@@ -245,7 +245,7 @@ class GoldMention:
         return cls(
             novel_id=str(row["novel_id"]),
             chapter=float(row["chapter"]),  # type: ignore[arg-type]
-            offset=int(row["offset"]),  # type: ignore[arg-type]
+            offset=int(row["offset"]),
             surface=str(row["surface"]),
             identity=str(row.get("identity", "")),
             kind=MentionKind(str(row.get("kind", MentionKind.CHARACTER.value))),

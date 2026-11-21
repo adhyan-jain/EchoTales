@@ -19,8 +19,8 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
-from echotales.pipeline.cloud_ledger import estimate_job_usd  # type: ignore[import-untyped]
-from echotales.pipeline.render.runpod import RunPodClient  # type: ignore[import-untyped]
+from echotales.pipeline.cloud_ledger import estimate_job_usd
+from echotales.pipeline.render.runpod import RunPodClient
 
 IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp"}
 
