@@ -149,6 +149,29 @@ def new_job_id(novel_id: str, kind: str) -> str:
     return f"{novel_id}:{kind}:{uuid.uuid4().hex[:8]}"
 
 
+def _output_inputs_fingerprint(store: Store, novel_id: str, kind: str) -> str:
+    """What a Studio render or voice job reads besides its own params: the bible (latest lock plus the current facts
+    digest), the saved screenplay episodes, and the config.json sections that pick the look and the narrator.
+
+    The skip key used to be the request alone, so a second Render click after the bible or screenplay changed
+    finished SUCCEEDED with no new version folder and no new audio (EVOLUTION 4.181, 4.183). With this in the key an
+    unchanged request over unchanged inputs still resumes, and a changed input reruns."""
+    import json
+
+    from echotales.pipeline.config import _load_config_json  # type: ignore[import-untyped]
+    from echotales.pipeline.review_gate import fact_digests  # type: ignore[import-untyped]
+
+    locks = store.list_bible_locks(novel_id)
+    facts, _, _ = fact_digests(store, novel_id)
+    episodes = json.dumps(store.list_screenplay_episodes(novel_id), sort_keys=True, default=str)
+    cfg = _load_config_json()
+    section = cfg.get(kind) if isinstance(cfg.get(kind), dict) else {}
+    return digest_text(json.dumps({
+        "lock": [locks[-1]["version"], locks[-1]["digest"]] if locks else None,
+        "facts": facts, "episodes": episodes, "config": section,
+    }, sort_keys=True, default=str))
+
+
 def run_stage(
     store: Store,
     *,
@@ -175,7 +198,11 @@ def run_stage(
     returns `None` immediately -- the same skip check
     `pipeline_run.py::stage()` implements, applied here too so an
     HTTP-triggered job that re-POSTs an already-completed stage is a fast
-    no-op rather than redone work.
+    no-op rather than redone work. For Studio `render` and `voice` jobs the
+    digest also carries the inputs that change the output (bible lock and
+    facts, screenplay episodes, config section; `_output_inputs_fingerprint`),
+    so the same request after one of those changed reruns instead of
+    finishing green with nothing new.
     """
     if skip_if_succeeded:
         existing = store.find_succeeded_stage_run(stage_name, input_digest)
@@ -617,6 +644,7 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
             fn=lambda: build_personas(novel_id, store, client=client, prefix_causal=get_settings().persona_prefix_causal),
         )
     elif job.kind == "render":
+        input_digest = digest_text(f"{input_digest}|{_output_inputs_fingerprint(store, novel_id, 'render')}")
         from echotales.pipeline import paths
         from echotales.pipeline.compute import default_image_engine
         from echotales.pipeline.render.panels import get_engine, render_panels
@@ -693,6 +721,7 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
             # Also after a partial render: the version folder exists and the convention wants its VERSIONS.md line.
             _record_studio_version(Path(out_dir), wanted, version, engine_name, job.job_id)
     elif job.kind == "voice":
+        input_digest = digest_text(f"{input_digest}|{_output_inputs_fingerprint(store, novel_id, 'voice')}")
         from echotales.pipeline import paths
         from echotales.pipeline.voice import get_engine as get_voice_engine
         from echotales.pipeline.voice import render_novel

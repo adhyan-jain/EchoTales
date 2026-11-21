@@ -31,3 +31,26 @@ def test_a_studio_render_lands_in_a_new_named_version_and_is_recorded(tmp_path) 
     assert list((chapter / "v2_stub-studio").glob("*.png"))
     log = (chapter / "VERSIONS.md").read_text()
     assert "## v2_stub-studio" in log and "## v3_stub-studio" in log and "not a real render" in log
+
+
+def test_a_repeat_render_reruns_once_the_screenplay_changed(tmp_path) -> None:
+    """Same request, changed input: a new version, not a green no-op (EVOLUTION 4.183)."""
+    store = _seeded_store(tmp_path)
+    panels = tmp_path / "panels"
+    params = {"engine": "stub", "chapters": [1.0], "panel_dir": str(panels), "seed": 1}
+
+    def click(n: int) -> None:
+        job = Job(job_id=f"t:render:{n}", novel_id="t", kind="render", created_at=0.0, params_json=json.dumps(params))
+        store.add_job(job)
+        run_job(store, job, params)
+        assert store.get_job(job.job_id).status.value == "SUCCEEDED"
+
+    def versions() -> list[str]:
+        return sorted(p.name for p in (panels / "ch1").iterdir() if p.is_dir())
+
+    click(1)
+    click(2)
+    assert len(versions()) == 1  # unchanged inputs: resumed
+    store.save_screenplay_episode("ep1", "t", {"title": "A", "source_chapters": [1.0]})
+    click(3)
+    assert len(versions()) == 2  # changed input: reran
