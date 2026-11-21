@@ -72,9 +72,21 @@ class CloudLedger:
             budget_usd = float(get_settings().cloud_budget_usd)
         self.budget_usd = float(budget_usd)
         self.entries: list[LedgerEntry] = []
+        #: Ids this instance reserved or settled: the only entries it may overwrite on disk (see `_sync`).
+        self._own: set[str] = set()
+        self._sync()
+
+    def _sync(self) -> None:
+        """Re-read the file and keep this instance's own entries over it. Each engine builds its own ledger, and a
+        ledger that saved only what it had loaded erased the others' reservations (two instances, a video and an edit
+        call: the first's entry was gone from the file), so the hard budget was undercounted."""
+        disk: list[LedgerEntry] = []
         if self.path.is_file():
             raw = json.loads(self.path.read_text(encoding="utf-8"))
-            self.entries = [LedgerEntry(**e) for e in raw.get("entries", [])]
+            disk = [LedgerEntry(**e) for e in raw.get("entries", [])]
+        mine = {e.id: e for e in self.entries if e.id in self._own}
+        merged = [mine.pop(e.id, e) for e in disk]
+        self.entries = merged + list(mine.values())
 
     @property
     def spent_usd(self) -> float:
@@ -85,6 +97,7 @@ class CloudLedger:
         return round(self.budget_usd - self.spent_usd, 4)
 
     def _save(self) -> None:
+        self._sync()
         self.path.parent.mkdir(parents=True, exist_ok=True)
         tmp = self.path.with_suffix(".tmp")
         tmp.write_text(json.dumps({"entries": [asdict(e) for e in self.entries]}, indent=1), encoding="utf-8")
@@ -92,6 +105,7 @@ class CloudLedger:
 
     def reserve(self, provider: str, kind: str, estimated_usd: float, note: str = "") -> LedgerEntry:
         """Record the estimate; refuse (and record nothing) if it would pass the budget. Call before submitting."""
+        self._sync()
         if self.spent_usd + estimated_usd > self.budget_usd + 1e-9:
             raise BudgetExceeded(
                 f"cloud budget ${self.budget_usd:.2f} would be exceeded: ${self.spent_usd:.2f} spent, this "
@@ -99,17 +113,20 @@ class CloudLedger:
                 "(raise ECHOTALES_CLOUD_BUDGET_USD only on purpose)")
         entry = LedgerEntry(uuid.uuid4().hex[:12], provider, kind, round(estimated_usd, 4), note=note, ts=time.time())
         self.entries.append(entry)
+        self._own.add(entry.id)
         self._save()
         return entry
 
     def attach_job(self, entry: LedgerEntry, job_id: str) -> None:
         entry.job_id, entry.status = job_id, "submitted"
+        self._own.add(entry.id)
         self._save()
 
     def settle(self, entry: LedgerEntry, actual_usd: float | None, status: str = "completed") -> None:
         """Record the billed/measured cost. `actual_usd=None` keeps the estimate as the charge."""
         entry.actual_usd = None if actual_usd is None else round(actual_usd, 4)
         entry.status = status
+        self._own.add(entry.id)
         self._save()
 
     def summary(self) -> dict[str, Any]:
