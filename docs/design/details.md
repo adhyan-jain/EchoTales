@@ -1554,10 +1554,7 @@ ignored.
 
 `beat_text()` draws the composition cue from the block's **narration**, not
 its raw text: a dialogue block's text is the spoken line, which the audio
-already carries and which describes nothing visible. `present_entity_ids()`
-resolves ids from mentions rather than `scene.py`'s `active_selves`, which
-holds surface text (`"he"`, `"his uncle"`) and cannot be looked up against a
-persona.
+already carries and which describes nothing visible.
 
 **`beat_canon.py`** — hand-authored staging for the handful of panels no
 amount of extraction reaches, keyed to exact `(novel, chapter, block

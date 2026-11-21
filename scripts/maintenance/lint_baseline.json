@@ -5,7 +5,7 @@
     "packages/pipeline/src"
   ],
   "mypy_version": "mypy 2.3.0 (compiled: yes)",
-  "ruff": 542,
+  "ruff": 540,
   "ruff_targets": [
     "packages"
   ]

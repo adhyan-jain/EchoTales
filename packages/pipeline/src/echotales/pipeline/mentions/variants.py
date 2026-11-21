@@ -171,15 +171,3 @@ class VariantReport:
             lines.append("  no suspected splits")
         return "\n".join(lines)
 
-
-def audit_surfaces(surfaces: list[str]) -> VariantReport:
-    """Audit an alias set for normalisation gaps."""
-    families = group_variants(surfaces)
-    multi = [f for f in families.values() if f.size > 1]
-    largest = max(families.values(), key=lambda f: f.size, default=None)
-    return VariantReport(
-        families=len(families),
-        multi_form_families=len(multi),
-        largest_family=(largest.canonical, largest.size) if largest else ("", 0),
-        suspected_splits=find_suspected_splits(surfaces),
-    )

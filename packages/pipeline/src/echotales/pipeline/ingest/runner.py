@@ -8,7 +8,6 @@ work, so nothing here accumulates a whole novel in memory.
 from __future__ import annotations
 
 import logging
-from collections.abc import Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -127,7 +126,3 @@ def _find_gaps(seen: list[float], wanted: ChapterRange | None) -> list[float]:
         return []
     return [float(n) for n in range(lo, hi + 1) if float(n) not in present]
 
-
-def iter_ingested(store: Store, novel_id: str) -> Iterator[Chapter]:
-    """Convenience re-export so callers need not import the store directly."""
-    return store.iter_chapters(novel_id)

@@ -196,36 +196,6 @@ def _self_named(text: str, person_names: frozenset[str]) -> str | None:
     return found.pop() if len(found) == 1 else None
 
 
-def apply_self_naming(store: Store, novel_id: str) -> int:
-    """Apply the self-naming tier to already-stored spans; returns lines changed.
-
-    The same rule as in `attribute_chapter`, for a database whose speakers
-    stage ran before the tier existed. A full re-run would also reclassify
-    spans and redo the non-deterministic LLM tier, which is more change than
-    the fix needs; this touches only the lines the rule decides.
-    """
-    person_ids = {e.id for e in store.all_selves(novel_id) if e.kind.is_person}
-    person_names = frozenset(
-        m.text for m in store.get_mentions(novel_id)
-        if m.target_id in person_ids and m.alias_type is AliasType.RIGID_NAME
-    )
-    changed = 0
-    for chapter in store.chapter_numbers(novel_id):
-        spans = store.get_spans(novel_id, chapter)
-        touched = []
-        for span in spans:
-            if (span.span_type is SpanType.DIALOGUE and span.attribution_method not in _TRUSTED_TIERS
-                    and (named := _self_named(span.text, person_names))
-                    and named != span.speaker_self_id):
-                span.speaker_self_id, span.attribution_method, span.confidence = (
-                    named, AttributionMethod.SELF_NAMING, 0.9)
-                touched.append(span)
-        if touched:
-            store.add_spans(touched)
-            changed += len(touched)
-    return changed
-
-
 def attribute_chapter(
     chapter: Chapter,
     *,

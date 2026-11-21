@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from echotales.core.enums import OBSERVER_SYSTEM, TargetKind
+from echotales.core.enums import OBSERVER_SYSTEM
 from echotales.core.store import Store
 from echotales.pipeline.resolve.retrieve import EntityProfile
 
@@ -121,12 +121,3 @@ def build_focused_wiki(
         return "(no candidate profiles available)"
     return "\n\n".join(summarise_entity(p, store).render() for p in chosen)
 
-
-def wiki_for_kind(
-    profiles: dict[str, EntityProfile],
-    kind: TargetKind,
-    store: Store | None = None,
-) -> str:
-    """Wiki restricted to selves or to personas."""
-    subset = {k: v for k, v in profiles.items() if v.target_kind is kind}
-    return build_wiki(subset, store)

@@ -13,7 +13,7 @@ import os
 import struct
 import wave
 from dataclasses import dataclass, field
-from typing import Any, Protocol
+from typing import Any
 
 
 @dataclass(slots=True)
@@ -133,24 +133,6 @@ class TTSWorkerResponse:
         return base64.b64decode(self.audio_wav_b64)
 
 
-class ImageEngineProtocol(Protocol):
-    """Protocol for image generator backends."""
-
-    def generate(self, req: ImageWorkerRequest) -> ImageWorkerResponse: ...
-
-
-class VideoEngineProtocol(Protocol):
-    """Protocol for video generator backends."""
-
-    def generate(self, req: VideoWorkerRequest) -> VideoWorkerResponse: ...
-
-
-class TTSEngineProtocol(Protocol):
-    """Protocol for speech/TTS generator backends."""
-
-    def synthesize(self, req: TTSWorkerRequest) -> TTSWorkerResponse: ...
-
-
 def _generate_solid_png_b64(width: int = 1080, height: int = 1920, color: tuple[int, int, int] = (40, 44, 52)) -> str:
     """Generate a minimal valid PNG using pure Python stdlib."""
     import zlib
@@ -251,10 +233,3 @@ def run_video_worker(req: VideoWorkerRequest) -> VideoWorkerResponse:
     b64 = _generate_stub_mp4_b64(dur)
     return VideoWorkerResponse(video_b64=b64, duration_s=dur, status="COMPLETED")
 
-
-def run_tts_worker(req: TTSWorkerRequest) -> TTSWorkerResponse:
-    """Deterministic offline stub speech worker."""
-    word_count = max(1, len(req.text.split()))
-    dur = max(0.5, word_count * 0.28)
-    b64 = _generate_sine_wav_b64(dur)
-    return TTSWorkerResponse(audio_wav_b64=b64, duration_s=dur, sample_rate=24000, status="COMPLETED")

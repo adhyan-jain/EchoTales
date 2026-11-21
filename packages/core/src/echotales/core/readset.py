@@ -85,10 +85,6 @@ def normalize(text: str) -> str:
     return " ".join(text.split()).casefold()
 
 
-def segment_ref(segment_id: str) -> str:
-    return fact_ref("segment", segment_id)
-
-
 def hash_read_set(refs: Iterable[str]) -> str:
     """Order-independent digest of a read set.
 

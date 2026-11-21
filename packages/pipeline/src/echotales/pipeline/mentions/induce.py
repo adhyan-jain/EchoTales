@@ -30,7 +30,6 @@ chapter 2.
 
 from __future__ import annotations
 
-import tomllib
 from dataclasses import dataclass, field
 from enum import StrEnum
 from pathlib import Path
@@ -314,13 +313,3 @@ def load_or_seed(path: Path | str | None, seed_path: Path | str = SEED_PATH) -> 
         return load_lexicon(path)
     return load_lexicon(seed_path)
 
-
-def seed_is_present(seed_path: Path | str = SEED_PATH) -> bool:
-    p = Path(seed_path)
-    if not p.exists():
-        return False
-    try:
-        tomllib.loads(p.read_text(encoding="utf-8"))
-    except tomllib.TOMLDecodeError:
-        return False
-    return True

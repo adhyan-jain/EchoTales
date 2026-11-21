@@ -18,7 +18,6 @@ from __future__ import annotations
 
 import hashlib
 import time
-from dataclasses import dataclass
 
 from echotales.core.models import Mention, ReviewItem
 from echotales.core.store import Store, normalize_alias
@@ -46,12 +45,6 @@ def _fingerprint(kind: str, case: DeferredCase) -> str:
     # re-open a reviewer's decision for nothing.
     raw = kind + "|" + ",".join(sorted(c.target_id for c in case.candidates))
     return hashlib.sha1(raw.encode("utf-8")).hexdigest()[:12]
-
-
-@dataclass(slots=True)
-class ReviewOutcome:
-    written: int = 0
-    closed: int = 0
 
 
 def build_item(
