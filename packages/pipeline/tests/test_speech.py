@@ -50,3 +50,14 @@ def test_the_director_request_lists_the_lines_and_says_the_speaker_owns_the_face
     assert "SPOKEN LINES in this passage" not in build_prompt("He stood.", cast={FANG: ""}, novel_style="x")
     sysp = system_prompt("").lower()
     assert "reaction" in sysp and "third person" in sysp
+
+
+def test_speaker_ids_lists_the_lead_blocks_speaker_first_and_skips_a_quote_that_names_its_speaker() -> None:
+    from echotales.pipeline.render.speech import speaker_ids
+
+    assert speaker_ids(SPANS, [0, 1, 18], lead=18, label_of=_label) == [FANG, "Bai Ning Bing"]
+    # block 0 opens by calling Fang Yuan by name, so it is not his line; only block 1's speaker remains
+    assert speaker_ids(SPANS, [0, 1], lead=0, label_of=_label) == ["Bai Ning Bing"]
+    # thoughts are not lines; an unnamed speaker (anonymous, not a person) is not cast
+    assert speaker_ids(SPANS, [25], lead=25, label_of=_label) == []
+    assert speaker_ids(SPANS, [1], lead=1, label_of=lambda sp: "") == []

@@ -67,6 +67,23 @@ def test_over_the_shoulder_needs_someone_else_in_the_scene() -> None:
     assert out[1].focus != "over-shoulder"
 
 
+def test_the_lead_speaking_to_someone_faces_the_viewer_and_the_listener_is_the_back_turned_foreground() -> None:
+    """P&P ch1: the speaker is the lead and is in the frame facing the camera; the one spoken to may be back-turned."""
+    spoken = "- Mrs. Bennet says to Mr. Bennet: have you heard that Netherfield Park is let at last"
+    names = ["Mrs. Bennet", "Mr. Bennet"]
+    out = _run([("x", {}), ('"Have you heard?"', {"spoken": spoken}), ('"Have you heard?"', {"spoken": spoken})], names=names)
+    assert out[1].focus == "over-shoulder" and out[1].subject == "Mr. Bennet"
+    sentence = fr.framing_sentence(out[1], "Mrs. Bennet")
+    assert "Mr. Bennet at the edge of the frame" in sentence and "Mrs. Bennet large in the middle" in sentence
+    assert out[2].focus != "over-shoulder", "never two over-the-shoulder shots in a row"
+
+
+def test_a_line_said_to_nobody_in_the_cast_is_not_an_over_the_shoulder_shot() -> None:
+    spoken = "- Mrs. Bennet says: have you heard"
+    out = _run([("x", {}), ('"Have you heard?"', {"spoken": spoken})], names=["Mrs. Bennet", "Mr. Bennet"])
+    assert out[1].focus != "over-shoulder"
+
+
 def test_a_weapon_insert_may_follow_another_insert_but_a_lamp_may_not() -> None:
     out = _run([("x", {}), ("The lamp had a classical Western style.", {}), ("A gun? A revolver?", {})])
     assert [o.focus for o in out[1:]] == ["prop", "prop"] and out[2].subject == "revolver"

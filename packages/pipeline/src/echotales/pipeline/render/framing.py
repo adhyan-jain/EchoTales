@@ -130,6 +130,18 @@ def _other_speaker(spoken: str, lead: str) -> str:
     return ""
 
 
+def _addressee(spoken: str, lead: str, names: list[str]) -> str:
+    """Who the lead speaks to when the line says it and that person is in the cast, '' otherwise.
+
+    The speaker is the lead (`panels.py` casts the speaker of a line first); the one spoken to may stand back-turned in the
+    foreground of an over-the-shoulder shot while the speaker faces the viewer (P&P ch1: the speaker must be the one drawn)."""
+    for m in _SAYS.finditer(spoken or ""):
+        to = (m.group("to") or "").strip()
+        if lead and m.group("who").strip().lower() == lead.lower() and to and to.lower() != lead.lower():
+            return next((n for n in names if n.lower() == to.lower()), "")
+    return ""
+
+
 def _angle(text: str, expression: str) -> str:
     blob = f"{text} {expression}"
     if _HIGH.search(blob):
@@ -210,6 +222,8 @@ def plan_framing(
         chosen = Framing("close", focus="prop", subject=obj, reason=f"the text centres the {obj}")
     elif others_present and (other := _other_speaker(spoken, lead)) and not crowd and not crowd_in_scene and not (last and last.focus == "over-shoulder"):
         chosen = Framing("medium", focus="over-shoulder", subject=other, reason="someone else speaks to the lead")
+    elif others_present and (to := _addressee(spoken, lead, names)) and not crowd and not crowd_in_scene and not (last and last.focus == "over-shoulder"):
+        chosen = Framing("medium", focus="over-shoulder", subject=to, reason=f"the lead speaks to {to}")
     elif _PEAK.search(text) or _PEAK_EXPRESSION.search(expression):
         chosen = Framing("close", reason="emotional peak")
     elif not _PERSON_WORDS.search(text) and not any(n.lower() in text.lower() for n in names) and _PLACE.search(text):

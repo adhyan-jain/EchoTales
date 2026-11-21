@@ -60,3 +60,27 @@ def spoken_lines(
         if len(out) >= max_lines:
             break
     return "\n".join(out)
+
+
+def speaker_ids(
+    spans: list[Span], blocks: list[int], *, lead: int, label_of: Callable[[Span], str],
+) -> list[str]:
+    """Self ids of the people who say a quoted line in these blocks: the lead block's speaker first, then in reading order.
+
+    Why (P&P e2e 2026-11-22): the cast came from PRESENT mentions only, and the speaker of a line is not a mention, so "My dear
+    Mr. Bennet" (said by his wife) was drawn as the husband, and the wife appeared in 6 of 32 panels. The same attribution
+    guard as `spoken_lines` applies: a quote that opens by calling the speaker by name belongs to someone else, and a speaker
+    `label_of` does not name (anonymous, unresolved, not a person) is not cast."""
+    wanted = set(blocks)
+    ordered = sorted(
+        (s for s in spans if s.block_index in wanted and s.span_type is SpanType.DIALOGUE and s.text.strip() and s.speaker_self_id),
+        key=lambda s: (s.block_index != lead, s.block_index, s.start),
+    )
+    out: list[str] = []
+    for sp in ordered:
+        who = label_of(sp).strip()
+        if not who or _is_vocative_of(who, " ".join(sp.text.split())):
+            continue
+        if sp.speaker_self_id not in out:
+            out.append(str(sp.speaker_self_id))
+    return out
