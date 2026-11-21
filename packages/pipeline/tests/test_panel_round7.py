@@ -54,3 +54,14 @@ def test_a_view_with_nobody_or_one_person_keeps_only_the_place_of_the_staging() 
     for focus in ("reverse", "overview", "low", "down", "profile"):
         out = trim_staging(st, focus, "medium", "crowd")
         assert "Blocking" not in out and "Set" in out and "Light" in out
+
+
+def test_a_soft_pick_never_makes_a_third_face_view_in_a_row() -> None:
+    """Cliff r7 seed 1: a medium, a close-up, an eye crop and a close-up in a row were four near-identical panels."""
+    state = fr.FramingState()
+    out = [fr.plan_framing("Fang Yuan lightly laughed. He felt pain!", names=["Fang Yuan"], others_present=False, alone=True, state=state,
+                           opens_chapter=False) for _ in range(12)]
+    face = {("medium", ""), ("close", ""), ("close", "eyes")}
+    keys = [(f.size, f.focus) for f in out]
+    for i in range(2, len(keys)):
+        assert not (keys[i] in face and keys[i - 1] in face and keys[i - 2] in face), keys

@@ -151,6 +151,10 @@ _CYCLE: list[tuple[str, str]] = [("medium", ""), ("close", ""), ("medium", "behi
 #: (`out_r7_ab/ab_lone.png`). The lone lead's quiet rotation therefore walks only those, with the plain face crop and medium between.
 _LONE_CYCLE: list[tuple[str, str]] = [("medium", "down"), ("close", ""), ("medium", "profile"), ("close", "eyes"), ("medium", "")]
 
+#: The views that are all "his face or his chest-up" to a viewer. LotM and cliff r7: four of these in a row (a medium, a close-up, an eye
+#: crop, a close-up) drew four near-identical panels, so a soft pick never makes a third in a row.
+_FACE_VIEWS = {("medium", ""), ("close", ""), ("close", "eyes")}
+
 #: The views a crowd scene walks, each a different picture of the same confrontation (RI cliff r6: 5 of 13 panels were the one side
 #: view). Side view, reverse on the crowd with the lead out of frame, a high wide with him a lone figure, a low angle on him alone
 #: against the sky, a face close-up. The first is the round-6 side view.
@@ -221,14 +225,15 @@ def plan_framing(
         used = {_key(f) for f in recent[-2:]}
         # Round 7: a plain "rotation" pick always walks on (a 3-view loop of medium, behind, close otherwise: the last two used
         # always excluded only the view that had just been left, so the run never reached the other cycle entries).
-        if (_key(chosen) in used or chosen.reason == "rotation") and last is not None:
+        too_much_face = len(recent) >= 2 and all(_key(f) in _FACE_VIEWS for f in recent[-2:])
+        if (_key(chosen) in used or chosen.reason == "rotation" or (too_much_face and _key(chosen) in _FACE_VIEWS)) and last is not None:
             # A persistent pointer, not the last view's place: the text-driven wides and close-ups in between (LotM r7: a wide, a
             # close and a corner view alternated) reset a last-view start to the same three entries and never reached the others.
             cycle = _LONE_CYCLE if alone else _CYCLE
             start = state.cycle_n
             for i in range(len(cycle)):
                 size, focus = cycle[(start + i) % len(cycle)]
-                if (size, focus) not in used:
+                if (size, focus) not in used and not (too_much_face and (size, focus) in _FACE_VIEWS):
                     state.cycle_n = (start + i + 1) % len(cycle)
                     chosen = Framing(size, focus=focus, reason=f"{chosen.reason}; a different view after {last.size} {last.focus}".strip())  # type: ignore[arg-type]
                     break

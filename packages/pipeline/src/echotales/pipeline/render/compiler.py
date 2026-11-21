@@ -768,6 +768,10 @@ def _compile_composed(b: PanelBrief, profile: ModelProfile, appearance: Appearan
     # what holds (RI cliff scene 2026-11-20: with the identity last, the robe changed colour and the hair style changed in
     # 13 panels of one scene; staging and the paragraph carried the scene and said nothing of clothes).
     for c in b.characters:
+        if b.frame_focus == "reverse":
+            # Round 7: a reverse shot on the crowd leaves the lead out; with his identity sentence the model drew him in the middle of
+            # the crowd, who stood around him facing the viewer (cliff r7 p4).
+            continue
         s.append(PromptSection(f"character:{c.name}", identity_sentence(c, appearance)))
         written[c.name] = appearance is not AppearanceInText.OFF
         fields[c.name] = derive_demeanour(c, b.mood, b.tension).fields_used
