@@ -68,7 +68,7 @@ from echotales.pipeline.render.contract import (
 )
 from echotales.pipeline.render.direction import direct_beat, sanitize_prompt
 from echotales.pipeline.render.factions import qualify_role, scene_faction
-from echotales.pipeline.render.framing import (  # type: ignore[import-untyped]
+from echotales.pipeline.render.framing import (
     FramingState,
     apply_framing,
     crowd_in_scene,

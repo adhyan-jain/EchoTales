@@ -121,7 +121,7 @@ PROFILES["z-image-turbo"] = ModelProfile(
 def default_model() -> str:
     """The configured image model (`render.image_model`: Z-Image Turbo since D58). This used to be a constant "noobai-xl-1.1",
     so a bare `compile_prompt(brief)` wrote NoobAI tags although every real render is Z-Image (EVOLUTION 4.171)."""
-    from echotales.pipeline.config import get_settings  # type: ignore[import-untyped]
+    from echotales.pipeline.config import get_settings
 
     return str(get_settings().render_image_model)
 
@@ -130,7 +130,7 @@ def model_profile(key: str | None = None) -> ModelProfile:
     """The profile for `key`, or for the configured image model when none is given. A key the engine registry
     (`pipeline/engines/registry.py`) does not list on the compiler surface raises, because a typo silently rendering with another
     model would make a model comparison meaningless."""
-    from echotales.pipeline.engines import registry  # type: ignore[import-untyped]
+    from echotales.pipeline.engines import registry
 
     chosen = (key or default_model()).strip().lower()
     if chosen not in registry.compiler_profiles() or chosen not in PROFILES:
@@ -756,7 +756,7 @@ def _compile_composed(b: PanelBrief, profile: ModelProfile, appearance: Appearan
     stage = PromptSection("staging", staging_text) if staging_text else None
     cropped = b.composition.strip()
     if b.shot == "close" and b.frame_focus in ("", "eyes", "hands"):
-        from echotales.pipeline.render.framing import (  # type: ignore[import-untyped]
+        from echotales.pipeline.render.framing import (
             crop_composition,
         )
 
@@ -1123,7 +1123,7 @@ def brief_from_direction(
 
     The crowd comes from the director's layout and the crowd-cut flag, never from the headcount tag: the old path wrote
     "solo" because nothing here knew a crowd existed."""
-    from echotales.pipeline.render.lightgrade import light_grade  # type: ignore[import-untyped]
+    from echotales.pipeline.render.lightgrade import light_grade
 
     art, wardrobe, manhua = genre_direction(novel_id)
     d = direction
@@ -1182,7 +1182,7 @@ def brief_from_direction(
         chars, crowd = [], None
     lead_face = ""
     if chars and composition:
-        from echotales.pipeline.render.face import (  # type: ignore[import-untyped]
+        from echotales.pipeline.render.face import (
             drop_calm_clause,
             infer_expression,
             is_neutral,

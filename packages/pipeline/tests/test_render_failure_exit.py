@@ -12,11 +12,11 @@ import json
 from pathlib import Path
 
 import pytest
+from _panel_fixture import build_store
 from echotales.pipeline.render import compiled_route
 from echotales.pipeline.render.panels import PanelReport, render_panels
 from echotales.pipeline.workers_contract import ImageWorkerResponse
 from PIL import Image
-from _panel_fixture import build_store
 from test_panel_batching import MockNonStubEngine, _chapter_store
 
 
