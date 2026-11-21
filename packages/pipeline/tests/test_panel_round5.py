@@ -182,6 +182,6 @@ def test_a_crowd_panel_is_seen_from_behind_the_lead_with_the_crowd_facing_him() 
     crowd_views = [f for f in out if f.focus == "behind" and f.subject == "crowd"]
     assert crowd_views
     text = fr.framing_sentence(crowd_views[0], "Fang Yuan")
-    assert "behind Fang Yuan" in text and "facing him" in text and "gap" in text
+    assert "side view" in text and "profile" in text and "turned toward him" in text and "gap" in text
     assert not any(f.focus == "behind" and f.subject == "crowd" for f in [fr.plan_framing("x", names=["A"], crowd=False,
                                                                                      state=fr.FramingState(), opens_chapter=False)])

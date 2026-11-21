@@ -739,7 +739,7 @@ def _compile_composed(b: PanelBrief, profile: ModelProfile, appearance: Appearan
     nothing scene-dependent is in them; wounds and clothing state live in the paragraph, which comes from the panel's text.
     Setting clauses the paragraph already says are not repeated."""
     from echotales.pipeline.persona.genre import style_lead
-    lead = _MANGA_LEAD if b.mode is OutputMode.MANGA else style_lead(b.novel_id)
+    lead = _MANGA_LEAD if b.mode is OutputMode.MANGA else style_lead(b.novel_id, people=b.frame_focus != "prop")
     s = [PromptSection("style", lead)]
     # The framing comes straight after the style lead: Z-Image has no CFG, so the shot named first and plainly is the shot drawn.
     # Before this the compiled prompt never named a shot (16 of 16 LotM panels were one medium shot, EVOLUTION 4.171).

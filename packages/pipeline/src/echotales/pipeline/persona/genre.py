@@ -426,8 +426,14 @@ _FLAVOUR: dict[str, str] = {
 STYLE_LEADS: dict[str, str] = {k: f"{_LOOK} {v}" for k, v in _FLAVOUR.items()}
 
 
-def style_lead(novel_id: str) -> str:
-    return STYLE_LEADS.get(genre_of(novel_id), STYLE_LEADS["generic"])
+def style_lead(novel_id: str, *, people: bool = True) -> str:
+    """The fixed look plus the genre flavour. `people=False` is for a still-life insert: "mature faces with natural eyes" and
+    "gaslamp-era clothes" in the lead drew one or two men beside the lamp and the pipe (LotM round 5, 2 of 4 inserts)."""
+    lead = STYLE_LEADS.get(genre_of(novel_id), STYLE_LEADS["generic"])
+    if people:
+        return lead
+    lead = lead.replace("realistic adult proportions and mature faces with natural eyes, ", "")
+    return lead.replace("hanfu robes, ", "").replace("-era clothes and streets", "-era streets")
 
 
 #: A genre needs this many lexicon hits per 10,000 words, and a lead over the runner-up, before it is proposed;
