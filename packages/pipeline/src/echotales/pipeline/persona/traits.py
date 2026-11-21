@@ -82,6 +82,9 @@ class TraitProfile:
     label: str = ""
     age_band: str = "adult"
     gender: str = "unknown"
+    #: True when the gender came from a title in the canonical name (`title_gender`): nothing later (the model read in
+    #: `extract_traits`) may replace it.
+    gender_locked: bool = False
     register: str = "neutral"
     prominence: Prominence = Prominence.INCIDENTAL
 
@@ -106,6 +109,30 @@ class TraitProfile:
         continuous traits do not form voice categories.
         """
         return f"{self.gender}:{self.age_band}:{self.register}"
+
+
+#: Titles that state a gender when they are part of a character's canonical name. "Lord" is deliberately absent: translated
+#: xianxia uses it for both genders ("Lord Yao Ji" is a woman, RI vol 1, measured), so it stays under the pronoun-first rule.
+_NAME_TITLE_GENDER = {
+    "mr": "male", "mister": "male", "sir": "male",
+    "mrs": "female", "ms": "female", "miss": "female", "madam": "female", "madame": "female", "lady": "female", "dame": "female",
+}
+#: A capitalised (or all-capitals) word, an optional full stop, then another capitalised word: "Mr. Bennet", "Mr Bennet", "MR.
+#: BENNET". Case matters for the first word only so that a lower-case "miss" (a verb) is never a title.
+_NAME_TITLE = re.compile(r"(?<![A-Za-z])([A-Z][A-Za-z]*)\.?\s+(?=[A-Z]|and\b|&)")
+
+
+def title_gender(name: str) -> str | None:
+    """The gender a title inside the canonical name states, or None.
+
+    P&P ch1: "Mr. Bennet" was stored female because the narration around his name is mostly about his wife, and a pronoun
+    count (or a small model reading the same paragraph) is about the neighbourhood, not about him. A title that is part of
+    the name is about this character alone, so it outranks both. Titles of both sides in one name ("Mr. and Mrs. Bennet")
+    state nothing."""
+    found = {
+        _NAME_TITLE_GENDER[m.group(1).casefold()] for m in _NAME_TITLE.finditer(name) if m.group(1).casefold() in _NAME_TITLE_GENDER
+    }
+    return found.pop() if len(found) == 1 else None
 
 
 def _honorific_signals(surfaces: list[str]) -> tuple[str | None, str | None]:
@@ -386,11 +413,17 @@ def infer_traits_deterministic(
         if from_anchor is not None:
             gender, pronoun_reason = from_anchor, anchor_reason
 
+    # A title in the canonical name outranks the pronoun and anchor reads above (see `title_gender`).
+    titled = title_gender(label)
+    if titled is not None:
+        gender, pronoun_reason = titled, ""
+
     profile = TraitProfile(
         target_id=target_id,
         label=label,
         age_band=age or "adult",
         gender=gender or "unknown",
+        gender_locked=titled is not None,
         prominence=prominence,
         provenance="deterministic",
     )
@@ -406,7 +439,9 @@ def infer_traits_deterministic(
 
     if age:
         profile.notes.append(f"age band from honorific evidence in {surfaces[:3]}")
-    if gender and pronoun_reason:
+    if titled is not None:
+        profile.notes.append(f"gender from the title in the name {label!r}")
+    elif gender and pronoun_reason:
         profile.notes.append(f"gender from pronouns: {pronoun_reason}")
     elif gender:
         profile.notes.append(f"gender from address form in {surfaces[:3]}")

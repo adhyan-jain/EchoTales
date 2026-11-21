@@ -119,7 +119,9 @@ def extract_traits(
     # "unknown" is the model saying it saw nothing, not a finding. It sees only `_MAX_NARRATION` samples while the
     # deterministic read counted pronouns over all of them, and letting it win erased a grounded gender: on RI, 19
     # persons (Fang Yuan, 32/32 male pronouns, among them) were stored `unknown` while the pronoun rule alone says male.
-    if value.gender in GENDERS and not (value.gender == "unknown" and base.gender != "unknown"):
+    # A gender the title in the name fixed (`traits.title_gender`) is not the model's to change: a small model read Mrs.
+    # Bennet's paragraphs and called Mr. Bennet a woman (P&P e2e 2026-11-22).
+    if not base.gender_locked and value.gender in GENDERS and not (value.gender == "unknown" and base.gender != "unknown"):
         out.gender = value.gender
     if value.speech_register in REGISTERS:
         out.register = value.speech_register
