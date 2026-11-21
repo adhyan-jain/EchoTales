@@ -324,8 +324,13 @@ def _run_voice_audition(novel_id: str, params: dict[str, Any]) -> None:
         if voice is None:
             raise ValueError(f"voice {voice_id!r} is not in the voice bank or this project's own voices")
         out = audition.line_sample_path(root, voice_id, emotion, text)
-        if not out.is_file():
+        # The file name has no engine in it (the Studio finds it by voice, emotion and text), so a silent stub sample
+        # was reused for good once a real engine asked for the same line (EVOLUTION 4.183). A sidecar names the maker.
+        maker = out.with_suffix(".engine")
+        made_by = maker.read_text(encoding="utf-8").strip() if maker.is_file() else ""
+        if not out.is_file() or made_by != engine.name:
             audition.synthesize_line(voice, engine, out, text, emotion)
+            maker.write_text(engine.name, encoding="utf-8")
     else:
         raise ValueError(f"voice_audition target must be 'narrator' or 'line', not {target!r}")
 

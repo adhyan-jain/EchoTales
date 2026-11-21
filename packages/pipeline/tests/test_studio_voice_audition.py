@@ -112,6 +112,28 @@ def test_a_line_sample_is_voiced_in_the_assigned_voice_and_found_again(bank) -> 
     assert bank.call("GET", "/api/projects/t/voices/sample?voice_id=hifitts92&emotion=fear&text=Get%20out.")[0] == 404
 
 
+def test_a_stub_line_sample_is_not_reused_for_a_real_engine(bank, monkeypatch) -> None:
+    """The sample file name has no engine in it; a silent stub take was served for good (EVOLUTION 4.183)."""
+    import echotales.pipeline.voice as voice_pkg
+
+    class _Fake:
+        name = "fake"
+
+        def synthesize(self, req):
+            Path(req.out_path).write_bytes(b"RIFFreal")
+            return req.out_path
+
+    params = {"target": "line", "voice_id": "hifitts92", "text": "Get out.", "emotion": "anger"}
+    q = "voice_id=hifitts92&emotion=anger&text=Get%20out."
+    assert bank.run_job("voice_audition", {**params, "engine": "stub"})["status"] == "SUCCEEDED"
+    # The route only lets "stub" and "chatterbox" through, so the second request still says "stub" while another
+    # engine answers: the same situation as a real engine asking for the line the stub already made.
+    monkeypatch.setattr(voice_pkg, "get_engine", lambda name="stub", **kw: _Fake())
+    assert bank.run_job("voice_audition", {**params, "engine": "stub"})["status"] == "SUCCEEDED"
+    path = bank.call("GET", f"/api/projects/t/voices/sample?{q}")[1]["path"]
+    assert bank.call("GET", f"/api/novels/t/output/file?path={path}")[1] == b"RIFFreal"
+
+
 def test_a_line_can_be_voiced_in_an_uploaded_voice(srv) -> None:  # noqa: F811
     assert _upload_voice(srv, _wav(5))[0] == 201
     params = {"target": "line", "engine": "stub", "voice_id": "project:my-voice", "text": "Hello there."}
