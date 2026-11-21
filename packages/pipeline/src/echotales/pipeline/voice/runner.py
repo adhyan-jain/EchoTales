@@ -638,7 +638,18 @@ def _write_outputs(out_dir: Path, manifest: list, casting, engine_name: str = ""
     # Which engine made this audio, so the M4B export can refuse silent stub output without being told.
     # The bank's licence travels with the audio it made, so a later export can read it from the output directory
     # instead of from whatever --bank-kind the caller remembers.
-    stamp = {"engine": engine_name, "bank": getattr(bank, "bank_id", ""), "licence": getattr(bank, "licence", "")}
+    here = {"engine": engine_name, "bank": getattr(bank, "bank_id", ""), "licence": getattr(bank, "licence", "")}
+    # Per chapter, because a partial rerun with another engine used to relabel every earlier chapter's audio (4.183).
+    # The top-level engine is "stub" if ANY chapter is stub, so the M4B export and the Studio check still refuse a
+    # book with a silent chapter in it.
+    try:
+        chapters = dict(json.loads((out_dir / "run.json").read_text(encoding="utf-8")).get("chapters") or {})
+    except (OSError, ValueError, AttributeError):
+        chapters = {}
+    for chapter in {m.chapter for m in manifest}:
+        chapters[f"{chapter:g}"] = here
+    engines = {c.get("engine", "") for c in chapters.values()}
+    stamp = {**here, "engine": "stub" if "stub" in engines else engine_name, "chapters": chapters}
     (out_dir / "run.json").write_text(json.dumps(stamp), encoding="utf-8")
     (out_dir / "manifest.jsonl").write_text(
         "\n".join(json.dumps(asdict(line)) for line in manifest) + "\n",
