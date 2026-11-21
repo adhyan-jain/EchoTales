@@ -119,7 +119,6 @@ def _scene_state_by_segment_as_before(store, novel_id, scene, *args, **kwargs):
 def _real_clip_tokenizer_available() -> bool:
     try:
         import transformers  # noqa: F401
-
         from echotales.pipeline.persona.prompt import count_tokens
 
         count_tokens("probe")  # loads the CLIP tokenizer; raises when its files are not cached and cannot be fetched
