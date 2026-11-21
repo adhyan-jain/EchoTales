@@ -597,15 +597,20 @@ def load_hifitts(root: str | Path) -> VoiceBank:
         if nested is None:
             raise FileNotFoundError(f"no audio/ directory under {root}")
         audio = nested
-    voices: list[BankVoice] = []
+    # The corpus can hold both `92_clean` and `92_other`. Each used to become a voice with the same id (`hifitts92`),
+    # so a dict keyed by speaker id kept whichever came last, often the noisy one (EVOLUTION 4.183): one voice per
+    # speaker, the clean tier when both exist.
+    by_speaker: dict[str, BankVoice] = {}
     for speaker_dir in sorted(p for p in audio.iterdir() if p.is_dir()):
         speaker, _, tier = speaker_dir.name.partition("_")
         if speaker not in HIFITTS_SPEAKERS:
             continue
         gender, name = HIFITTS_SPEAKERS[speaker]
+        if speaker in by_speaker and tier == "other":
+            continue
         if (ref := _pick_reference(sorted(speaker_dir.rglob("*.flac")))) is None:
             continue
-        voices.append(
+        by_speaker[speaker] = (
             BankVoice(
                 speaker_id=f"hifitts{speaker}",
                 gender=gender,
@@ -615,7 +620,8 @@ def load_hifitts(root: str | Path) -> VoiceBank:
                 name=name,
             )
         )
-    return VoiceBank(voices, **_stamp("hifitts"))
+    # Directory order, as before, with one entry per speaker.
+    return VoiceBank(list(by_speaker.values()), **_stamp("hifitts"))
 
 
 #: Bank kinds `echotales voice`, the Studio voice job and audio QA accept, and the folder each one lives in under

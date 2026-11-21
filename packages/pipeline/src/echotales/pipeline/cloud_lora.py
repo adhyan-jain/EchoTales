@@ -58,8 +58,14 @@ def estimate_usd(spec: LoraTrainSpec) -> float:
     return float(estimate_job_usd("lora", 1))
 
 
-def submit(spec: LoraTrainSpec, client: RunPodClient | None = None, *, dry_run: bool = False) -> dict[str, Any]:
-    """Estimate (dry run: stop there, send nothing) or reserve in the ledger, submit and return the job id."""
+def submit(
+    spec: LoraTrainSpec, client: RunPodClient | None = None, *, dry_run: bool = False, out_path: Path | None = None,
+) -> dict[str, Any]:
+    """Estimate (dry run: stop there, send nothing) or reserve in the ledger, submit and return the job id.
+
+    With `out_path` the call also waits for the job, settles the ledger with the billed time and writes the returned
+    .safetensors there. Without it the job was submitted and never read back: the LoRA the docstring promises was
+    lost and the ledger entry stayed reserved at its estimate for good (EVOLUTION 4.183)."""
     est = estimate_usd(spec)
     if dry_run:
         return {"dry_run": True, "estimated_usd": est, "images": len(spec.images), "submitted": False}
@@ -71,4 +77,13 @@ def submit(spec: LoraTrainSpec, client: RunPodClient | None = None, *, dry_run: 
                     "caption": f"{spec.trigger}, {spec.character}"} for p in spec.images],
     }
     job = client.submit(payload, kind="lora", estimated_usd=est, note=spec.character)
-    return {"dry_run": False, "estimated_usd": est, "job_id": job.job_id, "submitted": True}
+    result: dict[str, Any] = {"dry_run": False, "estimated_usd": est, "job_id": job.job_id, "submitted": True}
+    if out_path is not None:
+        state = client.wait(job)
+        encoded = (state.get("output") or {}).get("lora")
+        if not isinstance(encoded, str) or not encoded:
+            raise RuntimeError(f"runpod lora job {job.job_id} completed with no 'lora' in its output")
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_bytes(base64.b64decode(encoded.split(",", 1)[-1]))
+        result["lora"] = str(out_path)
+    return result

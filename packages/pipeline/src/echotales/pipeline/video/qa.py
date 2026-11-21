@@ -42,6 +42,10 @@ logger = logging.getLogger(__name__)
 def sample_8_video_frames(video_path: Path, num_frames: int = 8) -> list[Image.Image]:
     """Sample evenly spaced frames from a video file using ffmpeg."""
     frames: list[Image.Image] = []
+    # `fps=num_frames` took the first `num_frames` frames at that rate, i.e. the first second of the clip, so a face
+    # that drifted at second 5 passed the "evenly spaced" check (EVOLUTION 4.183). Spread them over the whole clip.
+    duration = probe_video_duration(video_path)
+    rate = f"{num_frames / duration:.5f}" if duration > 0 else str(num_frames)
     with tempfile.TemporaryDirectory() as td:
         out_pattern = Path(td) / "f_%03d.png"
         cmd = [
@@ -50,7 +54,7 @@ def sample_8_video_frames(video_path: Path, num_frames: int = 8) -> list[Image.I
             "-i",
             str(video_path),
             "-vf",
-            f"fps={num_frames},scale=320:-1",
+            f"fps={rate},scale=320:-1",
             "-vframes",
             str(num_frames),
             str(out_pattern),

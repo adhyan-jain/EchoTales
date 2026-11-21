@@ -231,6 +231,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_clora.add_argument("--character", required=True)
     p_clora.add_argument("--references", required=True, help="folder of the character's approved reference images")
     p_clora.add_argument("--dry-run", action="store_true", help="print the estimated cost and submit nothing")
+    p_clora.add_argument("--out", default=None, help="wait for the job and save the .safetensors here (else it is only submitted)")
 
     p_bench = sub.add_parser(
         "benchmark",

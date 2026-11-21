@@ -286,3 +286,14 @@ def test_a_scene_hair_that_is_only_a_condition_keeps_the_locked_hair_and_joins_t
     assert "hair disheveled" in lock.state and "torn to shreds" in lock.state
     kept = il.build_lock("p", facts, d, scene_hair="black hair in a bun")
     assert "bun" in kept.hair and kept.source["hair"] == "scene"
+
+
+def test_defaults_are_rederived_when_the_gender_becomes_known_later(tmp_path) -> None:
+    """The first lock was made before the gender was inferred; it must not keep the male garment (EVOLUTION 4.183)."""
+    store = Store(str(tmp_path / "t.db"))
+    first = il.stored_defaults(store, "p1", "s1", "", False)
+    assert first["garment"] == il._GARMENT[(False, "male")]
+    assert il.stored_defaults(store, "p1", "s1", "", False) == first  # unknown gender: unchanged
+    later = il.stored_defaults(store, "p1", "s1", "female", False)
+    assert later == il.choose_defaults("s1", "female", False)
+    assert il.stored_defaults(store, "p1", "s1", "", False) == later  # and the new pick is the stored one

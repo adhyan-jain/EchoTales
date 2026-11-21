@@ -57,6 +57,17 @@ def _file_to_b64(path: str | Path | None) -> str | None:
     return base64.b64encode(p.read_bytes()).decode("ascii")
 
 
+#: The Wan worker (workers/runpod/wan_video/handler.py) accepts only 4n+1 frames in 5..161 and refuses anything else.
+WAN_MIN_FRAMES, WAN_MAX_FRAMES = 5, 161
+
+
+def valid_wan_frames(frames: int) -> int:
+    """Nearest 4n+1 in 5..161. `round(dur * fps)` was sent as is, so almost every line was refused by the worker. A
+    line longer than 161 frames (6.7 s at 24 fps) is capped, not split: the clip covers its first 6.7 s and the
+    compositor holds the keyframe for the rest of the audio."""
+    return min(WAN_MAX_FRAMES, max(WAN_MIN_FRAMES, 4 * round((frames - 1) / 4) + 1))
+
+
 def generate_wan_video(
     keyframe_path: str | Path,
     output_path: str | Path,
@@ -70,6 +81,7 @@ def generate_wan_video(
     run_worker: Callable[[VideoWorkerRequest], VideoWorkerResponse] = run_video_worker,
 ) -> WanVideoResult:
     """Generate AI video clip via Wan 2.2 worker contract."""
+    num_frames = valid_wan_frames(num_frames)
     kf_b64 = _file_to_b64(keyframe_path)
     if not kf_b64:
         raise FileNotFoundError(f"Keyframe not found: {keyframe_path}")

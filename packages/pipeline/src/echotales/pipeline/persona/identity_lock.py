@@ -77,7 +77,13 @@ def stored_defaults(store: object, persona_id: str, self_id: str, gender: str, m
     row = store.conn.execute("SELECT payload_json FROM derived_artifact WHERE id=?", (aid,)).fetchone()  # type: ignore[attr-defined]
     if row is not None:
         stored: dict[str, str] = json.loads(row["payload_json"])
-        return stored
+        # The pick was stored once, so a gender inferred only after the first lock (a later chapter's "she") left the
+        # first gender's garment and hair on a character now known to be the other (EVOLUTION 4.183). The garment
+        # names the gender the pick was made for; re-derive only when the gender now is stated and differs. Text-stated
+        # and reviewer-set looks never live here: `build_lock` reads facts before defaults.
+        made_for = next((g for (m, g), garment in _GARMENT.items() if m == manhua and garment == stored.get("garment")), "")
+        if gender not in ("male", "female") or not made_for or made_for == gender:
+            return stored
     chosen = choose_defaults(self_id, gender, manhua)
     store.record_artifact(aid, TIER, [], "", json.dumps(chosen))  # type: ignore[attr-defined]
     store.conn.commit()  # type: ignore[attr-defined]

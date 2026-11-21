@@ -212,3 +212,24 @@ class TestSetGender:
         assert _stored_gender(store) == "unknown"
 
 
+def test_a_failed_apply_is_rolled_back_and_stays_pending_with_its_error(tmp_path, monkeypatch) -> None:
+    """A write made before the apply raised was committed anyway (EVOLUTION 4.183)."""
+    from echotales.pipeline import corrections
+
+    store = _gender_novel(tmp_path)
+    before = store.conn.execute("SELECT title FROM novel WHERE id='t'").fetchone()[0]
+
+    def half_done(store, correction, *, seq):
+        store.conn.execute("UPDATE novel SET title='HALF DONE' WHERE id='t'")
+        raise RuntimeError("event append failed")
+
+    monkeypatch.setattr(corrections, "_apply_set_gender", half_done)
+    log = CorrectionLog(tmp_path / "t.jsonl")
+    log.add(Correction(novel_id="t", type=CorrectionType.SET_GENDER, payload={"self_id": "t:self1", "gender": "female"}))
+    result = apply_pending(store, log)
+    assert result["count"] == 0
+    assert store.conn.execute("SELECT title FROM novel WHERE id='t'").fetchone()[0] == before
+    (c,) = list(CorrectionLog(tmp_path / "t.jsonl"))
+    assert not c.applied and "event append failed" in c.error
+
+

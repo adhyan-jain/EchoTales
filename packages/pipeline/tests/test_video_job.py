@@ -120,3 +120,19 @@ def test_prune_with_ltx_local_is_refused(store: Store) -> None:
     job = _run(store, {"chapters": [1], "engine": "ltx-local", "prune_visual_narration": True})
     assert job.status == JobStatus.FAILED
     assert "prune" in job.error_summary
+
+
+@pytest.mark.parametrize("kind", ["video", "episode"])
+def test_stub_audio_is_refused_outside_stub_mode(store: Store, tmp_path: Path, monkeypatch, kind: str) -> None:
+    """Silent stub audio must not finish SUCCEEDED as a video (EVOLUTION 4.183); the M4B export refuses it too."""
+    from echotales.pipeline.config import LLMMode, get_settings
+
+    (tmp_path / "audio").mkdir()
+    (tmp_path / "audio" / "run.json").write_text(json.dumps({"engine": "stub"}), encoding="utf-8")
+    monkeypatch.setattr(get_settings(), "llm_mode", LLMMode.LOCAL)
+    job = Job(job_id=f"n:{kind}:1", novel_id="n", kind=kind, status=JobStatus.PENDING, created_at=1.0,
+              params_json=json.dumps({"chapters": [1]}))
+    store.add_job(job)
+    jobs.run_job(store, job, {"chapters": [1]})
+    got = store.get_job(job.job_id)
+    assert got.status == JobStatus.FAILED and "chatterbox" in got.error_summary

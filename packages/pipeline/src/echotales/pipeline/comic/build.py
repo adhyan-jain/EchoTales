@@ -126,11 +126,24 @@ def _pan_value(move: CameraMove, kf) -> float:
     return 0.0
 
 
+def shot_frame_counts(shots: list[Shot], fps: int) -> list[int]:
+    """Frames per shot such that every shot starts on the frame its audio does. Rounding each shot's own length
+    (`round(duration * fps)`) lost up to half a frame per shot, so 60 shots of 2.31 s ended about a second early
+    against the mixed audio and subtitles, which are placed in seconds (EVOLUTION 4.183)."""
+    counts, t, done = [], 0.0, 0
+    for shot in shots:
+        t += shot.duration
+        end = max(done + 1, round(t * fps))
+        counts.append(end - done)
+        done = end
+    return counts
+
+
 def _shot_frames(plate: Image.Image, shot: Shot, size: tuple[int, int], fps: int,
-                 depth: np.ndarray | None = None, parallax_px: float = 0.0):
+                 depth: np.ndarray | None = None, parallax_px: float = 0.0, frames: int | None = None):
     """Frames of one shot. With a depth map (relative to the full page) near pixels also slide sideways across the
     shot, so a still gains layers; without one this is the plain camera move."""
-    traj = compute_camera_trajectory(shot.move, shot.duration, fps)
+    traj = compute_camera_trajectory(shot.move, (frames / fps) if frames else shot.duration, fps)
     aspect = size[0] / size[1]
     last = max(1, len(traj.keyframes) - 1)
     depth_img = Image.fromarray(depth) if depth is not None else None
@@ -227,9 +240,9 @@ def build_episode(
     try:
         for _ in range(int(TITLE_SECONDS * fps)):
             proc.stdin.write(title_card.tobytes())
-        for shot in shots:
+        for shot, n_frames in zip(shots, shot_frame_counts(shots, fps), strict=True):
             plate = plates[shot.page_index]
-            for frame in _shot_frames(plate, shot, size, fps, depth_maps.get(shot.page_index), parallax_px):
+            for frame in _shot_frames(plate, shot, size, fps, depth_maps.get(shot.page_index), parallax_px, n_frames):
                 proc.stdin.write(frame.tobytes())
         for _ in range(int(CREDIT_SECONDS * fps)):
             proc.stdin.write(end_card.tobytes())

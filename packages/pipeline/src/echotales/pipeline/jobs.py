@@ -149,6 +149,29 @@ def new_job_id(novel_id: str, kind: str) -> str:
     return f"{novel_id}:{kind}:{uuid.uuid4().hex[:8]}"
 
 
+def _output_inputs_fingerprint(store: Store, novel_id: str, kind: str) -> str:
+    """What a Studio render or voice job reads besides its own params: the bible (latest lock plus the current facts
+    digest), the saved screenplay episodes, and the config.json sections that pick the look and the narrator.
+
+    The skip key used to be the request alone, so a second Render click after the bible or screenplay changed
+    finished SUCCEEDED with no new version folder and no new audio (EVOLUTION 4.181, 4.183). With this in the key an
+    unchanged request over unchanged inputs still resumes, and a changed input reruns."""
+    import json
+
+    from echotales.pipeline.config import _load_config_json  # type: ignore[import-untyped]
+    from echotales.pipeline.review_gate import fact_digests  # type: ignore[import-untyped]
+
+    locks = store.list_bible_locks(novel_id)
+    facts, _, _ = fact_digests(store, novel_id)
+    episodes = json.dumps(store.list_screenplay_episodes(novel_id), sort_keys=True, default=str)
+    cfg = _load_config_json()
+    section = cfg.get(kind) if isinstance(cfg.get(kind), dict) else {}
+    return digest_text(json.dumps({
+        "lock": [locks[-1]["version"], locks[-1]["digest"]] if locks else None,
+        "facts": facts, "episodes": episodes, "config": section,
+    }, sort_keys=True, default=str))
+
+
 def run_stage(
     store: Store,
     *,
@@ -175,7 +198,11 @@ def run_stage(
     returns `None` immediately -- the same skip check
     `pipeline_run.py::stage()` implements, applied here too so an
     HTTP-triggered job that re-POSTs an already-completed stage is a fast
-    no-op rather than redone work.
+    no-op rather than redone work. For Studio `render` and `voice` jobs the
+    digest also carries the inputs that change the output (bible lock and
+    facts, screenplay episodes, config section; `_output_inputs_fingerprint`),
+    so the same request after one of those changed reruns instead of
+    finishing green with nothing new.
     """
     if skip_if_succeeded:
         existing = store.find_succeeded_stage_run(stage_name, input_digest)
@@ -297,10 +324,26 @@ def _run_voice_audition(novel_id: str, params: dict[str, Any]) -> None:
         if voice is None:
             raise ValueError(f"voice {voice_id!r} is not in the voice bank or this project's own voices")
         out = audition.line_sample_path(root, voice_id, emotion, text)
-        if not out.is_file():
+        # The file name has no engine in it (the Studio finds it by voice, emotion and text), so a silent stub sample
+        # was reused for good once a real engine asked for the same line (EVOLUTION 4.183). A sidecar names the maker.
+        maker = out.with_suffix(".engine")
+        made_by = maker.read_text(encoding="utf-8").strip() if maker.is_file() else ""
+        if not out.is_file() or made_by != engine.name:
             audition.synthesize_line(voice, engine, out, text, emotion)
+            maker.write_text(engine.name, encoding="utf-8")
     else:
         raise ValueError(f"voice_audition target must be 'narrator' or 'line', not {target!r}")
+
+
+def _refuse_stub_audio(audio_dir: Any, params: dict[str, Any]) -> None:
+    """Stub audio is silent, so a video or episode made from it would finish SUCCEEDED with no sound (4.183). Same
+    message as the M4B export; allowed when the person says so (`allow_stub`) or the whole run is in stub mode
+    (`ECHOTALES_LLM_MODE=stub`, how CI and `make demo` run)."""
+    from echotales.pipeline.config import LLMMode, get_settings
+    from echotales.pipeline.voice.export import engine_of
+
+    if engine_of(Path(audio_dir)) == "stub" and not params.get("allow_stub") and get_settings().llm_mode is not LLMMode.STUB:
+        raise ValueError("the audio in this project was made by the stub engine and is silent; voice it with chatterbox first")
 
 
 def _run_video(store: Store, novel_id: str, params: dict[str, Any]) -> list[str]:
@@ -330,6 +373,7 @@ def _run_video(store: Store, novel_id: str, params: dict[str, Any]) -> list[str]
     panel_dir = params.get("panel_dir") or paths.asset_dir(novel_id, "panels")
     audio_dir = params.get("audio_dir") or paths.asset_dir(novel_id, "audio")
     out_dir = params.get("out_dir") or paths.asset_dir(novel_id, "video")
+    _refuse_stub_audio(audio_dir, params)
 
     if prune:
         from echotales.pipeline.render.compose import get_engine as get_compose_engine
@@ -376,6 +420,9 @@ def _run_episode(store: Store, novel_id: str, params: dict[str, Any]) -> list[st
 
         if refusal := resource_refusal(motion, http=True):
             raise ValueError(str(refusal))
+    from echotales.pipeline import paths
+
+    _refuse_stub_audio(params.get("audio_dir") or paths.asset_dir(novel_id, "audio"), params)
     out: list[str] = []
     try:
         for c in params["chapters"]:
@@ -617,6 +664,7 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
             fn=lambda: build_personas(novel_id, store, client=client, prefix_causal=get_settings().persona_prefix_causal),
         )
     elif job.kind == "render":
+        input_digest = digest_text(f"{input_digest}|{_output_inputs_fingerprint(store, novel_id, 'render')}")
         from echotales.pipeline import paths
         from echotales.pipeline.compute import default_image_engine
         from echotales.pipeline.render.panels import get_engine, render_panels
@@ -693,6 +741,7 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
             # Also after a partial render: the version folder exists and the convention wants its VERSIONS.md line.
             _record_studio_version(Path(out_dir), wanted, version, engine_name, job.job_id)
     elif job.kind == "voice":
+        input_digest = digest_text(f"{input_digest}|{_output_inputs_fingerprint(store, novel_id, 'voice')}")
         from echotales.pipeline import paths
         from echotales.pipeline.voice import get_engine as get_voice_engine
         from echotales.pipeline.voice import render_novel

@@ -406,3 +406,26 @@ def test_a_voice_whose_pitch_contradicts_its_gender_is_never_cast(tmp_path: Path
     assert report.pitch_conflicts == ["p226", "p229"]
     used = {line["voice"] for line in _manifest(out)}
     assert not used & {"p226", "p229"}
+
+
+def test_a_partial_rerun_with_another_engine_does_not_relabel_earlier_chapters(tmp_path: Path) -> None:
+    """Chapter 1 by the stub, chapter 2 by a real engine: the project stays stub (EVOLUTION 4.183)."""
+    from dataclasses import dataclass
+
+    from echotales.pipeline.voice.runner import _write_outputs
+
+    @dataclass
+    class _Line:
+        chapter: float
+
+    class _Casting:
+        def summary(self) -> str:
+            return ""
+
+    _write_outputs(tmp_path, [_Line(1.0)], _Casting(), "stub")
+    _write_outputs(tmp_path, [_Line(2.0)], _Casting(), "real")
+    stamp = json.loads((tmp_path / "run.json").read_text(encoding="utf-8"))
+    assert stamp["engine"] == "stub"
+    assert {c: v["engine"] for c, v in stamp["chapters"].items()} == {"1": "stub", "2": "real"}
+    _write_outputs(tmp_path, [_Line(1.0)], _Casting(), "real")
+    assert json.loads((tmp_path / "run.json").read_text(encoding="utf-8"))["engine"] == "real"

@@ -85,15 +85,21 @@ def _load_pipeline() -> Any:
     return _PIPE
 
 
+def _fit_keyframe(data: bytes, width: int, height: int) -> Any:
+    """Cover-fit to the model size. A plain `resize` stretched a portrait panel into 832x480 and the clip animated a
+    squashed face (EVOLUTION 4.183); the crop keeps the aspect and loses edge, as the page composer does."""
+    from PIL import Image, ImageOps
+
+    return ImageOps.fit(Image.open(io.BytesIO(data)).convert("RGB"), (width, height), Image.Resampling.LANCZOS)
+
+
 def _run(params: dict[str, Any]) -> bytes:
     """Heavy part (GPU): keyframe bytes -> mp4 bytes. Tests replace this."""
     from diffusers.utils import export_to_video
-    from PIL import Image
-
     pipe = _load_pipeline()
     width = int(os.environ.get("WAN_WIDTH", "832"))
     height = int(os.environ.get("WAN_HEIGHT", "480"))
-    image = Image.open(io.BytesIO(params["keyframe"])).convert("RGB").resize((width, height))
+    image = _fit_keyframe(params["keyframe"], width, height)
     frames = pipe(image=image, prompt=params["prompt"], height=height, width=width,
                   num_frames=params["num_frames"]).frames[0]
     with tempfile.NamedTemporaryFile(suffix=".mp4") as tmp:
