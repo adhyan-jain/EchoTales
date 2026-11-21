@@ -1170,108 +1170,30 @@ def cmd_render(args: argparse.Namespace) -> int:
         # render.direction_first says: two models resident at once is what ran this machine out of memory.
         two_phase = director_client is not None and (get_settings().render_direction_first or pol.force_sequential)
 
-        if two_phase:
-            # Direction and image generation split into two passes so an
-            # LLM backend that needs the local GPU (ollama) never has to
-            # share it with the local diffusion engine in the same process
-            # -- see render_panels's own docstring on prompt_cache_path and
-            # docs/EVOLUTION.md section 9 for the measured OOM this avoids.
-            # Phase 1 uses a stub image engine deliberately: no GPU cost,
-            # every beat's director call still runs and gets cached.
-            #
-            # **Phase 1 writes to a separate scratch directory, not
-            # args.panel_dir.** A real, caught bug: StubImageEngine writes
-            # a real (placeholder) PNG to request.out_path, and
-            # render_panels's own cross-run cache checks `image_path.
-            # exists()` -- so a phase 1 run against the *same* directory
-            # phase 2 uses left every image path already "existing" by the
-            # time phase 2 ran, and phase 2 silently skipped real SDXL
-            # generation for all 39 panels, reporting them "reused from
-            # cache" when every one was actually the stub's blank
-            # placeholder. Only prompt_cache_path needs to persist between
-            # the two phases; the image files themselves must not.
-            import tempfile
-
-            direction_scratch = tempfile.mkdtemp(prefix="echotales-direction-")
-            # Shared between the two phases of *this* version only.
-            # Inside the version it belongs to: at the panels/ root these piled
-            # up as prompt_cache_v10..v51.json beside the chapter folders.
-            cache_path = (
-                Path(args.panel_dir) / _tag / _version / "prompt_cache.json"
-                if _version else Path(args.panel_dir) / "prompt_cache.json"
-            )
-            print(f"phase 1/2: directing panels via {director_client.backend.value} ...")
-            direction_report = render_panels(
-                args.novel,
-                store,
-                out_dir=direction_scratch,
-                engine=get_panel_engine("stub"),
-                # **The real engine's `quality_prefix` budget, not the stub's.**
-                # This phase writes the prompt every later phase-2 panel uses
-                # verbatim -- reserving against the stub (which has none)
-                # would size every prompt to the full 75 tokens and let
-                # phase 2's real prefix silently truncate it anyway. See
-                # `render_panels`'s `target_engine` docstring.
-                target_engine=image_engine,
-                chapters=wanted,
-                seed=args.seed,
-                width=args.width,
-                height=args.height,
-                client=director_client,
-                max_panels=max_panels,
-                density=getattr(args, "density", "beat"),
-                look=getattr(args, "look", None),
-                block_range=block_range,
-                prompt_cache_path=cache_path,
-                version=_version,
-                observer_id=getattr(args, "observer", OBSERVER_READER),
-            )
-            print(direction_report.summary())
-
-            from echotales.pipeline.config import ModelBackend as _ModelBackend
-
-            if director_client.backend is _ModelBackend.OLLAMA:
-                unload_ollama_models(prefix="phase 1/2: ")
-
-            print(f"phase 2/2: generating images ({image_engine_name}) ...")
-            report = render_panels(
-                args.novel,
-                store,
-                out_dir=args.panel_dir,
-                engine=image_engine,
-                chapters=wanted,
-                seed=args.seed,
-                width=args.width,
-                height=args.height,
-                client=None,
-                max_panels=max_panels,
-                density=getattr(args, "density", "beat"),
-                look=getattr(args, "look", None),
-                block_range=block_range,
-                prompt_cache_path=cache_path,
-                version=_version,
-                observer_id=getattr(args, "observer", OBSERVER_READER),
-            )
-            import shutil as _shutil
-
-            _shutil.rmtree(direction_scratch, ignore_errors=True)
-        else:
-            report = render_panels(
-                args.novel,
-                store,
-                out_dir=args.panel_dir,
-                engine=image_engine,
-                chapters=wanted,
-                seed=args.seed,
-                width=args.width,
-                height=args.height,
-                client=director_client,
-                max_panels=max_panels,
-                density=getattr(args, "density", "beat"),
-                look=getattr(args, "look", None),
-                block_range=block_range,
-                observer_id=getattr(args, "observer", OBSERVER_READER),
-            )
+        report = render_panels_directed(
+            args.novel,
+            store,
+            image_engine=image_engine,
+            director_client=director_client,
+            two_phase=two_phase,
+            out_dir=args.panel_dir,
+            cache_path=(
+                Path(args.panel_dir) / _tag / _version / "prompt_cache.json" if _version else Path(args.panel_dir) / "prompt_cache.json"
+            ),
+            render_fn=render_panels,
+            engine_factory=get_panel_engine,
+            image_engine_name=image_engine_name,
+            chapters=wanted,
+            seed=args.seed,
+            width=args.width,
+            height=args.height,
+            max_panels=max_panels,
+            density=getattr(args, "density", "beat"),
+            look=getattr(args, "look", None),
+            block_range=block_range,
+            version=_version,
+            observer_id=getattr(args, "observer", OBSERVER_READER),
+        )
         print(report.summary())
         if report.status != "ok":
             # The motion and compose stages read the manifest, which still lists the panels with no file, so they would
@@ -1591,6 +1513,74 @@ def cmd_reader(args: argparse.Namespace) -> int:
     print(report.summary())
     store.close()
     return 0
+
+
+def render_panels_directed(  # type: ignore[no-untyped-def]
+    novel_id: str,
+    store,
+    *,
+    image_engine,
+    director_client,
+    two_phase: bool,
+    out_dir,
+    cache_path,
+    render_fn,
+    engine_factory,
+    image_engine_name: str = "",
+    say=print,
+    **render_kwargs,
+):
+    """`render_panels` with the panel director, in one pass or the two the compute policy asks for.
+
+    The one place the CLI (`cmd_render`) and the Studio render job both go through. The Studio job used to call `render_panels`
+    itself with no director client, so every panel of a Studio-queued P&P render read "no director client" and was drawn from the
+    bare persona sentence (32 panels, 30 byte-identical; P&P e2e 2026-11-22).
+
+    Two passes (`two_phase`): direction first, through a stub image engine into a scratch folder, then image generation reading
+    the saved prompts with no director, so ollama and the diffusion model never share the GPU (render_panels's docstring and
+    EVOLUTION section 9 on the measured OOM). The scratch folder is deliberate: a stub writes a real placeholder PNG, and
+    phase 2's own `image_path.exists()` cache then skipped real generation for all 39 panels. Only `prompt_cache_path` persists
+    between the phases.
+
+    `render_fn` and `engine_factory` are the callers' own `render_panels` and `get_engine`, looked up where each caller looks
+    them up (the CLI through the `render` package, the job through `render.panels`), so each keeps its own seam for tests."""
+    import shutil
+    import tempfile
+
+    from echotales.pipeline.config import ModelBackend
+
+    if not two_phase:
+        return render_fn(novel_id, store, out_dir=out_dir, engine=image_engine, client=director_client, **render_kwargs)
+    scratch = tempfile.mkdtemp(prefix="echotales-direction-")
+    try:
+        say(f"phase 1/2: directing panels via {director_client.backend.value} ...")
+        direction_report = render_fn(
+            novel_id,
+            store,
+            out_dir=scratch,
+            engine=engine_factory("stub"),
+            # The real engine's `quality_prefix` budget, not the stub's: this phase writes the prompt every phase-2 panel uses
+            # verbatim, so reserving against the stub (which has none) would let phase 2's real prefix truncate it anyway.
+            target_engine=image_engine,
+            client=director_client,
+            prompt_cache_path=cache_path,
+            **render_kwargs,
+        )
+        say(direction_report.summary())
+        if director_client.backend is ModelBackend.OLLAMA:
+            unload_ollama_models(prefix="phase 1/2: ")
+        say(f"phase 2/2: generating images ({image_engine_name or getattr(image_engine, 'name', '')}) ...")
+        return render_fn(
+            novel_id,
+            store,
+            out_dir=out_dir,
+            engine=image_engine,
+            client=None,
+            prompt_cache_path=cache_path,
+            **render_kwargs,
+        )
+    finally:
+        shutil.rmtree(scratch, ignore_errors=True)
 
 
 def unload_ollama_models(*, prefix: str = "") -> None:
