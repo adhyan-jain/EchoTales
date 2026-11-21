@@ -700,7 +700,7 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
                 fn=lambda: regen.regenerate_panel(
                     novel_id, chapter=float(params["chapter"]), panel_id=str(params["panel_id"]),
                     engine=get_engine(engine_name), direction=direction, candidates=params.get("candidates"),
-                    version=params.get("version"), out_dir=params.get("panel_dir"), job_id=job.job_id,
+                    version=params.get("version"), out_dir=params.get("panel_dir"), job_id=job.job_id, store=store,
                 ),
             )
             return str(pipeline_run.run_id)

@@ -51,7 +51,8 @@ def test_redraw_writes_candidates_beside_the_render_and_never_over_it(rendered):
     assert done.status.value == "SUCCEEDED", done.error_summary
     index = json.loads((vdir / "regen" / str(row.panel_seq) / "index.json").read_text())
     assert index["rounds"][0]["direction"] == "she turns toward the window"
-    assert index["rounds"][0]["prompt"].startswith("she turns toward the window")
+    # An edited direction goes through the compiler (4.187), so it sits inside the compiled prompt, not in front of the old one.
+    assert "she turns toward the window" in index["rounds"][0]["prompt"]
     assert [c["id"] for c in index["rounds"][0]["candidates"]] == ["r1c0", "r1c1", "r1c2"]
     assert all((vdir / c["file"]).is_file() for c in index["rounds"][0]["candidates"])
     assert (vdir / row.image_path).read_bytes() == original
@@ -177,3 +178,123 @@ def test_a_redraw_that_fails_midway_does_not_block_the_next_one(rendered):
         regen.regenerate_panel("t", chapter=1.0, panel_id=row.panel_id, engine=Flaky(), candidates=2)
     out = regen.regenerate_panel("t", chapter=1.0, panel_id=row.panel_id, engine=Flaky(), candidates=1)
     assert out["round"] == 2
+
+
+# --- an edited direction goes through the compiler (EVOLUTION 4.187) ------------------------------------------------
+
+
+def _sections(row, prefix):
+    return [text for label, text in (row.prompt_sections or []) if label.startswith(prefix)]
+
+
+def test_an_edited_direction_is_compiled_with_the_identity_sentence_and_style_lead(rendered):
+    store, vdir = rendered
+    row = load_panel_plan(vdir)[0]
+    identity = _sections(row, "character:")
+    style = _sections(row, "style")
+    assert identity and style, row.prompt_sections  # the stub render used the compiler, so the sections were recorded
+    done = _redraw(store, panel_id=row.panel_id, direction="she turns toward the window", candidates=1)
+    assert done.status.value == "SUCCEEDED", done.error_summary
+    rnd = json.loads((vdir / "regen" / str(row.panel_seq) / "index.json").read_text())["rounds"][0]
+    assert "she turns toward the window" in rnd["prompt"]
+    assert all(sentence in rnd["prompt"] for sentence in identity)
+    assert style[0] in rnd["prompt"]
+    assert rnd["prompt"] != row.prompt
+
+
+def test_without_an_override_the_recorded_prompt_is_drawn_as_before(rendered):
+    store, vdir = rendered
+    row = load_panel_plan(vdir)[0]
+    assert _redraw(store, panel_id=row.panel_id, candidates=1).status.value == "SUCCEEDED"
+    rnd = json.loads((vdir / "regen" / str(row.panel_seq) / "index.json").read_text())["rounds"][0]
+    assert rnd["prompt"] == row.prompt and rnd["direction"] == ""
+
+
+def _give_the_panel_a_composed_direction(vdir, row):
+    """Rewrite the plan row as a director-composed panel: a paragraph, a framing sentence and a focus."""
+    plan = vdir / "panel_plan.jsonl"
+    rows = [json.loads(line) for line in plan.read_text().splitlines()]
+    for r in rows:
+        if r["panel_id"] == row.panel_id:
+            r["direction"] = {
+                "shot": "medium", "composition": "an old paragraph about the courtyard", "frame": "A wide view from far back.",
+                "frame_focus": "", "action": "old action",
+            }
+    plan.write_text("".join(json.dumps(r) + "\n" for r in rows))
+
+
+def test_an_edit_replaces_the_composed_paragraph_and_keeps_the_framing(rendered):
+    store, vdir = rendered
+    row = load_panel_plan(vdir)[0]
+    _give_the_panel_a_composed_direction(vdir, row)
+    done = _redraw(store, panel_id=row.panel_id, direction="she turns toward the window", candidates=1)
+    assert done.status.value == "SUCCEEDED", done.error_summary
+    prompt = json.loads((vdir / "regen" / str(row.panel_seq) / "index.json").read_text())["rounds"][0]["prompt"]
+    assert "she turns toward the window" in prompt
+    assert "old paragraph" not in prompt  # the paragraph is what the compiler builds the scene from, so it is the edit
+    assert "A wide view from far back." in prompt  # the framing is the director's and code's, not the edit's
+    assert "Fang Yuan" in prompt  # the identity sentence
+    assert prompt.index("A wide view from far back.") < prompt.index("Fang Yuan")  # framing straight after the style lead
+
+
+def test_a_real_engine_gets_the_compiled_prompt_through_the_worker_route(rendered):
+    """Not the plain `engine.generate`: the compiled route is the one a normal render uses for a non-stub engine."""
+    import base64
+    import io
+
+    from echotales.pipeline.render import compiled_route
+    from echotales.pipeline.workers_contract import ImageWorkerResponse
+    from PIL import Image
+
+    store, vdir = rendered
+    row = load_panel_plan(vdir)[0]
+    seen = []
+
+    class Worker:
+        def generate_many(self, requests, sections=None, *, greyscale=False):
+            seen.append((list(requests), list(sections or [])))
+            buf = io.BytesIO()
+            Image.new("RGB", (8, 8), "white").save(buf, format="PNG")
+            return [ImageWorkerResponse(image_b64=base64.b64encode(buf.getvalue()).decode(), seed=r.seed, duration_s=0.0)
+                    for r in requests]
+
+    class Real:
+        name = "z-image-turbo"
+
+        def generate(self, req):
+            raise AssertionError("the plain engine path was used for a compiled prompt")
+
+    from echotales.pipeline.config import get_settings
+
+    compiled_route.set_worker(get_settings().render_image_model, Worker())
+    try:
+        out = regen.regenerate_panel("t", chapter=1.0, panel_id=row.panel_id, engine=Real(), direction="she turns", candidates=1,
+                                     store=store)
+    finally:
+        compiled_route.set_worker(get_settings().render_image_model, None)
+    assert out["candidates"] == ["r1c0"] and (vdir / "regen" / str(row.panel_seq) / "r1c0.png").is_file()
+    (requests, sections), = seen
+    assert "she turns" in requests[0].prompt and sections[0] and any(label.startswith("character:") for label, _ in sections[0])
+
+
+def test_a_panel_the_worker_cannot_draw_is_an_error_not_a_missing_candidate(rendered):
+    from echotales.pipeline.config import get_settings
+    from echotales.pipeline.render import compiled_route
+
+    store, vdir = rendered
+    row = load_panel_plan(vdir)[0]
+
+    class Broken:
+        def generate_many(self, requests, sections=None, *, greyscale=False):
+            raise RuntimeError("out of memory")
+
+    class Real:
+        name = "z-image-turbo"
+
+    compiled_route.set_worker(get_settings().render_image_model, Broken())
+    try:
+        with pytest.raises(regen.PanelRegenError, match="not drawn"):
+            regen.regenerate_panel("t", chapter=1.0, panel_id=row.panel_id, engine=Real(), direction="x", candidates=1, store=store)
+    finally:
+        compiled_route.set_worker(get_settings().render_image_model, None)
+    assert not list((vdir / "regen").glob("**/index.json"))  # no index line for a candidate that has no file
