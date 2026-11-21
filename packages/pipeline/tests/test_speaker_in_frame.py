@@ -10,8 +10,23 @@ from __future__ import annotations
 from pathlib import Path
 from types import SimpleNamespace
 
-from echotales.core.enums import OBSERVER_READER, AliasType, BlockType, ReferenceMode, SpanType, TargetKind
-from echotales.core.models import Block, Chapter, DiscoursePosition, Mention, NarrativeSegment, Self, Span
+from echotales.core.enums import (
+    OBSERVER_READER,
+    AliasType,
+    BlockType,
+    ReferenceMode,
+    SpanType,
+    TargetKind,
+)
+from echotales.core.models import (
+    Block,
+    Chapter,
+    DiscoursePosition,
+    Mention,
+    NarrativeSegment,
+    Self,
+    Span,
+)
 from echotales.core.store import Store
 from echotales.pipeline.persona.split import BodyEpoch, write_epochs
 from echotales.pipeline.render.direction import PanelDirection
@@ -79,7 +94,7 @@ class _Director:
     def __init__(self) -> None:
         self.prompts: list[str] = []
 
-    def complete(self, task, prompt, schema, **kwargs):  # noqa: ANN001, ANN003, ANN201
+    def complete(self, task, prompt, schema, **kwargs):
         if schema is not PanelDirection:
             return SimpleNamespace(value=None)
         self.prompts.append(prompt)

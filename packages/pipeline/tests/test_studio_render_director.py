@@ -12,7 +12,6 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
-
 from echotales.core.models import Job
 from echotales.core.store import Store
 from echotales.pipeline import commands, compute, config

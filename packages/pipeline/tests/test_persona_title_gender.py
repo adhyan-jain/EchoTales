@@ -10,7 +10,6 @@ from __future__ import annotations
 from types import SimpleNamespace
 
 import pytest
-
 from echotales.pipeline.persona.extract import CharacterProfileResponse, extract_traits
 from echotales.pipeline.persona.traits import infer_traits_deterministic, title_gender
 
@@ -60,7 +59,7 @@ def test_a_pronoun_still_outranks_a_title_that_is_not_in_the_name() -> None:
 class _FemaleModel:
     """A small model that read the wife's paragraphs and answered female."""
 
-    def complete(self, task, prompt, schema, *, system="", novel_id="", **_):  # noqa: ANN001, ANN003, ANN201
+    def complete(self, task, prompt, schema, *, system="", novel_id="", **_):
         return SimpleNamespace(value=CharacterProfileResponse(gender="female", age_band="adult", speech_register="neutral"))
 
 

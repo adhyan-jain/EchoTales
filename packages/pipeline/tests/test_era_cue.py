@@ -9,7 +9,13 @@ from __future__ import annotations
 
 from echotales.pipeline.persona import genre
 from echotales.pipeline.render import framing as fr
-from echotales.pipeline.render.compiler import CharacterBrief, OutputMode, PanelBrief, compile_prompt, model_profile
+from echotales.pipeline.render.compiler import (
+    CharacterBrief,
+    OutputMode,
+    PanelBrief,
+    compile_prompt,
+    model_profile,
+)
 
 PERIOD = ("generic", "victorian_gothic", "western_fantasy", "xianxia")
 MODERN = ("contemporary", "modern_apocalypse", "science_fiction")

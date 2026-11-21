@@ -7,12 +7,16 @@ was dropped as "outside CAST", stripped as "out-of-scene" and replaced in the pa
 from __future__ import annotations
 
 import pytest
-
 from echotales.core.enums import BlockType, TargetKind
 from echotales.core.models import Block, Chapter, DiscoursePosition, Self
 from echotales.core.store import Store
 from echotales.pipeline.render.compiler import _match_director_characters
-from echotales.pipeline.render.direction import CharacterDirection, PanelDirection, _validate_direction, name_key
+from echotales.pipeline.render.direction import (
+    CharacterDirection,
+    PanelDirection,
+    _validate_direction,
+    name_key,
+)
 
 PASSAGE = "Mr. Bennet replied that he had not. Mrs. Bennet was in the room."
 CAST = {"Mr. Bennet": "black hair", "Mrs. Bennet": "grey hair"}
