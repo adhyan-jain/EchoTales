@@ -116,6 +116,24 @@ def _scene_state_by_segment_as_before(store, novel_id, scene, *args, **kwargs):
     return state
 
 
+def _real_clip_tokenizer_available() -> bool:
+    try:
+        import transformers  # noqa: F401
+        from echotales.pipeline.persona.prompt import count_tokens
+
+        count_tokens("probe")  # loads the CLIP tokenizer; raises when its files are not cached and cannot be fetched
+    except Exception:
+        return False
+    return True
+
+
+# SNAPSHOT's prompts were cut to the 77-token budget by the real CLIP tokenizer. `count_tokens` falls back to a
+# deliberate over-count without `transformers`, which drops different clauses (fresh-clone install test, 2026-11-21:
+# this one test failed there and passed in a checkout with the `ml` extras and a cached tokenizer; no .env or
+# config.json was involved). Without the tokenizer the byte pin cannot hold, so it is skipped, not loosened.
+@pytest.mark.skipif(
+    not _real_clip_tokenizer_available(), reason="the snapshot needs the real CLIP tokenizer (transformers + cached weights)"
+)
 def test_no_director_rows_have_no_direction_and_prompts_are_byte_identical_to_before(
     tmp_path, monkeypatch
 ):
