@@ -16,6 +16,8 @@ dependencies = [
     "numpy>=1.26",
     "soundfile>=0.12",
     "pyloudnorm>=0.1",
+    # voice/qa.py median_f0 (pyin) and the Whisper resampler; imported at call time by the audition path and its tests.
+    "librosa>=0.10",
     "pillow>=10.1",
 ]
 
