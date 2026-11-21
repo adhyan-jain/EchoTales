@@ -65,3 +65,26 @@ def test_a_soft_pick_never_makes_a_third_face_view_in_a_row() -> None:
     keys = [(f.size, f.focus) for f in out]
     for i in range(2, len(keys)):
         assert not (keys[i] in face and keys[i - 1] in face and keys[i - 2] in face), keys
+
+
+def test_the_overview_and_reverse_views_carry_no_full_figure_identity_for_the_lead() -> None:
+    """Cliff r7 seed 777 p6 and p12: the overview drew Fang Yuan twice, a full-size one in the foreground (his identity sentence) and
+    a tiny green figure in the ring below. In these views the lead is only the sentence's small figure (or absent)."""
+    from echotales.pipeline.render.compiler import (
+        CharacterBrief,
+        OutputMode,
+        PanelBrief,
+        compile_prompt,
+        model_profile,
+    )
+
+    lead = CharacterBrief(name="Fang Yuan", gender="male", age_band="adult", appearance={"hair_color": "black"}, lead=True)
+    views = (("overview", fr.Framing("wide", "high-angle", "overview", "crowd")), ("reverse", fr.Framing("medium", focus="reverse", subject="crowd")))
+    for focus, f in views:
+        b = PanelBrief(novel_id="", characters=[lead], mode=OutputMode.COLOUR, shot=f.size, frame_focus=focus,
+                       framing=fr.framing_sentence(f, "Fang Yuan"), staging="Set: a cliff. Blocking: Fang Yuan stands alone. Light: dusk.")
+        out = compile_prompt(b, model_profile("z-image-turbo"))
+        assert not any(s.label.startswith("character") for s in out.sections), focus
+        assert "Blocking" not in out.positive
+    over = fr.framing_sentence(fr.Framing("wide", "high-angle", "overview", "crowd"), "Fang Yuan")
+    assert "centre of the ring" in over and "no other figure" in over

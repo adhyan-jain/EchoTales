@@ -290,9 +290,11 @@ def framing_sentence(f: Framing, lead: str, *, people: bool = True, alone: bool 
                 "beyond the lens.")
     if f.focus == "overview":
         # Drew him mid-sized (not small) on bare rock with the crowd a thin ring far behind: lone, and no follower reading (2 of 2).
-        return (f"High wide establishing shot looking down from far above: {who} is one small lone figure standing on bare rock, "
-                "and the crowd is a loose ring of tiny people at a distance from him on the ground, the whole place visible and "
-                "the figures small in it.")
+        # Cliff r7 seed 777 p6, p12: the lead drawn twice, full-size in the foreground (his identity sentence, now dropped for this view
+        # in the compiler) and as a tiny figure in the ring. He is only the small figure at the centre of the ring.
+        return (f"High wide establishing shot looking straight down from far above: the crowd is a loose ring of tiny people on the "
+                f"ground and {who} is one small lone figure standing on bare rock at the centre of the ring, no other figure "
+                "in the picture, the whole place visible and every figure small in it.")
     if f.focus == "low":
         # "head and shoulders ... no other person" drew him seated on the rock (2 of 2); this wording drew him standing, wind in
         # the hair, nobody else (2 of 2).
