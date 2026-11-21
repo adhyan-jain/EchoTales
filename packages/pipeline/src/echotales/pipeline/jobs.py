@@ -444,7 +444,7 @@ def _run_pages(store: Store, novel_id: str, params: dict[str, Any]) -> list[str]
 
     if not params.get("chapters"):
         raise ValueError("no chapters chosen; pass chapters, e.g. [1], for the chapters to make pages of")
-    fmt = str(params.get("format") or "manga")
+    fmt = str(params.get("format") or "webtoon")
     if fmt not in FORMATS:
         raise ValueError(f"page format {fmt!r} is not one of {', '.join(FORMATS)}; pick one of them")
     exports = parse_exports(params.get("export") or "png")

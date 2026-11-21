@@ -39,6 +39,10 @@ class ComposerPanel:
     #: The source image size; only the webtoon strip uses it, to keep each panel's own shape.
     width: int
     height: int
+    #: Webtoon only: a scene change gets a bigger gap and a colour fade band.
+    scene_index: int = 0
+    #: Webtoon only: px of gutter the panel's overflowing bubbles need below it (`letter_panel(...).gutter_used`).
+    letter_gap: int = 0
 
 
 @dataclass(frozen=True, slots=True)
@@ -53,12 +57,23 @@ class PlacedPanel:
 
 
 @dataclass(frozen=True, slots=True)
+class Band:
+    """A strip of gutter that fades from the panel above to the panel below (a webtoon scene change)."""
+
+    y: int
+    h: int
+    above: str
+    below: str
+
+
+@dataclass(frozen=True, slots=True)
 class PageLayout:
     index: int
     width: int
     height: int
     template: str
     panels: tuple[PlacedPanel, ...]
+    bands: tuple[Band, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -166,20 +181,47 @@ def _place(rows: Rows, ids: Sequence[str], *, rtl: bool, page_index: int, templa
     return PageLayout(page_index, PAGE_W, PAGE_H, template, tuple(placed))
 
 
+#: Gaps between webtoon panels, by what the reader just saw. Tight inside an exchange so the scroll keeps
+#: its rhythm, wider around a splash or establishing shot to let it land, widest at a scene change, where
+#: the gap also carries a colour fade (manhwa use the gap as the pause between scenes).
+GAP_SAME_SCENE = 40
+GAP_EMPHASIS = 110
+GAP_SCENE_CHANGE = 260
+#: Free page kept under a panel's overflowing bubbles so they never touch the next panel.
+LETTER_GAP_PAD = 28
+
+
+def _gap(prev: ComposerPanel, nxt: ComposerPanel) -> int:
+    if prev.scene_index != nxt.scene_index:
+        base = GAP_SCENE_CHANGE
+    elif PanelRole.SPLASH in (prev.role, nxt.role) or PanelRole.ESTABLISHING in (prev.role, nxt.role):
+        base = GAP_EMPHASIS
+    else:
+        base = GAP_SAME_SCENE
+    return max(base, prev.letter_gap + LETTER_GAP_PAD) if prev.letter_gap else base
+
+
 def _webtoon(panels: Sequence[ComposerPanel]) -> list[PageLayout]:
     placed: list[PlacedPanel] = []
+    bands: list[Band] = []
     y = WEBTOON_GUTTER
     for k, p in enumerate(panels):
+        if k:
+            gap = _gap(panels[k - 1], p)
+            if panels[k - 1].scene_index != p.scene_index:
+                bands.append(Band(y, gap, panels[k - 1].panel_id, p.panel_id))
+            y += gap
         if p.role is PanelRole.SPLASH:
-            ratio = 1.6
+            ratio = 1.7
         elif p.role is PanelRole.ESTABLISHING:
-            ratio = 0.6
+            ratio = 1.0
         else:
             ratio = min(max(p.height / p.width if p.width else 1.0, 0.75), 1.5)
         h = round(WEBTOON_W * ratio)
         placed.append(PlacedPanel(p.panel_id, 0, y, WEBTOON_W, h, k))
-        y += h + WEBTOON_GUTTER
-    return [PageLayout(1, WEBTOON_W, y, "webtoon", tuple(placed))]
+        y += h
+    y += max(WEBTOON_GUTTER, panels[-1].letter_gap + LETTER_GAP_PAD if panels[-1].letter_gap else 0)
+    return [PageLayout(1, WEBTOON_W, y, "webtoon", tuple(placed), tuple(bands))]
 
 
 def compose_pages(panels: Sequence[ComposerPanel], fmt: str) -> list[PageLayout]:

@@ -1,16 +1,18 @@
-"""Lettering by code, never by the image model (roadmap M1 step 2).
+"""Lettering by code, never by the image model (roadmap M1 step 2; placement and style reworked in 4.185).
 
 **Why this exists.** A diffusion model draws text as shapes that look like text, so every word on a
-page is set here, from the span types the pipeline already produced: speech bubbles for dialogue
-(tail toward the director's `characters[].position`), caption boxes for narration, cloud bubbles for
-inner monologue, a jagged bubble for a shouted line, and an optional SFX layer.
+page is set here, from the span types the pipeline already produced: rounded speech bubbles for dialogue
+(tail toward the speaker's face), muted rectangular captions for narration, cloud bubbles for inner
+monologue, a spiky bold bubble for a shouted line, and an optional SFX layer.
 
-**Text is never silently dropped.** Fitting shrinks the font to a floor, then splits one line over
+**Bubbles do not cover the picture.** Each bubble goes to the lowest-cost spot of a cheap subject estimate
+read from the panel's own pixels (`placement.py`). When the panel has no clear spot big enough and the
+caller reserved a strip of gutter below it (webtoon), the bubble moves into the gutter instead of
+shrinking the font: legibility is a floor (`MIN_FONT_PX`), not something to trade for fit.
+
+**Text is never silently dropped.** Fitting shrinks the font to that floor, then splits one line over
 two bubbles, then truncates with an ellipsis; each of those, and any bubble that finds no room, is
 returned in `LetterResult.overflow` so the page report says exactly what did not make it.
-
-Placement is greedy and only avoids other bubbles: it cannot see where a face is, so a reviewer
-still checks pages (the plan's "Opus reviews every page").
 """
 
 from __future__ import annotations
@@ -21,20 +23,42 @@ from enum import StrEnum
 from functools import lru_cache
 from pathlib import Path
 
-from echotales.pipeline.compositor.manga import render_onomatopoeia_overlay
+from echotales.pipeline.compositor.manga import (
+    render_onomatopoeia_overlay,  # type: ignore[import-untyped]
+)
+from echotales.pipeline.pages.placement import (  # type: ignore[import-untyped]
+    SPILL_LIMIT,
+    SubjectMap,
+    estimate_subject,
+    find_clear_spot,
+    find_gutter_spot,
+    speaker_point,
+)
 from PIL import Image, ImageDraw, ImageFont
 
 FONT_DIR = Path(__file__).parent / "fonts"
-#: Comic Neue (dialogue) and Bangers (shouts), both OFL. When a file is absent Pillow's built-in
-#: scalable font is used, so lettering still works; the pages just look plainer.
-DIALOGUE_FONT = FONT_DIR / "ComicNeue-Regular.ttf"
-SHOUT_FONT = FONT_DIR / "Bangers-Regular.ttf"
+#: Liberation Sans (SIL OFL 1.1, licence file beside the fonts): a clean sans that stays readable at webtoon
+#: size. Bangers/Comic Neue, which this module once named, were never bundled, so every page had been set
+#: in Pillow's built-in font. When a file is absent Pillow's scalable font is still used.
+DIALOGUE_FONT = FONT_DIR / "LiberationSans-Regular.ttf"
+SHOUT_FONT = FONT_DIR / "LiberationSans-Bold.ttf"
 
 INK = (20, 20, 20)
 PAPER = (255, 255, 255)
-CAPTION = (255, 246, 205)
+#: Narration boxes are quieter than speech so the eye reads them as the narrator, not a character.
+CAPTION = (236, 233, 224)
+CAPTION_INK = (70, 66, 60)
+CAPTION_EDGE = (120, 115, 105)
 #: Placement keeps this many pixels between two bubbles so tails and outlines never touch.
 CLEARANCE = 6
+#: Smallest font a page may use at its export size (800 px webtoon, 1200 px page). Below this a phone
+#: reader cannot read the line; 4.185 reports the measured minimum per book.
+MIN_FONT_PX = 22
+#: Panels narrower than this are test fixtures or thumbnails; the legibility floor does not apply to them.
+LEGIBLE_PANEL_MIN_W = 480
+#: Tallest gutter bubble stack allowed for one bubble. A constant, not the strip's height, so the dry run
+#: that measures the strip and the real run that draws in it fit text identically.
+GUTTER_MAX_H = 300
 #: Elliptical and jagged shapes need more room than their text block to keep text inside the outline.
 INFLATE = {"speech": 1.0, "narration": 1.0, "thought": 1.3, "shout": 1.3}
 
@@ -66,6 +90,8 @@ class PlacedLetter:
     #: The text actually drawn (a split part, or a truncated line ending in an ellipsis).
     text: str
     font_size: int
+    #: True when the bubble sits in the gutter strip below the panel instead of on the picture.
+    in_gutter: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -80,6 +106,9 @@ class Overflow:
 class LetterResult:
     placed: list[PlacedLetter] = field(default_factory=list)
     overflow: list[Overflow] = field(default_factory=list)
+    #: Pixels of gutter below the panel the gutter bubbles needed (0 when none). The webtoon builder runs
+    #: the lettering once with a generous strip to read this, then lays the strip out at exactly that size.
+    gutter_used: int = 0
 
 
 # --------------------------------------------------------------------------- text fitting
@@ -94,7 +123,23 @@ def _font(shout: bool, size: int) -> ImageFont.FreeTypeFont | ImageFont.ImageFon
         return ImageFont.load_default(size=size)
 
 
-def _wrap(text: str, font: ImageFont.FreeTypeFont | ImageFont.ImageFont, max_w: float) -> list[str]:
+def sentence_case(text: str) -> str:
+    """Novels print shouts in capitals; manhwa letter them in sentence case with a bold face, so the weight
+    carries the volume and the line stays readable. Only fully capitalised text is touched."""
+    letters = [c for c in text if c.isalpha()]
+    if len(letters) < 4 or not all(c.isupper() for c in letters):
+        return text
+    out, start = [], True
+    for ch in text.lower():
+        out.append(ch.upper() if start and ch.isalpha() else ch)
+        if ch.isalpha():
+            start = False
+        elif ch in ".!?":
+            start = True
+    return "".join(out).replace(" i ", " I ").replace(" i'", " I'")
+
+
+def _greedy(text: str, font: ImageFont.FreeTypeFont | ImageFont.ImageFont, max_w: float) -> list[str]:
     lines: list[str] = []
     cur = ""
     for word in text.split():
@@ -120,6 +165,24 @@ def _wrap(text: str, font: ImageFont.FreeTypeFont | ImageFont.ImageFont, max_w: 
     return lines
 
 
+def _wrap(text: str, font: ImageFont.FreeTypeFont | ImageFont.ImageFont, max_w: float) -> list[str]:
+    """Greedy wrap, then the narrowest width that keeps the same line count. Greedy alone leaves a one-word
+    last line under a full-width first line; centred, that reads as a typo in a bubble. Balanced lines are
+    what manhwa lettering looks like, and a narrower block also covers less picture."""
+    lines = _greedy(text, font, max_w)
+    n = len(lines)
+    if n < 2:
+        return lines
+    lo, hi = max(font.getlength(w) for w in text.split()), max_w
+    for _ in range(12):
+        mid = (lo + hi) / 2
+        if len(_greedy(text, font, mid)) <= n:
+            hi = mid
+        else:
+            lo = mid
+    return _greedy(text, font, hi)
+
+
 @dataclass(slots=True)
 class _Fit:
     lines: list[str]
@@ -135,7 +198,7 @@ def _fit(text: str, style: str, max_w: float, max_h: float, base: int, floor: in
         font = _font(shout, size)
         pad = size * 0.6
         lines = _wrap(text, font, max_w / infl - 2 * pad)
-        lh = size * 1.15
+        lh = size * 1.2
         h = len(lines) * lh + 2 * pad
         w = max((font.getlength(line) for line in lines), default=0) + 2 * pad
         if h * infl <= max_h and w * infl <= max_w + 1:
@@ -166,7 +229,8 @@ _ANCHOR_Y = {"foreground": 0.85, "background": 0.55}
 
 
 def _anchor(position: str | None, rect: tuple[int, int, int, int]) -> tuple[int, int]:
-    """Where the speaker is in the panel; the centre when the director did not say."""
+    """Where the speaker is in the panel when the picture shows no face there; the centre when the
+    director did not say either."""
     x, y, w, h = rect
     pos = (position or "").lower()
     fx = next((v for k, v in _ANCHOR_X.items() if k in pos), 0.5)
@@ -174,30 +238,14 @@ def _anchor(position: str | None, rect: tuple[int, int, int, int]) -> tuple[int,
     return round(x + w * fx), round(y + h * fy)
 
 
-def _overlaps(a: tuple[int, int, int, int], b: tuple[int, int, int, int]) -> bool:
-    return not (a[2] + CLEARANCE <= b[0] or b[2] + CLEARANCE <= a[0] or a[3] + CLEARANCE <= b[1] or b[3] + CLEARANCE <= a[1])
-
-
-def _find_spot(
-    bw: int, bh: int, rect: tuple[int, int, int, int], taken: list[tuple[int, int, int, int]], anchor_x: int
-) -> tuple[int, int] | None:
-    rx, ry, rw, rh = rect
-    edge = 8
-    ystep = max(4, round(rh * 0.03))
-    xstep = max(4, round(rw * 0.03))
-    xs = list(range(rx + edge, rx + rw - bw - edge + 1, xstep))
-    xs.sort(key=lambda x: (abs(x + bw / 2 - anchor_x), x))
-    for y in range(ry + edge, ry + rh - bh - edge + 1, ystep):
-        for x in xs:
-            if not any(_overlaps((x, y, x + bw, y + bh), t) for t in taken):
-                return x, y
-    return None
-
-
 # --------------------------------------------------------------------------- drawing
 
 
-def _tail(box: tuple[int, int, int, int], anchor: tuple[int, int], rect: tuple[int, int, int, int], size: int):
+def _tail(
+    box: tuple[int, int, int, int], anchor: tuple[int, int], rect: tuple[int, int, int, int], size: int, stop: int
+) -> tuple[tuple[float, float], float, tuple[int, int]]:
+    """Tail base on the bubble edge facing the speaker, and a tip that stops `stop` px short of the
+    speaker's face so the tail points at the head without covering it."""
     x0, y0, x1, y1 = box
     cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
     below = anchor[1] > cy
@@ -205,34 +253,34 @@ def _tail(box: tuple[int, int, int, int], anchor: tuple[int, int], rect: tuple[i
     bx = min(max(cx + 0.45 * (anchor[0] - cx), x0 + (x1 - x0) * 0.2), x1 - (x1 - x0) * 0.2)
     dx, dy = anchor[0] - bx, anchor[1] - by
     dist = math.hypot(dx, dy) or 1.0
-    length = min(dist, max(rect[3] * 0.3, size * 2))
+    length = max(min(dist - stop, max(rect[3] * 0.3, size * 2)), min(dist, size * 1.2))
     tip = (round(bx + dx / dist * length), round(by + dy / dist * length))
     tip = (min(max(tip[0], rect[0]), rect[0] + rect[2]), min(max(tip[1], rect[1]), rect[1] + rect[3]))
-    half = max(4, size * 0.4)
+    half = max(4, size * 0.32)
     return (bx, by), half, tip
 
 
 def _draw_body(draw: ImageDraw.ImageDraw, style: str, box: tuple[int, int, int, int], size: int) -> None:
     x0, y0, x1, y1 = box
     if style == "narration":
-        draw.rectangle(box, fill=CAPTION, outline=INK, width=2)
+        draw.rectangle(box, fill=CAPTION, outline=CAPTION_EDGE, width=2)
     elif style == "speech":
-        draw.rounded_rectangle(box, radius=min((y1 - y0) // 2, size * 1.2), fill=PAPER, outline=INK, width=3)
+        draw.rounded_rectangle(box, radius=min((y1 - y0) // 2, size * 1.6), fill=PAPER, outline=INK, width=2)
     elif style == "thought":
         r = max(4, round(min(x1 - x0, y1 - y0) * 0.1))
         ex0, ey0, ex1, ey1 = x0 + r, y0 + r, x1 - r, y1 - r
         cx, cy, rx, ry = (ex0 + ex1) / 2, (ey0 + ey1) / 2, (ex1 - ex0) / 2, (ey1 - ey0) / 2
-        for k in range(16):
-            a = k * math.tau / 16
+        for k in range(18):
+            a = k * math.tau / 18
             px, py = cx + rx * math.cos(a), cy + ry * math.sin(a)
             draw.ellipse((px - r, py - r, px + r, py + r), fill=PAPER, outline=INK, width=2)
         draw.ellipse((ex0, ey0, ex1, ey1), fill=PAPER)
     else:  # shout: alternating radii give the jagged outline a deterministic spike count
         cx, cy, rx, ry = (x0 + x1) / 2, (y0 + y1) / 2, (x1 - x0) / 2, (y1 - y0) / 2
         pts = []
-        for k in range(24):
-            f = 1.0 if k % 2 == 0 else 0.8
-            a = k * math.tau / 24
+        for k in range(28):
+            f = 1.0 if k % 2 == 0 else 0.84
+            a = k * math.tau / 28
             pts.append((cx + rx * f * math.cos(a), cy + ry * f * math.sin(a)))
         draw.polygon(pts, fill=PAPER, outline=INK, width=3)
 
@@ -263,16 +311,53 @@ def _sfx(img: Image.Image, rect: tuple[int, int, int, int], item: LetterItem) ->
     return PlacedLetter(item.span_id, "sfx", (x + bb[0], y + bb[1], x + bb[2], y + bb[3]), None, item.text, size)
 
 
+def _pieces(
+    text: str, style: str, max_w: float, max_h: float, base: int, floor: int, span_id: str, overflow: list[Overflow]
+) -> list[tuple[str, _Fit]]:
+    """The text as one bubble, two bubbles, or a truncated bubble, recording which in `overflow`."""
+    fit = _fit(text, style, max_w, max_h, base, floor)
+    if fit is not None:
+        return [(text, fit)]
+    words = text.split()
+    half = len(words) // 2
+    parts = [" ".join(words[:half]), " ".join(words[half:])] if half else [text]
+    fits = [_fit(p, style, max_w, max_h, base, floor) for p in parts]
+    if len(parts) == 2 and all(fits):
+        overflow.append(Overflow(span_id, "split"))
+        return [(p, f) for p, f in zip(parts, fits, strict=True) if f is not None]
+    if (cut := _truncate(words, style, max_w, max_h, base, floor)) is not None:
+        overflow.append(Overflow(span_id, "truncated", cut[2]))
+        return [(cut[0], cut[1])]
+    return []
+
+
 def letter_panel(
-    img: Image.Image, rect: tuple[int, int, int, int], items: list[LetterItem], *, rtl: bool
+    img: Image.Image,
+    rect: tuple[int, int, int, int],
+    items: list[LetterItem],
+    *,
+    rtl: bool,
+    subject: SubjectMap | None = None,
+    gutter_below: int = 0,
 ) -> LetterResult:
-    """Draw `items` into `img` inside `rect` (x, y, w, h), in order. Mutates `img`."""
+    """Draw `items` into `img` inside `rect` (x, y, w, h), in order. Mutates `img`.
+
+    `subject` is the panel's subject estimate (taken from the pixels under `rect` when not given).
+    `gutter_below` is how many pixels of free page lie under the panel; a bubble with no clear spot on the
+    picture goes there. 0 keeps every bubble on the picture, at the least harmful spot."""
     result = LetterResult()
     rx, ry, rw, rh = rect
+    if subject is None:
+        subject = estimate_subject(img.crop((rx, ry, rx + rw, ry + rh)))
     base = min(max(round(min(rh * 0.055, rw * 0.065)), 12), 40)
     floor = max(9, round(base * 0.65))
+    if rw >= LEGIBLE_PANEL_MIN_W:
+        floor = max(floor, MIN_FONT_PX)
+        base = max(base, floor)
     draw = ImageDraw.Draw(img)
     taken: list[tuple[int, int, int, int]] = []
+    gutter_pad = 14
+    stop = round(min(rw, rh) * 0.09)
 
     for item in items:
         style = _style_of(item)
@@ -281,53 +366,65 @@ def letter_panel(
             result.placed.append(placed)
             taken.append(placed.box)
             continue
+        text = sentence_case(item.text)
         max_w = rw * (0.9 if style == "narration" else 0.62)
-        max_h = rh * 0.4
-        pieces: list[tuple[str, _Fit]] = []
-        fit = _fit(item.text, style, max_w, max_h, base, floor)
-        if fit is not None:
-            pieces.append((item.text, fit))
-        else:
-            words = item.text.split()
-            half = len(words) // 2
-            parts = [" ".join(words[:half]), " ".join(words[half:])] if half else [item.text]
-            fits = [_fit(p, style, max_w, max_h, base, floor) for p in parts]
-            if len(parts) == 2 and all(fits):
-                pieces = [(p, f) for p, f in zip(parts, fits, strict=True) if f is not None]
-                result.overflow.append(Overflow(item.span_id, "split"))
-            elif (cut := _truncate(words, style, max_w, max_h, base, floor)) is not None:
-                pieces = [(cut[0], cut[1])]
-                result.overflow.append(Overflow(item.span_id, "truncated", cut[2]))
-            else:
-                result.overflow.append(Overflow(item.span_id, "unplaced", item.text))
-                continue
-
-        for text, f in pieces:
-            anchor = _anchor(item.speaker_position, rect)
-            start_x = rx + 8 if not rtl else rx + rw - f.w - 8
-            spot = _find_spot(f.w, f.h, rect, taken, anchor[0] if style != "narration" else start_x + f.w // 2)
-            if spot is None:
+        # Captions are the quiet voice: a notch smaller than speech, never below the legibility floor.
+        sbase = max(floor, round(base * 0.82)) if style == "narration" else base
+        pieces = _pieces(text, style, max_w, rh * 0.4, sbase, floor, item.span_id, result.overflow)
+        force_gutter = False
+        if not pieces:
+            if gutter_below > 0:
+                # No legible fit on the picture: the gutter is wider and taller, so the same text fits there.
+                pieces = _pieces(text, style, rw * 0.92, GUTTER_MAX_H, sbase, floor, item.span_id, result.overflow)
+                force_gutter = bool(pieces)
+            if not pieces:
                 result.overflow.append(Overflow(item.span_id, "unplaced", text))
                 continue
-            box = (spot[0], spot[1], spot[0] + f.w, spot[1] + f.h)
+
+        face = speaker_point(subject, rect, item.speaker_position)
+        anchor = face or _anchor(item.speaker_position, rect)
+        for text_piece, f in pieces:
+            pull = ((rx + rw - 8) if rtl else (rx + 8), ry) if style == "narration" else anchor
+            spot = None if force_gutter else find_clear_spot(f.w, f.h, rect, subject, taken, pull, CLEARANCE)
+            if gutter_below > 0 and (spot is None or spot.spill > SPILL_LIMIT):
+                gf = f if force_gutter else _fit(text_piece, style, rw * 0.92, GUTTER_MAX_H, sbase, floor)
+                g = (
+                    find_gutter_spot(gf.w, gf.h, rect, taken, pull[0], CLEARANCE, avail=gutter_below, pad=gutter_pad)
+                    if gf is not None
+                    else None
+                )
+                if g is not None and gf is not None:
+                    spot, f = g, gf
+            if spot is None:
+                result.overflow.append(Overflow(item.span_id, "unplaced", text_piece))
+                continue
+            box = (spot.x, spot.y, spot.x + f.w, spot.y + f.h)
             tip = None
             if style != "narration":
-                base_pt, half, tip = _tail(box, anchor, rect, f.size)
+                tail_anchor = anchor
+                if spot.in_gutter:
+                    # Up into the picture only far enough to point at the speaker's side of it.
+                    tail_anchor = (anchor[0], ry + rh - min(round(rh * 0.14), 60))
+                base_pt, half, tip = _tail(box, tail_anchor, rect, f.size, 0 if spot.in_gutter else stop)
                 _draw_tail(draw, style, base_pt, half, tip)
             _draw_body(draw, style, box, f.size)
             if style in ("speech", "shout") and tip is not None:
                 # Paint over the outline where the tail joins the body so they read as one shape.
+                sgn = 1 if base_pt[1] >= (box[1] + box[3]) / 2 else -1
                 draw.polygon(
-                    [(base_pt[0] - half + 2, base_pt[1]), (base_pt[0] + half - 2, base_pt[1]),
+                    [(base_pt[0] - half + 2, base_pt[1] - sgn), (base_pt[0] + half - 2, base_pt[1] - sgn),
                      (base_pt[0] + (tip[0] - base_pt[0]) * 0.2, base_pt[1] + (tip[1] - base_pt[1]) * 0.2)],
                     fill=PAPER,
                 )
             font = _font(style == "shout", f.size)
-            lh = f.size * 1.15
+            lh = f.size * 1.2
             ty = (box[1] + box[3]) / 2 - len(f.lines) * lh / 2
+            ink = CAPTION_INK if style == "narration" else INK
             for k, line in enumerate(f.lines):
                 lw = font.getlength(line)
-                draw.text(((box[0] + box[2]) / 2 - lw / 2, ty + k * lh), line, fill=INK, font=font)
-            result.placed.append(PlacedLetter(item.span_id, style, box, tip, text, f.size))
+                draw.text(((box[0] + box[2]) / 2 - lw / 2, ty + k * lh), line, fill=ink, font=font)
+            result.placed.append(PlacedLetter(item.span_id, style, box, tip, text_piece, f.size, spot.in_gutter))
             taken.append(box)
+            if spot.in_gutter:
+                result.gutter_used = max(result.gutter_used, box[3] + gutter_pad - (ry + rh))
     return result
