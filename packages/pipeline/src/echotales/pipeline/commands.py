@@ -2088,7 +2088,7 @@ def cmd_cloud(args: argparse.Namespace) -> int:
 
         spec = cloud_lora.build_spec(args.character, args.references)
         try:
-            print(json.dumps(cloud_lora.submit(spec, dry_run=args.dry_run), indent=1))
+            print(json.dumps(cloud_lora.submit(spec, dry_run=args.dry_run, out_path=Path(args.out) if args.out else None), indent=1))
         except (cloud_ledger.BudgetExceeded, RuntimeError) as exc:
             print(f"cloud: {exc}", file=sys.stderr)
             return 2

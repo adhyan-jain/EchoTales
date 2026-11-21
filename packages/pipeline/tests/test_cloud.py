@@ -154,6 +154,21 @@ def test_lora_dry_run_submits_nothing_and_manifest_lists_dataset(tmp_path: Path)
         cloud_lora.build_spec("x", tmp_path / "empty-nowhere")
 
 
+def test_lora_submit_with_out_path_waits_settles_and_saves_the_file(tmp_path: Path) -> None:
+    refs = tmp_path / "refs"
+    refs.mkdir()
+    (refs / "a.png").write_bytes(b"1")
+    spec = cloud_lora.build_spec("Lan Qing", refs)
+    http = FakeHTTP({"status": "COMPLETED", "executionTime": 1, "output": {"lora": "QUJD"}})
+    client = _client(tmp_path, http, budget=100.0)
+    out = cloud_lora.submit(spec, client, out_path=tmp_path / "l" / "lan.safetensors")
+    assert (tmp_path / "l" / "lan.safetensors").read_bytes() == b"ABC" and out["lora"].endswith("lan.safetensors")
+    assert any(m[0] == "GET" for m in http.calls)  # it waited, which is what settles the ledger entry
+    bad = FakeHTTP({"status": "COMPLETED", "executionTime": 1, "output": {}})
+    with pytest.raises(RuntimeError, match="no 'lora'"):
+        cloud_lora.submit(spec, _client(tmp_path, bad, budget=100.0), out_path=tmp_path / "x.safetensors")
+
+
 def test_dry_run_report_writes_and_sends_nothing(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(cloud_ledger.paths, "CLOUD_LEDGER_PATH", tmp_path / "ledger.json")
     rep = cloud_ledger.dry_run_report("video", 10)
