@@ -136,6 +136,8 @@ class Correction:
     id: str = field(default_factory=lambda: uuid.uuid4().hex[:12])
     created_at: float = field(default_factory=time.time)
     applied: bool = False
+    #: Why the last apply failed; it stays pending, and the Studio can say why (EVOLUTION 4.183).
+    error: str = ""
 
     def to_json(self) -> dict[str, object]:
         return {
@@ -145,6 +147,7 @@ class Correction:
             "payload": self.payload,
             "created_at": self.created_at,
             "applied": self.applied,
+            "error": self.error,
         }
 
     @classmethod
@@ -156,6 +159,7 @@ class Correction:
             payload=dict(row["payload"]),  # type: ignore[arg-type]
             created_at=float(row["created_at"]),  # type: ignore[arg-type]
             applied=bool(row.get("applied", False)),
+            error=str(row.get("error", "") or ""),
         )
 
 
@@ -243,6 +247,14 @@ class CorrectionLog:
             for c in self._items:
                 if c.id == correction_id:
                     c.applied = True
+            self._flush()
+
+    def mark_failed(self, correction_id: str, error: str) -> None:
+        with self.locked():
+            self._reload()
+            for c in self._items:
+                if c.id == correction_id:
+                    c.error = error
             self._flush()
 
     def _flush(self) -> None:
@@ -333,6 +345,12 @@ def _apply_pending_locked(store: Store, log: CorrectionLog) -> dict[str, object]
             # it surfaces again next time rather than silently vanishing.
             if "error" not in result:
                 log.mark_applied(correction.id)
+        failed = "error" in result
+        if failed:
+            # A half-done apply (a row written, then the event append raised) was committed below and the correction
+            # stayed pending, so the next apply wrote it again (EVOLUTION 4.183). Undo it, keep it pending, say why.
+            store.conn.rollback()
+            log.mark_failed(correction.id, str(result["error"]))
         applied.append(result)
         # Committed after every item, not once at the end: a later
         # correction failing must not roll back -- or leave merely
@@ -340,7 +358,8 @@ def _apply_pending_locked(store: Store, log: CorrectionLog) -> dict[str, object]
         # writes its own file immediately (`CorrectionLog._flush`), so this
         # keeps the store and the log's "applied" bit from ever disagreeing
         # about whether a given correction actually landed.
-        store.conn.commit()
+        if not failed:
+            store.conn.commit()
 
     return {"applied": applied, "count": sum(1 for r in applied if "error" not in r)}
 
