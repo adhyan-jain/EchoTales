@@ -654,6 +654,8 @@ def expectation_from_brief(brief: Any) -> PanelExpectation:
 
 def summarise(rows: list[dict[str, Any]]) -> dict[str, Any]:
     """Pass rates and cost from the per-panel rows `render` writes to `vision_check.jsonl`."""
+    # A `skipped` row is the record that the check did not run (`render/panels.py::_vision_skipped`), not a panel.
+    rows = [r for r in rows if not r.get("skipped")]
     checked = [r for r in rows if not r.get("unchecked")]
     n = len(checked)
     reasons: dict[str, int] = {}

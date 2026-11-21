@@ -141,26 +141,37 @@ def _cached_snapshot(model_id: str) -> str | None:
     return None
 
 
-def _vision_check(pending_batch: list[Any], pending_expect: dict[Any, Any], failed: list[Any]) -> list[dict[str, Any]]:
-    """The vision pass over a chapter's freshly drawn panels (`render/vision_pass.py`); `[]` when it is off.
+def _vision_skipped(reason: str) -> list[dict[str, Any]]:
+    """The one row that says the check did not run, for `vision_check.jsonl` (EVOLUTION 4.187): without it the file was
+    missing and `audit` could not tell "not checked" from "passed"."""
+    log.info("vision check skipped: %s", reason)
+    return [{"panel": "", "skipped": True, "unchecked": True, "reason": reason}]
 
-    Off means a single candidate was asked for, or no vision model is installed (said once in the log)."""
+
+def _vision_check(pending_batch: list[Any], pending_expect: dict[Any, Any], failed: list[Any]) -> list[dict[str, Any]]:
+    """The vision pass over a chapter's freshly drawn panels (`render/vision_pass.py`).
+
+    When it is off (a single candidate was asked for, no vision model is installed, a stub run) the result is one
+    `skipped` row naming why, never `[]`, so the file records "not checked"; `[]` only when there was nothing to ask."""
     if not pending_expect:
         return []
     from echotales.pipeline.config import ModelBackend, get_settings
+    from echotales.pipeline.keyframes import qa
     from echotales.pipeline.render import vision_pass
 
     settings = get_settings()
     # A stub run (CI, no GPU, no network) never reaches for a model that happens to be installed: only an explicit
     # `render.candidates` turns the check on there.
     if settings.model_backend is ModelBackend.STUB and settings.render_candidates == 0:
-        return []
+        return _vision_skipped("stub run: the vision check runs only when render.candidates is set")
     vlm = vision_pass.choose_vlm(vision_model=settings.render_vision_model, candidates=settings.render_candidates)
     if vlm is None:
-        return []
+        if settings.render_candidates == 1:
+            return _vision_skipped("render.candidates is 1: a single candidate per panel, nothing to choose between")
+        return _vision_skipped(qa.NO_VLM_MESSAGE)
     n = vision_pass.candidates_for(settings.render_candidates, vlm)
     if n < 2:
-        return []
+        return _vision_skipped("fewer than two candidates per panel: nothing to choose between")
     drawn = {f.out_path for f in failed}
     items = [(req, secs) for req, secs in pending_batch if req.out_path not in drawn]
     checked: list[dict[str, Any]] = vision_pass.run(
@@ -1562,11 +1573,26 @@ class PanelReport:
     #: second diffusion pass. See `render_panels`'s note on why this is
     #: exact-match only, not similarity-based.
     deduped_panels: int = 0
+    #: Panels the worker could not draw (and the dedupe copies of them): they stay in `manifest.jsonl` and
+    #: `panel_plan.jsonl` with no file. The CLI render returned 0 over such holes (EVOLUTION 4.181, 4.187).
+    failed: int = 0
     engine: str = "stub"
 
+    @property
+    def status(self) -> str:
+        """`ok`, `partial` (some panels have no picture) or `failed` (none was drawn), as the job runner's PARTIAL."""
+        if not self.failed:
+            return "ok"
+        return "failed" if self.failed >= self.panels else "partial"
+
     def summary(self) -> str:
+        verdict = {
+            "ok": "",
+            "partial": f"PARTIAL: {self.failed:,} of {self.panels:,} panels were not drawn; the rest are on disk\n",
+            "failed": f"FAILED: none of the {self.panels:,} panels was drawn\n",
+        }[self.status]
         return (
-            f"{self.novel_id}: {self.panels:,} panels over {self.chapters} chapters "
+            f"{verdict}{self.novel_id}: {self.panels:,} panels over {self.chapters} chapters "
             f"({self.engine})\n"
             f"  reused from cache: {self.skipped_cached:,}; "
             f"deduped against another block this run: {self.deduped_panels:,}\n"
@@ -3293,6 +3319,7 @@ def render_panels(
                 # The cache index and digest map were filled when each panel was queued, before the worker wrote
                 # anything; a panel that never got a file must not be served as a cache hit or a dedupe source later.
                 log.warning("%d panel(s) of chapter %s were not generated", len(_failed), chapter_number)
+                report.failed += len(_failed)
                 for _req in _failed:
                     for _d in [d for d, src in generated_by_digest.items() if src == _req.out_path]:
                         del generated_by_digest[_d]
@@ -3308,6 +3335,8 @@ def render_panels(
             dst.parent.mkdir(parents=True, exist_ok=True)
             if src.exists():
                 shutil.copyfile(src, dst)
+            else:
+                report.failed += 1  # a dedupe copy of a panel the worker did not draw
         pending_copies.clear()
 
     out_dir.mkdir(parents=True, exist_ok=True)

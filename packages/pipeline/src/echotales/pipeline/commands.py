@@ -1270,6 +1270,13 @@ def cmd_render(args: argparse.Namespace) -> int:
                 observer_id=getattr(args, "observer", OBSERVER_READER),
             )
         print(report.summary())
+        if report.status != "ok":
+            # The motion and compose stages read the manifest, which still lists the panels with no file, so they would
+            # fail on "image missing" anyway; stop here with the verdict. 1 = none drawn, 3 = some drawn (the job
+            # runner's PARTIAL, EVOLUTION 4.181).
+            print(f"render {report.status.upper()}: {report.failed} of {report.panels} panels have no picture", file=sys.stderr)
+            store.close()
+            return 1 if report.status == "failed" else 3
 
     if not args.skip_motion:
         report = build_motion_library(
