@@ -135,6 +135,16 @@ def pipeline_stage_names(params: dict[str, Any]) -> tuple[str, ...]:
     return tuple(n for n in PIPELINE_STAGES if n not in skipped)
 
 
+def pipeline_stage_digest(source_digest: str, name: str, params: dict[str, Any]) -> str:
+    """Resume key of one `pipeline` stage. The chapter range is part of it: with the book's bytes alone, a build of
+    chapters 1-3 marked every stage SUCCEEDED and a later 1-10 build skipped them all, reporting success with seven
+    chapters unbuilt. A whole-book build keeps `cmd_run`'s key, so a CLI-built book still resumes here."""
+    key = f"{source_digest}|{name}|v{PIPELINE_VERSION}"
+    if params.get("chapters"):
+        key += f"|ch={params['chapters']}"
+    return digest_text(key)
+
+
 def new_job_id(novel_id: str, kind: str) -> str:
     return f"{novel_id}:{kind}:{uuid.uuid4().hex[:8]}"
 
@@ -444,7 +454,7 @@ def _run_pipeline(store: Store, job_id: str, novel_id: str, params: dict[str, An
     def stage(name: str, fn: Callable[[], Any]) -> None:
         run_stage(
             store, run_id=pipeline_run.run_id, stage_name=name,
-            input_digest=digest_text(f"{source_digest}|{name}|v{PIPELINE_VERSION}"),
+            input_digest=pipeline_stage_digest(source_digest, name, params),
             fn=fn, skip_if_succeeded=skip,
         )
 
@@ -636,6 +646,9 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
         run_stage(
             store, run_id=pipeline_run.run_id, stage_name="render",
             input_digest=input_digest,
+            # A repeat is a new version of the chapter, never a skip: the bible and direction behind identical params
+            # change, and a skipped job read SUCCEEDED with no new folder (review 2026-11-21).
+            skip_if_succeeded=False,
             fn=lambda: render_panels(
                 novel_id, store,
                 out_dir=out_dir,
@@ -681,6 +694,8 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
         run_stage(
             store, run_id=pipeline_run.run_id, stage_name="voice",
             input_digest=input_digest,
+            # The screenplay and casting behind identical params change; a skip reported SUCCEEDED with no audio.
+            skip_if_succeeded=False,
             fn=lambda: render_novel(
                 novel_id, store, bank,
                 out_dir=out_dir,

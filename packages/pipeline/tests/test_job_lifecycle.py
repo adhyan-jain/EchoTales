@@ -205,3 +205,44 @@ class TestServerSafety:
 
         assert status == 409 and "already been applied" in body["error"]
         assert any(c.id == "c1" for c in log)
+
+
+def test_a_wider_chapter_range_does_not_reuse_a_narrower_builds_stage_digest() -> None:
+    narrow = jobs.pipeline_stage_digest("src", "0 ingest", {"chapters": "1-3"})
+    assert narrow != jobs.pipeline_stage_digest("src", "0 ingest", {"chapters": "1-10"})
+    assert narrow != jobs.pipeline_stage_digest("src", "0 ingest", {})
+    # whole-book key unchanged, so a CLI-built book still resumes
+    assert jobs.pipeline_stage_digest("src", "0 ingest", {}) == jobs.digest_text(f"src|0 ingest|v{PIPELINE_VERSION}")
+
+
+class TestRepeatedJobsDoWork:
+    """A second identical Studio render/voice request must run again: its inputs (bible, screenplay, panels) change
+    between identical params, and a skipped job reports SUCCEEDED with no new output."""
+
+    def test_identical_render_requests_both_render(self, tmp_path: Path, monkeypatch) -> None:
+        from echotales.pipeline.render import panels
+
+        store = Store(str(tmp_path / "t.db"))
+        calls: list[str] = []
+        monkeypatch.setattr(panels, "get_engine", lambda name: object())
+        monkeypatch.setattr(panels, "render_panels", lambda *a, **k: calls.append(k["version"]))
+        params = {"engine": "stub", "panel_dir": str(tmp_path / "panels"), "chapters": [1.0]}
+        for i in (1, 2):
+            run_job(store, _job(store, f"n:render:{i}", "render"), params)
+            assert store.get_job(f"n:render:{i}").status is JobStatus.SUCCEEDED
+        assert len(calls) == 2
+
+    def test_identical_voice_requests_both_voice(self, tmp_path: Path, monkeypatch) -> None:
+        import echotales.pipeline.voice as voice_pkg
+        from echotales.pipeline.voice import bank as bank_mod
+
+        store = Store(str(tmp_path / "t.db"))
+        calls: list[int] = []
+        monkeypatch.setattr(voice_pkg, "render_novel", lambda *a, **k: calls.append(1))
+        monkeypatch.setattr(voice_pkg, "get_engine", lambda name: object())
+        monkeypatch.setattr(bank_mod, "load_bank", lambda *a, **k: bank_mod.VoiceBank([], bank_id="t", licence="x"))
+        params = {"engine": "stub", "out_dir": str(tmp_path / "a")}
+        for i in (1, 2):
+            run_job(store, _job(store, f"n:voice:{i}", "voice"), params)
+            assert store.get_job(f"n:voice:{i}").status is JobStatus.SUCCEEDED
+        assert len(calls) == 2
