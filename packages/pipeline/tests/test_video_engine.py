@@ -167,8 +167,8 @@ def test_video_fallback_to_path_1(
 
 def test_the_qa_samples_span_the_whole_clip_not_its_first_second(tmp_path: Path) -> None:
     """1 s red then 3 s blue: the first-second sampler saw only red (EVOLUTION 4.183)."""
-    import subprocess
     import shutil
+    import subprocess
 
     if shutil.which("ffmpeg") is None:
         pytest.skip("ffmpeg not installed")
