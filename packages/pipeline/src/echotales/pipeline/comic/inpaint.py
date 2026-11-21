@@ -115,7 +115,7 @@ def get_inpainter(name: str = "auto", *, weights: Path | str = LAMA_WEIGHTS, dev
     if name == "cv":
         return CvInpainter()
     if name == "lama":
-        return LamaInpainter(weights, device or "cuda")
+        return LamaInpainter(weights, device)  # None: the class picks cuda, or cpu only without CUDA
     if name == "auto":
         if Path(weights).is_file():
             try:

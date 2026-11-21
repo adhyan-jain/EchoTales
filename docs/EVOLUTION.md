@@ -9839,3 +9839,43 @@ Moved here from HANDOFF on 2026-11-21 (the HANDOFF "Pick up here" of 2026-11-20 
 - **Only partly verified.** Per-line speaker and addressee reach the director (unit-tested; on real renders the lead often still shows a mocking smile on enemy lines); the crowd gap by depth framing (4 seeds each, encoded as staging guidance; gemma2:9b rarely chooses it, a crowd shows in 3 of 13 cliff panels).
 - **Director bake-off (item 7).** qwen3:8b download stalled (181 MB of 5.2 GB, about 0 KB/s); the later reader bake-off in decisions D62 did run it. Z-Image-Engineer-V6 as the `z-engineer` stage-two writer on 9 RI cliff panels: 4.5 s per panel, 0 blanked paragraphs, 7 of 9 polished (2 fell back to the facts), crowds in rows or silhouettes in 5 of 9 against 3 of 9 for the plain prompt, but a softer, greyer look (crowd turns into fog silhouettes, panel 6 muddy, one costume changed to white). Not adopted; `data/scratch/panel_quality/out_r2_bake/sheet.png`.
 - **Left open then.** Persona epoch for Fang Yuan's rebirth starts at block 82; block 80 (already reborn) is drawn as the adult (`persona/split.py`). LotM: 6 of 16 panels show a daylight window for a night scene. The rain-night scene (RI b31) inherits the cliff's blood and a crowd from the carried staging. gemma2:9b still writes swords, armour and "a figure" into compositions. RI blocks 36-61 (clan hall) were rendered once before the scene-break fix and not re-rendered. Rounds 3 to 6 (4.172, 4.173, 4.177) addressed some of these; they were not re-checked item by item here.
+
+
+### 4.189 Heavy work on the GPU: NVENC video encodes, whisper, CLIP, OCR and TTS pick CUDA *(2026-11-22)*
+
+Owner rule (2026-11-22): every heavy task runs on the GPU (RTX 4060, 8 GB); the CPU only for extremely light work that will not spike its use; audio generation especially. Audit of every model load and heavy compute path in `packages/pipeline/src/echotales/pipeline`. New `hwaccel.py`: `pick_device` (cuda when torch sees it, an explicit `cuda` with no CUDA falls to cpu instead of dying in the loader), `free_cuda_cache`, `video_encoder` (a real one-frame `h264_nvenc` probe, cached per process; `ECHOTALES_VIDEO_ENCODER=libx264` forces the CPU encoder) and `h264_args` (NVENC `-preset p5 -rc vbr -cq 19 -b:v 0 -pix_fmt yuv420p`, else the old `libx264 -crf 20 -preset medium`).
+
+**Device table (before / after).**
+
+| Path | Model or work | Before | After |
+|---|---|---|---|
+| `voice/engine.py` ChatterboxEngine | Chatterbox TTS | cuda (crashed with no CUDA) | cuda; cpu only with no CUDA. Every caller (`jobs.py`, `commands.py`, voice runner, audition) calls `get_engine(name)` with no device, so none forces cpu |
+| `voice/qa.py` `whisper_transcriber` | whisper-base.en | cpu, fp32 | cuda, fp16, freed (`del` + `empty_cache`) after the batch; cpu/fp32 only with no CUDA |
+| `render/compose.py` `_render_segment`, mux | ffmpeg zoompan stills and captions mux | libx264 on the CPU (stills had no `-c:v`, ffmpeg default crf 23) | `h264_nvenc` when the probe passes, else libx264 |
+| `render/anime.py` (4 re-time, trim, loop calls) | ffmpeg | libx264 default | same `h264_args` |
+| `compositor/engine.py`, `comic/build.py`, `render/episode.py` | ffmpeg | libx264 (ultrafast / crf 20) | same `h264_args` (ultrafast is an x264 name, NVENC ignores it) |
+| `video/clip_gate.py` | CLIP ViT-L/14 | cuda only if the card had under 500 MiB in use, else cpu | cuda fp16 when torch has CUDA and 1.5 GiB is free; cpu only with no CUDA or no room (OOM guard) |
+| `comic/ocr.py` RapidOcr | PaddleOCR via onnxruntime | cpu | CUDA execution provider when onnxruntime has one. The installed `onnxruntime` 1.32 is CPU-only, so this is cpu here until `onnxruntime-gpu` replaces it (not installed: an environment change) |
+| `comic/ocr.py` EasyOcr | easyocr | `gpu=False` default | cuda when available (easyocr is not installed here) |
+| `comic/parallax.py` | Depth Anything V2 Small | cuda (crash with no CUDA) | cuda; cpu only with no CUDA |
+| `comic/inpaint.py` | LaMa (TorchScript) | cuda on `auto`; `lama` forced "cuda" | cuda; cpu only with no CUDA (class picks) |
+| `workers_zimage.py`, `workers_anima.py`, `workers_local.py`, `video/ltx_worker.py` | Z-Image NF4, Anima, NoobAI, LTX | cuda, no CPU offload | unchanged |
+| `render/panels.py` SDXL/SD engines, `render/motion.py` SVD | diffusers | compute on cuda, weights parked in RAM by `enable_model_cpu_offload` | unchanged: they do not fit 8 GB resident (legacy comparison engines); a change would be a quality and OOM risk |
+| `persona/prompt.py` | CLIP tokenizer | cpu | unchanged (tokenizer only) |
+| `mentions/seed.py`, `speakers/attribution.py`, `spans/delivery.py`, `render/narration_pruning.py`, `reader/*` | rules, gazetteer, Ollama | no torch/transformers/spacy import; no model load on the CPU | unchanged (LLM calls go through Ollama) |
+| RIFE | n/a | no RIFE in the tree | n/a |
+
+**Not moved, said plainly.** `librosa.pyin` pitch tracking and `librosa.resample` / `pyloudnorm` in `voice/qa.py` and `voice/audition.py` stay on the CPU: there is no GPU pyin here, and they run on short reference clips. Chatterbox re-prepares the reference-clip conditionals (librosa resample) on every `generate` call; light, left alone. The `zoompan`/`scale` ffmpeg filters, the per-frame PIL and cv2 work in `comic/build.py` and `compositor/engine.py`, and the imageio `libx264` write in `video/ltx_worker.py` (its own environment, 4 s clips that `anime.py` re-encodes through NVENC anyway) stay on the CPU. The decoder is not on the GPU either (the encode was the cost).
+
+**Tests.** `test_hwaccel.py` (23): device pick with cuda / no cuda / explicit cpu / no torch; probe result nvenc, probe failure, probe timeout, no ffmpeg, override, probed once; NVENC and x264 argument shapes; compose segments and the captions mux take the codec from `h264_args`; whisper cuda-fp16 and cpu-fp32; Chatterbox device; CLIP gate device with room, with ollama holding part of the card, without room; RapidOCR with and without the CUDA provider. `conftest.py` forces `ECHOTALES_VIDEO_ENCODER=libx264` for every other test so the suite never takes an NVENC session.
+
+**Measured, GPU runs under `data/scratch/gpu.lock` (the card was held by another job, so the runs waited for it).** Stills through the real `compose._render_segment`, 1080x1920 at 30 fps, Ken Burns zoom (the zoompan filter itself stays on the CPU, so the gain is the encode part only):
+
+| Clip | libx264 (CPU) | h264_nvenc (GPU) | Frames |
+|---|---|---|---|
+| 3 s | 4.11 s | 1.14 s | 90 / 90 |
+| 20 s | 16.39 s | 2.79 s | 600 / 600 |
+
+PSNR between the two 3 s encodes 41.5 dB (random-noise still, the worst case for size: NVENC 5.7 MB vs x264 3.5 MB at 3 s, 30.6 MB vs 15.5 MB at 20 s; cq 19 spends more bits than crf 20 on noise). Frame counts match exactly, which is what `anime.py`'s sync proof needs. Whisper-base.en on 6 real RI ch1 line clips, model load included: cpu 18.08 s, cuda fp16 7.42 s. Not run: a full anime or comic episode with NVENC segments concatenated (`-c copy`) end to end, and Chatterbox on this change (its device was already cuda).
+
+Suite: core+pipeline 2,823 passed, 29 skipped (`-o addopts=""`); ruff 540 and mypy 583, both at the baseline.
