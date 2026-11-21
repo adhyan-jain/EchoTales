@@ -31,6 +31,10 @@ relicensed (decision D7 in `docs/design/decisions.md`).
 | gemma2:9b (reader) | speaker and appearance reading | Gemma Terms of Use | **verify** |
 | qwen2.5:7b (name finding) | mention detection | Apache-2.0 for this size | **verify** |
 | ollama | local model server | MIT | **verify** |
+| Wan 2.2 (Wan-AI/Wan2.2-TI2V-5B-Diffusers; A14B optional) | RunPod image-to-video worker (`workers/runpod/wan_video`; optional cloud, never run) | Apache-2.0 | **verify** against the model card |
+| Qwen-Image-Edit-2509 (Qwen/Qwen-Image-Edit-2509) | RunPod multi-reference keyframe worker (`workers/runpod/qwen_image_edit`; optional cloud, never run) | Apache-2.0 | **verify** against the model card |
+| ostris/ai-toolkit | RunPod character-LoRA trainer for Z-Image Turbo (`workers/runpod/lora_trainer`; optional cloud, never run) | MIT; Z-Image Turbo support unverified | **verify** |
+| diffusers, transformers, accelerate, runpod SDK | libraries inside the RunPod worker images | Apache-2.0 (diffusers, transformers, accelerate); MIT (runpod SDK) | **verify** |
 
 `engines/registry.py` is the source of truth for which engines exist and what licence each is recorded under;
 `tests/test_third_party_licenses.py` fails if an engine there with a stated licence is missing from this file.
