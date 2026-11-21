@@ -124,7 +124,8 @@ def test_a_stub_run_never_uses_an_installed_vision_model(monkeypatch) -> None:
     get_settings(reload=True)
     try:
         monkeypatch.setattr(vp, "choose_vlm", boom)
-        assert panels._vision_check([], {Path("x.png"): EXPECT}, []) == []
+        rows = panels._vision_check([], {Path("x.png"): EXPECT}, [])
+        assert [r.get("skipped") for r in rows] == [True]  # recorded as not checked (4.187), no model looked
     finally:
         monkeypatch.undo()
         get_settings(reload=True)

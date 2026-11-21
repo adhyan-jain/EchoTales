@@ -48,9 +48,13 @@ def render_page(
     *,
     rtl: bool,
     probe_gutters: bool = False,
+    look: str = "colour",
 ) -> tuple[Image.Image, dict[str, LetterResult]]:
     """`probe_gutters` letters every panel with `GUTTER_PROBE` px of room below it whatever the layout
-    gives, to read each panel's `gutter_used`; the page it returns is then thrown away."""
+    gives, to read each panel's `gutter_used`; the page it returns is then thrown away.
+
+    `look="bw"` screens each picture to ink and paper (`pages/bwlook.py`) at the size it is placed, before the lettering, so the
+    bubbles and text stay black on white; the finished page is converted to greyscale (the caption box is cream)."""
     webtoon = layout.template == "webtoon"
     page = Image.new("RGB", (layout.width, layout.height), (255, 255, 255))
     results: dict[str, LetterResult] = {}
@@ -62,7 +66,12 @@ def render_page(
         # director frames the subject near the centre.
         pic = ImageOps.fit(images[r.panel_id].convert("RGB"), (r.w, r.h), Image.Resampling.LANCZOS)
         fitted[r.panel_id] = pic
-        subjects[r.panel_id] = estimate_subject(pic)
+        subjects[r.panel_id] = estimate_subject(pic)  # on the colour picture: the saliency read is better with it
+        if look == "bw":
+            from echotales.pipeline.pages.bwlook import to_manga_bw
+
+            pic = to_manga_bw(pic).convert("RGB")
+            fitted[r.panel_id] = pic
         page.paste(pic, (r.x, r.y))
         if not webtoon:
             draw.rectangle((r.x, r.y, r.x + r.w - 1, r.y + r.h - 1), outline=INK, width=BORDER)
@@ -80,4 +89,4 @@ def render_page(
         results[r.panel_id] = letter_panel(
             page, (r.x, r.y, r.w, r.h), list(items), rtl=rtl, subject=subjects[r.panel_id], gutter_below=gutter
         )
-    return page, results
+    return (page.convert("L").convert("RGB") if look == "bw" else page), results

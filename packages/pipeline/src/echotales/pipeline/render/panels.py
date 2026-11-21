@@ -68,7 +68,7 @@ from echotales.pipeline.render.contract import (
 )
 from echotales.pipeline.render.direction import direct_beat, sanitize_prompt
 from echotales.pipeline.render.factions import qualify_role, scene_faction
-from echotales.pipeline.render.framing import (  # type: ignore[import-untyped]
+from echotales.pipeline.render.framing import (
     FramingState,
     apply_framing,
     crowd_in_scene,
@@ -141,31 +141,44 @@ def _cached_snapshot(model_id: str) -> str | None:
     return None
 
 
-def _vision_check(pending_batch: list[Any], pending_expect: dict[Any, Any], failed: list[Any]) -> list[dict[str, Any]]:
-    """The vision pass over a chapter's freshly drawn panels (`render/vision_pass.py`); `[]` when it is off.
+def _vision_skipped(reason: str) -> list[dict[str, Any]]:
+    """The one row that says the check did not run, for `vision_check.jsonl` (EVOLUTION 4.187): without it the file was
+    missing and `audit` could not tell "not checked" from "passed"."""
+    log.info("vision check skipped: %s", reason)
+    return [{"panel": "", "skipped": True, "unchecked": True, "reason": reason}]
 
-    Off means a single candidate was asked for, or no vision model is installed (said once in the log)."""
+
+def _vision_check(
+    pending_batch: list[Any], pending_expect: dict[Any, Any], failed: list[Any], panel_mode: str | None = None,
+) -> list[dict[str, Any]]:
+    """The vision pass over a chapter's freshly drawn panels (`render/vision_pass.py`).
+
+    When it is off (a single candidate was asked for, no vision model is installed, a stub run) the result is one
+    `skipped` row naming why, never `[]`, so the file records "not checked"; `[]` only when there was nothing to ask."""
     if not pending_expect:
         return []
     from echotales.pipeline.config import ModelBackend, get_settings
+    from echotales.pipeline.keyframes import qa
     from echotales.pipeline.render import vision_pass
 
     settings = get_settings()
     # A stub run (CI, no GPU, no network) never reaches for a model that happens to be installed: only an explicit
     # `render.candidates` turns the check on there.
     if settings.model_backend is ModelBackend.STUB and settings.render_candidates == 0:
-        return []
+        return _vision_skipped("stub run: the vision check runs only when render.candidates is set")
     vlm = vision_pass.choose_vlm(vision_model=settings.render_vision_model, candidates=settings.render_candidates)
     if vlm is None:
-        return []
+        if settings.render_candidates == 1:
+            return _vision_skipped("render.candidates is 1: a single candidate per panel, nothing to choose between")
+        return _vision_skipped(qa.NO_VLM_MESSAGE)
     n = vision_pass.candidates_for(settings.render_candidates, vlm)
     if n < 2:
-        return []
+        return _vision_skipped("fewer than two candidates per panel: nothing to choose between")
     drawn = {f.out_path for f in failed}
     items = [(req, secs) for req, secs in pending_batch if req.out_path not in drawn]
     checked: list[dict[str, Any]] = vision_pass.run(
         [r for r, _ in items], [s for _, s in items], pending_expect, vlm=vlm, candidates=n,
-        model_key=settings.render_image_model, greyscale=settings.render_panel_mode == "manga",
+        model_key=settings.render_image_model, greyscale=(panel_mode or settings.render_panel_mode) == "manga",
     )
     return checked
 
@@ -1562,11 +1575,26 @@ class PanelReport:
     #: second diffusion pass. See `render_panels`'s note on why this is
     #: exact-match only, not similarity-based.
     deduped_panels: int = 0
+    #: Panels the worker could not draw (and the dedupe copies of them): they stay in `manifest.jsonl` and
+    #: `panel_plan.jsonl` with no file. The CLI render returned 0 over such holes (EVOLUTION 4.181, 4.187).
+    failed: int = 0
     engine: str = "stub"
 
+    @property
+    def status(self) -> str:
+        """`ok`, `partial` (some panels have no picture) or `failed` (none was drawn), as the job runner's PARTIAL."""
+        if not self.failed:
+            return "ok"
+        return "failed" if self.failed >= self.panels else "partial"
+
     def summary(self) -> str:
+        verdict = {
+            "ok": "",
+            "partial": f"PARTIAL: {self.failed:,} of {self.panels:,} panels were not drawn; the rest are on disk\n",
+            "failed": f"FAILED: none of the {self.panels:,} panels was drawn\n",
+        }[self.status]
         return (
-            f"{self.novel_id}: {self.panels:,} panels over {self.chapters} chapters "
+            f"{verdict}{self.novel_id}: {self.panels:,} panels over {self.chapters} chapters "
             f"({self.engine})\n"
             f"  reused from cache: {self.skipped_cached:,}; "
             f"deduped against another block this run: {self.deduped_panels:,}\n"
@@ -1642,6 +1670,9 @@ def render_panels(
     observer_id: str = OBSERVER_READER,
     #: "beat" (a picture per four blocks) or "dense" (a picture per block); see `compute.DENSITY_BLOCKS_PER_PANEL`.
     density: str = "beat",
+    #: `bw` draws black-and-white manga panels (the compiler's manga mode: ink lead, mono light grade, greyscale worker pass);
+    #: `colour` forces colour; None follows `render.look` / `render.panel_mode` (colour by default). EVOLUTION 4.187.
+    look: str | None = None,
 ) -> PanelReport:
     """Render one cached panel image per story-bearing block.
 
@@ -1692,6 +1723,12 @@ def render_panels(
     import shutil
 
     engine = engine or get_engine("stub")
+    from echotales.pipeline.config import LOOKS, look_error
+    from echotales.pipeline.config import get_settings as _settings_now
+
+    if (bad_look := look_error(look)) is not None:
+        raise ValueError(bad_look)
+    _panel_mode = LOOKS[look] if look else _settings_now().render_panel_mode
     # **Reserve the engine's own quality-prefix cost up front.** NoobAI/
     # Illustrious engines prepend a `quality_prefix` ahead of everything at
     # generation time (`IllustriousEngine.generate`), inside a *second*,
@@ -2991,7 +3028,7 @@ def render_panels(
                         store, novel_id,
                         list(_beat_bodies.keys()) or list(_scene_last_present_bodies.keys()),
                         story_position, _direction, location=scene_locale_text,
-                        mode=OutputMode(get_settings().render_panel_mode), is_crowd=is_crowd_cut,
+                        mode=OutputMode(_panel_mode), is_crowd=is_crowd_cut,
                         gender_hint="male" if "male" in genders else "",
                         beat_text=beat_prose, scene=_scene_ctx,
                     )
@@ -3228,6 +3265,7 @@ def render_panels(
                         prompt_tokens_before_fit=_fit_before,
                         dropped_clauses=_fit_dropped,
                         engine=engine.name,
+                        look="bw" if _panel_mode == "manga" else "colour",
                         width=width,
                         height=height,
                         seed=seed,
@@ -3287,16 +3325,17 @@ def render_panels(
                 [req for req, _ in pending_batch],
                 [secs for _, secs in pending_batch],
                 get_settings().render_image_model,
-                greyscale=get_settings().render_panel_mode == "manga",
+                greyscale=_panel_mode == "manga",
             )
             if _failed:
                 # The cache index and digest map were filled when each panel was queued, before the worker wrote
                 # anything; a panel that never got a file must not be served as a cache hit or a dedupe source later.
                 log.warning("%d panel(s) of chapter %s were not generated", len(_failed), chapter_number)
+                report.failed += len(_failed)
                 for _req in _failed:
                     for _d in [d for d, src in generated_by_digest.items() if src == _req.out_path]:
                         del generated_by_digest[_d]
-            _rows = _vision_check(pending_batch, pending_expect, _failed)
+            _rows = _vision_check(pending_batch, pending_expect, _failed, _panel_mode)
             if _rows:
                 from echotales.pipeline.keyframes.qa import summarise, write_rows
 
@@ -3308,6 +3347,8 @@ def render_panels(
             dst.parent.mkdir(parents=True, exist_ok=True)
             if src.exists():
                 shutil.copyfile(src, dst)
+            else:
+                report.failed += 1  # a dedupe copy of a panel the worker did not draw
         pending_copies.clear()
 
     out_dir.mkdir(parents=True, exist_ok=True)

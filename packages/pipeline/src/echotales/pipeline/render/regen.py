@@ -16,8 +16,11 @@ from pathlib import Path
 from typing import Any
 
 from echotales.pipeline import paths
+from echotales.pipeline.render.compiler import CompiledPrompt
+from echotales.pipeline.render.direction import PanelDirection
 from echotales.pipeline.render.plan import (
     PANEL_PLAN_FILE,
+    PanelPlan,
     load_panel_plan,
 )
 from echotales.pipeline.render.plan import _read_choices as read_choices
@@ -96,6 +99,84 @@ def screenplay_direction(store: Any, episode_id: str, shot_index: int) -> str:
     raise PanelRegenError(f"episode {episode_id!r} has no shot {shot_index}")
 
 
+def with_direction_override(direction: PanelDirection | None, text: str) -> PanelDirection:
+    """The panel's direction record with the reviewer's edit applied.
+
+    `action` always takes it (the plain compiler paths read it there). A director-composed panel (a `composition`
+    paragraph or a code-set `frame`) is compiled from the paragraph alone and ignores `action`, so the edit replaces the
+    paragraph too; the framing sentence, staging sheet and shot stay as the director and code set them."""
+    base = direction if direction is not None else PanelDirection()
+    update = {"action": text}
+    if base.composition or base.frame:
+        update["composition"] = text
+    return base.model_copy(update=update)
+
+
+def _panel_mode_of(row: PanelPlan) -> str:
+    """The look the panel was rendered in: a black-and-white render (`render --look bw`) records `look` on its plan row, and its
+    redraw must stay black and white whatever the configured look is now."""
+    from echotales.pipeline.config import get_settings
+
+    return "manga" if row.look == "bw" else str(get_settings().render_panel_mode)
+
+
+def _compile_edited(store: Any, novel_id: str, row: PanelPlan, text: str) -> CompiledPrompt | None:
+    """Re-compile one panel with an edited direction through the same compiler path a render uses (`panels.py`: brief from
+    the cast at the panel's story position, then `compile_prompt` for the configured image model), so the identity lock, the
+    style lead and the framing are the render's, not whatever the old prompt happened to carry.
+
+    None when this panel cannot be compiled the render's way (no store given, compiler off, or the row was written by the
+    legacy assembly, `prompt_sections` None): the caller then keeps the old path."""
+    from echotales.pipeline.config import get_settings
+
+    settings = get_settings()
+    if store is None or not settings.render_prompt_compiler or row.prompt_sections is None:
+        return None
+    chapter = store.get_chapter(novel_id, row.chapter)
+    if chapter is None:
+        return None
+    from echotales.pipeline.persona.identity_lock import SceneContext
+    from echotales.pipeline.persona.reference_gen import _demographics
+    from echotales.pipeline.persona.split import persona_at
+    from echotales.pipeline.render.compiler import (
+        OutputMode,
+        brief_from_direction,
+        compile_prompt,
+        model_profile,
+    )
+    from echotales.pipeline.render.panels import beat_text, story_position_of
+    from echotales.pipeline.render.scenes import group_scenes
+
+    by_index = {b.index: b for b in chapter.blocks}
+    position = story_position_of(row.chapter, row.lead_block, len(chapter.blocks))
+    self_ids = [c.self_id for c in row.cast]
+    # `character_looks` reads the gender the same way; the hint only fills a gender the stored profile leaves unknown.
+    genders = [
+        _demographics(store, persona_at(store, sid, position), novel_id=novel_id, entity_id=sid, position=position)[0]
+        for sid in self_ids
+    ]
+    spans = store.get_spans(novel_id, row.chapter)
+    lead_text = by_index[row.lead_block].text if row.lead_block in by_index else ""
+    # The scene's own text and key, so the look lock reads what the director pass stored for this scene.
+    scene = next(
+        (sc for sc in group_scenes(
+            novel_id, chapter, store.get_mentions(novel_id, row.chapter), store.get_segments(novel_id, row.chapter), spans,
+        ) if sc.index == row.scene_index),
+        None,
+    )
+    scene_ctx = None
+    if scene is not None:
+        scene_text = " ".join(by_index[b].text for b in scene.blocks if b in by_index and by_index[b].text.strip())
+        scene_ctx = SceneContext(key=f"{row.chapter:g}:{scene.blocks[0]}", text=scene_text, client=None, novel_id=novel_id)
+    brief = brief_from_direction(
+        store, novel_id, self_ids, position, with_direction_override(row.direction, text), location=row.location,
+        mode=OutputMode(_panel_mode_of(row)), is_crowd=row.slot_kind == "crowd",
+        gender_hint="male" if "male" in genders else "",
+        beat_text=beat_text(spans, row.block_indexes, lead_text), scene=scene_ctx,
+    )
+    return compile_prompt(brief, model_profile(settings.render_image_model))
+
+
 def regenerate_panel(
     novel_id: str,
     *,
@@ -107,18 +188,23 @@ def regenerate_panel(
     version: str | None = None,
     out_dir: Path | str | None = None,
     job_id: str = "",
+    store: Any = None,
 ) -> dict[str, Any]:
-    """Draw `candidates` new pictures of one panel from its recorded prompt, the direction (if any) leading it.
+    """Draw `candidates` new pictures of one panel, from its recorded prompt or from an edited direction.
 
-    The direction goes first so `fit_to_budget` keeps it: CLIP reads 77 tokens and the recorded prompt is already
-    close to that, so an appended edit would be the first thing cut and the redraw would ignore it.
+    With a `direction` and a `store`, the edit is applied to the panel's direction record and the prompt is compiled
+    again the way a render compiles it (`_compile_edited`), and a non-stub engine draws it through the compiled worker
+    route (`compiled_route.py`): the edit passes the same identity lock, style lead and framing as every other panel
+    (EVOLUTION 4.187). Without a `store`, or for a panel the compiler cannot rebuild, the old behaviour remains: the
+    direction goes first so `fit_to_budget` keeps it (CLIP reads 77 tokens and the recorded prompt is already close to
+    that, so an appended edit would be the first thing cut and the redraw would ignore it).
     """
     from echotales.pipeline.persona.prompt import (
         _USABLE_TOKENS,
         count_tokens,
         fit_to_budget,
     )
-    from echotales.pipeline.render.panels import PanelImageRequest
+    from echotales.pipeline.render.panels import PanelImageRequest, StubImageEngine
 
     n = default_candidates() if candidates is None else int(candidates)
     if not 1 <= n <= MAX_CANDIDATES:
@@ -126,10 +212,14 @@ def regenerate_panel(
     vdir = version_dir(novel_id, chapter, version, out_dir)
     row = _panel_row(vdir, panel_id)
     direction = direction.strip()
-    prompt = row.prompt
+    prompt, negative, sections = row.prompt, row.negative_prompt, None
     if direction:
-        reserved = count_tokens(getattr(engine, "quality_prefix", "") or "")
-        prompt = fit_to_budget([direction, row.prompt], limit=max(_USABLE_TOKENS - reserved, 1))
+        compiled = _compile_edited(store, novel_id, row, direction)
+        if compiled is not None:
+            prompt, negative, sections = compiled.positive, compiled.negative, compiled.section_texts()
+        else:
+            reserved = count_tokens(getattr(engine, "quality_prefix", "") or "")
+            prompt = fit_to_budget([direction, row.prompt], limit=max(_USABLE_TOKENS - reserved, 1))
     index = _read_index(vdir, row.panel_seq)
     folder = vdir / REGEN_DIR / str(row.panel_seq)
     # Files count too: an engine error part-way through a round leaves r<N>c0.png with no index line, and numbering from
@@ -141,10 +231,23 @@ def regenerate_panel(
         target = folder / f"r{rnd}c{i}.png"
         if target.exists():  # a round number is never reused, so this means the index was lost; do not overwrite
             raise PanelRegenError(f"{target.name} already exists; refusing to overwrite a previous candidate")
-        engine.generate(PanelImageRequest(
-            prompt=prompt, out_path=target, negative_prompt=row.negative_prompt,
+        request = PanelImageRequest(
+            prompt=prompt, out_path=target, negative_prompt=negative,
             width=row.width, height=row.height, seed=row.seed + 1000 * rnd + i,
-        ))
+        )
+        if sections is not None and not isinstance(engine, StubImageEngine):
+            # A compiled prompt is whole: the render draws it with the model's worker, not through `engine.generate`
+            # (which cuts at CLIP's 77 tokens).
+            from echotales.pipeline.config import get_settings
+            from echotales.pipeline.render.compiled_route import generate_compiled_batch
+
+            settings = get_settings()
+            if generate_compiled_batch(
+                [request], [sections], settings.render_image_model, greyscale=_panel_mode_of(row) == "manga",
+            ):
+                raise PanelRegenError(f"panel {panel_id!r} candidate {i + 1} was not drawn; see the log for the worker's error")
+        else:
+            engine.generate(request)
         made.append({"id": f"r{rnd}c{i}", "file": f"{REGEN_DIR}/{row.panel_seq}/{target.name}"})
     index["rounds"].append({
         "round": rnd, "direction": direction, "prompt": prompt, "engine": getattr(engine, "name", ""),

@@ -34,11 +34,10 @@ Master carries everything below; core+pipeline 2,820 passed, 2 skipped (`-o addo
 **Open:**
 - Panel round 7 (shot variety) is in progress in a separate worktree; it will add EVOLUTION 4.182.
 - No real end-to-end run yet on Pride and Prejudice ch1-3 or RI ch1 with the current code (upload to M4B, panels, video).
-- A redraw draws from the panel's recorded prompt through `engine.generate`; it does not re-run the director or the Z-Image compiled route (`render/compiled_route.py`) (4.179).
-- `render/panels.py` CLI render with undrawn panels returns success; only Studio jobs catch it (4.181 findings, not fixed in 4.183).
-- A vision check that did not run leaves no record, so an unchecked panel is not visible afterwards (4.181 findings, not fixed in 4.183).
+- A redraw with an edited direction is recompiled through the compiler and the worker route (4.187); not run on a real engine, and its candidates are not vision-checked. A redraw with no edit still draws the recorded prompt (4.179).
 - The dead-code / `py.typed` branch is pending, not merged.
 - gemma2:9b spills about 21% to CPU at the reader's 8192 context on the 8 GB card; the owner allowed it for 2026-11-20 only (D62).
+- Black-and-white manga look (4.188) is built and unit-tested only: no real bw render, no A/B of `render --look bw` against `pages --look bw` on real panels, no Studio control for `look`.
 - Pride and Prejudice stores the genre label "Victorian gothic" (a data fact, not a code default).
 - The RI hardcase gold notes quote RI verbatim; trim before the repository goes public.
 - `npm audit`: 0 critical, 16 high remain, all in react-scripts build tooling (4.184).

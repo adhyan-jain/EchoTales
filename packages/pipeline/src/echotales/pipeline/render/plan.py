@@ -87,6 +87,9 @@ class PanelPlan(BaseModel):
     prompt_sections: list[tuple[str, str]] | None = None
 
     engine: str
+    #: `bw` for a black-and-white manga render (`render --look bw`), else `colour`: a redraw of the panel stays in its look.
+    #: Optional with a default, so rows written before it still load (no schema bump).
+    look: Literal["colour", "bw"] = "colour"
     width: int
     height: int
     seed: int

@@ -2009,13 +2009,18 @@ def check_vision(store: Store, novel_id: str, source: SourceContext | None) -> C
         vf = pf.parent / "vision_check.jsonl"
         if vf.exists():
             rows.extend(json.loads(line) for line in vf.read_text(encoding="utf-8").splitlines() if line)
+    # A render that did not run the check records why (`render/panels.py::_vision_skipped`); "not checked" is not "passed".
+    skipped = sorted({str(r.get("reason", "")) for r in rows if r.get("skipped")})
+    rows = [r for r in rows if not r.get("skipped")]
     if not rows:
-        return _skipped(chk, qa.NO_VLM_MESSAGE)
+        return _skipped(chk, f"not checked: {'; '.join(skipped)}" if skipped else qa.NO_VLM_MESSAGE)
     s = qa.summarise(rows)
     warnings = [
         f"{r['panel']}: still fails {', '.join(r.get('failed', []))} after {r.get('candidates', 1)} candidate(s)"
         for r in rows if not r.get("passed") and not r.get("unchecked")
     ]
+    if skipped:
+        warnings.append(f"some chapters were not checked: {'; '.join(skipped)}")
     return _result(
         chk, [], count_in=s["panels_checked"], count_out=sum(bool(r.get("passed")) for r in rows if not r.get("unchecked")),
         unit="panels", warnings=warnings[:MAX_LISTED], stats=s,

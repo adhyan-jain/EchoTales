@@ -121,7 +121,7 @@ PROFILES["z-image-turbo"] = ModelProfile(
 def default_model() -> str:
     """The configured image model (`render.image_model`: Z-Image Turbo since D58). This used to be a constant "noobai-xl-1.1",
     so a bare `compile_prompt(brief)` wrote NoobAI tags although every real render is Z-Image (EVOLUTION 4.171)."""
-    from echotales.pipeline.config import get_settings  # type: ignore[import-untyped]
+    from echotales.pipeline.config import get_settings
 
     return str(get_settings().render_image_model)
 
@@ -130,7 +130,7 @@ def model_profile(key: str | None = None) -> ModelProfile:
     """The profile for `key`, or for the configured image model when none is given. A key the engine registry
     (`pipeline/engines/registry.py`) does not list on the compiler surface raises, because a typo silently rendering with another
     model would make a model comparison meaningless."""
-    from echotales.pipeline.engines import registry  # type: ignore[import-untyped]
+    from echotales.pipeline.engines import registry
 
     chosen = (key or default_model()).strip().lower()
     if chosen not in registry.compiler_profiles() or chosen not in PROFILES:
@@ -726,7 +726,6 @@ def _compile_natural(b: PanelBrief, profile: ModelProfile, appearance: Appearanc
     )
 
 
-_MANGA_LEAD = "Black and white manga panel, screentone shading, bold ink linework."
 
 
 def _compile_composed(b: PanelBrief, profile: ModelProfile, appearance: AppearanceInText) -> CompiledPrompt:
@@ -739,7 +738,7 @@ def _compile_composed(b: PanelBrief, profile: ModelProfile, appearance: Appearan
     nothing scene-dependent is in them; wounds and clothing state live in the paragraph, which comes from the panel's text.
     Setting clauses the paragraph already says are not repeated."""
     from echotales.pipeline.persona.genre import style_lead
-    lead = _MANGA_LEAD if b.mode is OutputMode.MANGA else style_lead(b.novel_id, people=b.frame_focus != "prop")
+    lead = style_lead(b.novel_id, people=b.frame_focus != "prop", look="bw" if b.mode is OutputMode.MANGA else "colour")
     s = [PromptSection("style", lead)]
     # The framing comes straight after the style lead: Z-Image has no CFG, so the shot named first and plainly is the shot drawn.
     # Before this the compiled prompt never named a shot (16 of 16 LotM panels were one medium shot, EVOLUTION 4.171).
@@ -756,7 +755,7 @@ def _compile_composed(b: PanelBrief, profile: ModelProfile, appearance: Appearan
     stage = PromptSection("staging", staging_text) if staging_text else None
     cropped = b.composition.strip()
     if b.shot == "close" and b.frame_focus in ("", "eyes", "hands"):
-        from echotales.pipeline.render.framing import (  # type: ignore[import-untyped]
+        from echotales.pipeline.render.framing import (
             crop_composition,
         )
 
@@ -1123,7 +1122,7 @@ def brief_from_direction(
 
     The crowd comes from the director's layout and the crowd-cut flag, never from the headcount tag: the old path wrote
     "solo" because nothing here knew a crowd existed."""
-    from echotales.pipeline.render.lightgrade import light_grade  # type: ignore[import-untyped]
+    from echotales.pipeline.render.lightgrade import light_grade
 
     art, wardrobe, manhua = genre_direction(novel_id)
     d = direction
@@ -1182,7 +1181,7 @@ def brief_from_direction(
         chars, crowd = [], None
     lead_face = ""
     if chars and composition:
-        from echotales.pipeline.render.face import (  # type: ignore[import-untyped]
+        from echotales.pipeline.render.face import (
             drop_calm_clause,
             infer_expression,
             is_neutral,
@@ -1217,7 +1216,7 @@ def brief_from_direction(
         empty_hands=bool(chars) and not props and not _HOLDS.search(f"{passage} {composition} {getattr(d, 'staging', '') or ''}"),
         grade=light_grade(
             (getattr(d, "staging", "") or "") if composition else "", getattr(d, "lighting", "") or "", passage,
-            f"{location} {getattr(d, 'setting', '')} {loc_detail}", composition, mood=mood,
+            f"{location} {getattr(d, 'setting', '')} {loc_detail}", composition, mood=mood, mono=mode is OutputMode.MANGA,
         ),
     )
 

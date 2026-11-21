@@ -27,6 +27,20 @@ _SENTENCE = {
     "day": "Natural daylight with clear soft shadows.",
     "bright": "Bright luminous light with a soft glow.",
 }
+#: The same grades for a black-and-white panel (`render --look bw`): the light and the shadow, no colour word. The colour sentences say
+#: "warm rim light", "desaturated and cool" and "colour grade", which a monochrome page either ignores or answers with a tint.
+_SENTENCE_MONO = {
+    "low": ("Low-key lighting: deep shadows swallow most of the frame, the subject lit only by the stated light source with a "
+            "thin rim light, heavy solid black shadows, dim and never bright or evenly lit."),
+    "dusk": "Low sun: long hard shadows, a strong rim light on the subject and deep black shadows.",
+    "soft": "Soft overcast light: diffuse and flat, with atmospheric depth in the distance.",
+    "day": "Natural daylight with clear soft shadows.",
+    "bright": "Bright luminous light with a soft glow.",
+}
+_MOOD_MONO = (
+    (("horror", "ominous", "eerie", "sinister", "dread", "uncanny", "menac"), "an ominous atmosphere of heavy black shadow"),
+    (("grim", "somber", "sombre", "sad", "grief", "tragic", "hopeless"), "a bleak, heavy-shadow atmosphere"),
+)
 _MOOD = (
     (("horror", "ominous", "eerie", "sinister", "dread", "uncanny", "menac"), "an ominous colour grade with deep red and sickly green accents"),
     (("grim", "somber", "sombre", "sad", "grief", "tragic", "hopeless"), "a muted cold blue-grey grade"),
@@ -51,8 +65,9 @@ def _kind(text: str) -> str:
     return ""
 
 
-def light_grade(*fields: str, mood: str = "") -> str:
-    """The grading sentence for the first field that states a light, plus a mood accent; "" when the text states none."""
+def light_grade(*fields: str, mood: str = "", mono: bool = False) -> str:
+    """The grading sentence for the first field that states a light, plus a mood accent; "" when the text states none.
+    `mono` swaps in the colour-free wording for a black-and-white panel."""
     kind = ""
     for f in fields:
         # A staging sheet's own "Light:" clause is the statement; the rest of the sheet (Set:, Blocking:) comes later in priority.
@@ -65,11 +80,11 @@ def light_grade(*fields: str, mood: str = "") -> str:
             kind = _kind(f)
             if kind:
                 break
-    out = _SENTENCE.get(kind, "")
+    out = (_SENTENCE_MONO if mono else _SENTENCE).get(kind, "")
     mood_l = (mood or "").lower()
-    accent = next((a for words, a in _MOOD if any(w in mood_l for w in words)), "")
+    accent = next((a for words, a in (_MOOD_MONO if mono else _MOOD) if any(w in mood_l for w in words)), "")
     if accent and out:
         out = out.rstrip(".") + f", {accent}."
     elif accent:
-        out = f"Colour grade: {accent}."
+        out = f"Atmosphere: {accent}." if mono else f"Colour grade: {accent}."
     return out

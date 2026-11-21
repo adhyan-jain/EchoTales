@@ -1220,6 +1220,7 @@ def cmd_render(args: argparse.Namespace) -> int:
                 client=director_client,
                 max_panels=max_panels,
                 density=getattr(args, "density", "beat"),
+                look=getattr(args, "look", None),
                 block_range=block_range,
                 prompt_cache_path=cache_path,
                 version=_version,
@@ -1245,6 +1246,7 @@ def cmd_render(args: argparse.Namespace) -> int:
                 client=None,
                 max_panels=max_panels,
                 density=getattr(args, "density", "beat"),
+                look=getattr(args, "look", None),
                 block_range=block_range,
                 prompt_cache_path=cache_path,
                 version=_version,
@@ -1266,10 +1268,18 @@ def cmd_render(args: argparse.Namespace) -> int:
                 client=director_client,
                 max_panels=max_panels,
                 density=getattr(args, "density", "beat"),
+                look=getattr(args, "look", None),
                 block_range=block_range,
                 observer_id=getattr(args, "observer", OBSERVER_READER),
             )
         print(report.summary())
+        if report.status != "ok":
+            # The motion and compose stages read the manifest, which still lists the panels with no file, so they would
+            # fail on "image missing" anyway; stop here with the verdict. 1 = none drawn, 3 = some drawn (the job
+            # runner's PARTIAL, EVOLUTION 4.181).
+            print(f"render {report.status.upper()}: {report.failed} of {report.panels} panels have no picture", file=sys.stderr)
+            store.close()
+            return 1 if report.status == "failed" else 3
 
     if not args.skip_motion:
         report = build_motion_library(
@@ -1461,11 +1471,13 @@ def cmd_estimate(args: argparse.Namespace) -> int:
 
 def cmd_pages(args: argparse.Namespace) -> int:
     """Manga, comic or webtoon pages from each chapter's latest rendered panels."""
-    from echotales.pipeline.pages.build import build_pages, parse_exports
+    from echotales.pipeline.pages.build import build_pages, parse_exports, resolve_format
     from echotales.pipeline.render.anime import AnimeRefusal
 
     store = _open_store(args)
     try:
+        look = getattr(args, "look", "colour")
+        fmt = resolve_format(getattr(args, "format", None), look)
         exports = parse_exports(args.export)
         numbers = store.chapter_numbers(args.novel)
         if selected := _chapter_range(args.chapters):
@@ -1477,8 +1489,8 @@ def cmd_pages(args: argparse.Namespace) -> int:
                   f"(`echotales render --novel {args.novel}`)", file=sys.stderr)
             return 2
         built = build_pages(
-            store, args.novel, chapters, fmt=args.format, exports=exports,
-            panel_dir=args.panel_dir, out_root=args.out, suffix=args.suffix,
+            store, args.novel, chapters, fmt=fmt, exports=exports,
+            panel_dir=args.panel_dir, out_root=args.out, suffix=args.suffix, look=look,
         )
     except (AnimeRefusal, ValueError, FileNotFoundError) as exc:
         print(f"refusing: {exc}", file=sys.stderr)
