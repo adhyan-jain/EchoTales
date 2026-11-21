@@ -222,6 +222,16 @@ def test_cost_route_says_when_the_episode_is_an_assumed_one(live_server: LivePor
     assert status == 200 and body["assumed_episode"] is True and body["num_shots"] == 12
 
 
+def test_render_generate_drops_server_owned_params(live_server: LivePort) -> None:  # noqa: F811
+    """`render/generate` handed the raw body to the job, so a request could name `panel_dir` (a server folder)."""
+    assert TestUploadSafety._create(live_server, "sg")[0] == 201
+    body = json.dumps({"engine": "stub", "panel_dir": "/tmp/echotales-escape"}).encode()
+    status, queued = _request(live_server, "POST", "/api/novels/sg/render/generate", body=body)
+    assert status == 202
+    job = live_server.registry.handles["sg"].store.get_job(queued["job_id"])
+    assert "panel_dir" not in json.loads(job.params_json)
+
+
 class TestRepeatedJobsDoWork:
     """A second identical Studio render/voice request must run again: its inputs (bible, screenplay, panels) change
     between identical params, and a skipped job reports SUCCEEDED with no new output."""
