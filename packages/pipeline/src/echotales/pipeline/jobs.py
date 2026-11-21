@@ -214,6 +214,21 @@ def _studio_version(out_dir: Path, chapters: list[float], engine_name: str, dens
     return f"v{highest}_{engine_name}-studio" + ("-dense" if density == "dense" else "")
 
 
+def _missing_panel_images(out_dir: Path, chapters: list[float], version: str) -> list[str]:
+    """Panels the version's plan names whose picture is not on disk. The image worker skips a panel that fails alone
+    (`compiled_route.generate_compiled_batch`) and the render still returns, so without this check the job read
+    SUCCEEDED over a chapter with holes that pages and the video then fail on."""
+    from echotales.pipeline.render.plan import PANEL_PLAN_FILE, load_panel_plan
+
+    missing: list[str] = []
+    for c in chapters:
+        vdir = out_dir / f"ch{c:g}" / version
+        if not (vdir / PANEL_PLAN_FILE).is_file():
+            continue
+        missing += [p.panel_id for p in load_panel_plan(vdir, apply_choices=False) if not (vdir / p.image_path).is_file()]
+    return missing
+
+
 def _record_studio_version(out_dir: Path, chapters: list[float], version: str, engine_name: str, job_id: str) -> None:
     what = (
         "placeholder panels from the stub engine, not a real render"
@@ -226,6 +241,16 @@ def _record_studio_version(out_dir: Path, chapters: list[float], version: str, e
         if (chapter_dir / version).is_dir():
             with open(chapter_dir / "VERSIONS.md", "a", encoding="utf-8") as fh:
                 fh.write(line)
+
+
+def _render_and_check(render: Callable[[], Any], out_dir: Path, chapters: list[float], version: str) -> Any:
+    result = render()
+    if missing := _missing_panel_images(out_dir, chapters, version):
+        raise PartialStageFailure(
+            f"{len(missing)} panel(s) were not drawn (e.g. {missing[0]}); the rest are in {version}",
+            progress=f"{len(missing)} missing",
+        )
+    return result
 
 
 VIDEO_ENGINES = engine_registry.names("video", surface="anime-video")
@@ -643,24 +668,30 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
         if (bad := density_error(density)) is not None:
             raise ValueError(bad)
         version = _studio_version(Path(out_dir), wanted, engine_name, density)
-        run_stage(
-            store, run_id=pipeline_run.run_id, stage_name="render",
-            input_digest=input_digest,
-            # A repeat is a new version of the chapter, never a skip: the bible and direction behind identical params
-            # change, and a skipped job read SUCCEEDED with no new folder (review 2026-11-21).
-            skip_if_succeeded=False,
-            fn=lambda: render_panels(
-                novel_id, store,
-                out_dir=out_dir,
-                engine=get_engine(engine_name),
-                chapters=chapters,
-                seed=params.get("seed", 20260812),
-                max_panels=max_panels,
-                version=version,
-                density=density,
-            ),
-        )
-        _record_studio_version(Path(out_dir), wanted, version, engine_name, job.job_id)
+        try:
+            run_stage(
+                store, run_id=pipeline_run.run_id, stage_name="render",
+                input_digest=input_digest,
+                # A repeat is a new version of the chapter, never a skip: the bible and direction behind identical params
+                # change, and a skipped job read SUCCEEDED with no new folder (review 2026-11-21).
+                skip_if_succeeded=False,
+                fn=lambda: _render_and_check(
+                    lambda: render_panels(
+                        novel_id, store,
+                        out_dir=out_dir,
+                        engine=get_engine(engine_name),
+                        chapters=chapters,
+                        seed=params.get("seed", 20260812),
+                        max_panels=max_panels,
+                        version=version,
+                        density=density,
+                    ),
+                    Path(out_dir), wanted, version,
+                ),
+            )
+        finally:
+            # Also after a partial render: the version folder exists and the convention wants its VERSIONS.md line.
+            _record_studio_version(Path(out_dir), wanted, version, engine_name, job.job_id)
     elif job.kind == "voice":
         from echotales.pipeline import paths
         from echotales.pipeline.voice import get_engine as get_voice_engine
