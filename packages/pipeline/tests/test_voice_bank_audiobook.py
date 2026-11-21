@@ -79,6 +79,15 @@ def test_hifitts_gender_comes_from_the_published_table_and_unknown_speakers_are_
     assert (bank.bank_id, bank.licence) == ("hifitts", "CC BY 4.0")
 
 
+def test_hifitts_with_both_tiers_of_one_speaker_gives_one_clean_voice(tmp_path: Path) -> None:
+    """`92_clean` and `92_other` made two voices with one id; a dict by id kept either (EVOLUTION 4.183)."""
+    _hifitts(tmp_path)
+    _tone(tmp_path / "audio" / "92_other" / "10349" / "a_0001.flac", 10.0, 44100)
+    voices = load_hifitts(tmp_path).voices
+    assert [v.speaker_id for v in voices].count("hifitts92") == 1
+    assert next(v for v in voices if v.speaker_id == "hifitts92").region == "clean"
+
+
 def test_hifitts_table_is_six_female_four_male() -> None:
     genders = [g for g, _ in HIFITTS_SPEAKERS.values()]
     assert (genders.count("female"), genders.count("male")) == (6, 4)
