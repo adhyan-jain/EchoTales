@@ -633,7 +633,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_pages.add_argument("--novel", required=True)
     p_pages.add_argument("--chapters", help="range, e.g. 1-3; default: every chapter that has rendered panels")
-    p_pages.add_argument("--format", default="manga", choices=["manga", "comic", "webtoon"])
+    p_pages.add_argument("--format", default="webtoon", choices=["manga", "comic", "webtoon"])
     p_pages.add_argument("--export", default="png", help="comma-separated: png,pdf,cbz (default: png)")
     p_pages.add_argument("--suffix", default=None, help="version suffix, e.g. v1_<suffix>; default: the format")
     p_pages.add_argument("--panel-dir", default=None, help="default: data/novels/<CODE>/panels")

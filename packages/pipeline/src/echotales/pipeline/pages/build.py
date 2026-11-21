@@ -12,7 +12,7 @@ import json
 import time
 from collections import defaultdict
 from collections.abc import Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 
 from echotales.core.enums import SpanType
@@ -32,7 +32,11 @@ from echotales.pipeline.pages.render import render_page
 from echotales.pipeline.render.anime import latest_panels_version
 from echotales.pipeline.render.director import _delivery_intensity
 from echotales.pipeline.render.plan import PanelPlan, load_panel_plan
-from echotales.pipeline.spans.delivery import DeliveryPolarity, dominant_polarity, extract_delivery_markers
+from echotales.pipeline.spans.delivery import (
+    DeliveryPolarity,
+    dominant_polarity,
+    extract_delivery_markers,
+)
 from echotales.pipeline.voice.delivery import strip_enclosing_quotes
 from PIL import Image
 
@@ -157,17 +161,31 @@ def build_chapter_pages(
         omitted += om
     roles = assign_roles(facts)
     composer_panels = [
-        ComposerPanel(p.panel_id, r, *images[p.panel_id].size) for p, r in zip(plans, roles, strict=True)
+        ComposerPanel(p.panel_id, r, *images[p.panel_id].size, scene_index=p.scene_index)
+        for p, r in zip(plans, roles, strict=True)
     ]
     layouts = compose_pages(composer_panels, fmt)
+    if fmt == "webtoon":
+        # The strip's gutters depend on how much lettering each panel pushes off the picture, which
+        # depends on the panel's size. Letter once with a generous strip to measure it, then lay the
+        # strip out with exactly that much room (4.185).
+        _, probe = render_page(layouts[0], images, lettering, rtl=False, probe_gutters=True)
+        composer_panels = [
+            replace(cp, letter_gap=probe[cp.panel_id].gutter_used if cp.panel_id in probe else 0) for cp in composer_panels
+        ]
+        layouts = compose_pages(composer_panels, fmt)
 
     rtl = fmt == "manga"
     rendered: list[Image.Image] = []
     overflow = [_overflow_row(o, None) for o in omitted]
+    fonts: list[int] = []
+    in_gutter = 0
     for layout in layouts:
         page, results = render_page(layout, images, lettering, rtl=rtl)
         for panel_id, res in results.items():
             overflow += [_overflow_row(o, panel_id) for o in res.overflow]
+            fonts += [p.font_size for p in res.placed if p.style != "sfx"]
+            in_gutter += sum(1 for p in res.placed if p.in_gutter)
         rendered.append(page)
     if fmt == "webtoon":
         rendered = split_strip(rendered[0], layouts[0])
@@ -187,6 +205,9 @@ def build_chapter_pages(
             {
                 "novel": novel_id, "chapter": chapter, "format": fmt, "panels_version": version_dir.name,
                 "pages": len(rendered), "files": [f.name for f in files], "overflow": overflow,
+                # Legibility and placement as drawn: smallest font in px at the export size, and how many
+                # bubbles had no clear spot on the picture and went to the gutter instead.
+                "min_font_px": min(fonts) if fonts else None, "gutter_bubbles": in_gutter,
             },
             indent=2,
         ),
