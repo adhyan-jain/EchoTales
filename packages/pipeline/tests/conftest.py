@@ -79,3 +79,16 @@ def _settings_cache_is_per_test(_clean_settings_environment):  # type: ignore[no
     config.get_settings(reload=True)
     yield
     config.get_settings(reload=True)
+
+
+@pytest.fixture(autouse=True)
+def _video_encoder_is_cpu_in_tests(monkeypatch):  # type: ignore[no-untyped-def]
+    """Unit tests encode on libx264 and never touch the GPU: NVENC is probed and used on a real run (hwaccel.py), but a
+    suite that took an encode session on every real-ffmpeg test would compete with a render on the same card.
+    `test_hwaccel.py` clears this to test the probe itself."""
+    from echotales.pipeline import hwaccel
+
+    monkeypatch.setenv("ECHOTALES_VIDEO_ENCODER", "libx264")
+    hwaccel.video_encoder.cache_clear()
+    yield
+    hwaccel.video_encoder.cache_clear()

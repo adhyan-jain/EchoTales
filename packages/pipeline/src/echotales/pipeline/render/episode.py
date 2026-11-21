@@ -36,6 +36,7 @@ from echotales.pipeline import paths
 from echotales.pipeline.comic.build import _card, _pan_value, camera_window
 from echotales.pipeline.comic.inpaint import srt_text
 from echotales.pipeline.compositor.camera import compute_camera_trajectory
+from echotales.pipeline.hwaccel import h264_args
 from echotales.pipeline.render.anime import AnimeRefusal, _load_timing, latest_panels_version
 from echotales.pipeline.render.director import _delivery_intensity
 from echotales.pipeline.render.plan import PanelPlan, load_panel_plan
@@ -586,7 +587,7 @@ def compose_episode(
     video = out_dir / "episode.mp4"
     cmd = ["ffmpeg", "-y", "-loglevel", "error", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{size[0]}x{size[1]}",
            "-r", str(fps), "-i", "-", "-i", str(wav), "-i", str(srt), "-i", str(meta), "-map", "0:v", "-map", "1:a",
-           "-map", "2:s", "-map_chapters", "3", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "20", "-c:a", "aac",
+           "-map", "2:s", "-map_chapters", "3", *h264_args(), "-c:a", "aac",
            "-b:a", "160k", "-c:s", "mov_text", "-metadata", f"title={book} - Episode {chapter:g}",
            "-frames:v", str(total_frames), "-t", f"{total:.3f}", str(video)]
     proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)

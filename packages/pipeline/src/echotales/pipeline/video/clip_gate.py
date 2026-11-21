@@ -61,6 +61,8 @@ MAX_SPIKE_RATIO = 3.5
 DRIFT_FRAMES = 8
 CLIP_MODEL = "openai/clip-vit-large-patch14"
 MIN_DRIFT_SIM = 0.80
+#: Free VRAM CLIP ViT-L/14 in fp16 needs (weights about 0.9 GB plus a small batch of activations).
+MIN_FREE_BYTES = int(1.5 * 2**30)
 
 Embedder = Callable[[list[Image.Image]], np.ndarray]
 
@@ -68,8 +70,10 @@ Embedder = Callable[[list[Image.Image]], np.ndarray]
 class ClipImageEmbedder:
     """CLIP ViT-L/14 image embeddings from the local Hugging Face cache, loaded on first use and freed by `close`.
 
-    GPU only when nothing else holds the card (`gpu.gpu_status()` under the owner's 500 MiB line; the gate runs
-    after the video worker process has exited), otherwise CPU. Never downloads.
+    On CUDA whenever there is a device with room for it (fp16 ViT-L is about 0.9 GB; jobs run one at a time and the
+    gate runs after the video worker process has exited), the CPU only with no CUDA or under 1.5 GB free (an out-of-memory guard, not a preference). Was "GPU only under a
+    500 MiB busy line", which sent the whole gate to the CPU whenever ollama still held its model (owner rule
+    2026-11-22: heavy work on the GPU). Never downloads.
     """
 
     def __init__(self) -> None:
@@ -79,11 +83,9 @@ class ClipImageEmbedder:
 
     def _load(self) -> None:
         import torch
-        from echotales.pipeline import gpu
         from transformers import CLIPModel, CLIPProcessor
 
-        status = gpu.gpu_status()
-        self.device = "cuda" if status is not None and status.used_mb <= 500 and torch.cuda.is_available() else "cpu"
+        self.device = "cuda" if torch.cuda.is_available() and torch.cuda.mem_get_info()[0] >= MIN_FREE_BYTES else "cpu"
         dtype = torch.float16 if self.device == "cuda" else torch.float32
         self._proc = CLIPProcessor.from_pretrained(CLIP_MODEL, local_files_only=True)
         self._model = CLIPModel.from_pretrained(CLIP_MODEL, local_files_only=True, torch_dtype=dtype).to(self.device).eval()

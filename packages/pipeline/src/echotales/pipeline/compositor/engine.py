@@ -27,6 +27,7 @@ from echotales.pipeline.compositor.manga import (
     generate_camera_shake_offsets,
     render_onomatopoeia_overlay,
 )
+from echotales.pipeline.hwaccel import h264_args
 from echotales.pipeline.screenplay.schema import CameraMove
 
 
@@ -241,15 +242,7 @@ def compose_shot_2_5d(
         cmd.extend(["-f", "lavfi", "-i", "anullsrc=channel_layout=stereo:sample_rate=24000"])
         cmd.extend(["-c:a", "aac", "-t", str(spec.duration_s)])
 
-    cmd.extend([
-        "-c:v",
-        "libx264",
-        "-pix_fmt",
-        "yuv420p",
-        "-preset",
-        "ultrafast",
-        str(out_video_path),
-    ])
+    cmd.extend([*h264_args(preset="ultrafast"), str(out_video_path)])
 
     subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
     return str(out_video_path)

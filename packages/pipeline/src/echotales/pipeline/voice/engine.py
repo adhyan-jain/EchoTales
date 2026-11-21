@@ -107,7 +107,10 @@ class ChatterboxEngine:
     def _ensure_model(self) -> object:
         if self._model is None:
             from chatterbox.tts import ChatterboxTTS
+            from echotales.pipeline.hwaccel import pick_device
 
+            # cuda stays cuda; only a machine with no CUDA at all drops to cpu, instead of dying in the loader.
+            self.device = pick_device(self.device)
             self._model = ChatterboxTTS.from_pretrained(device=self.device)
             self.sample_rate = getattr(self._model, "sr", self.sample_rate)
         return self._model

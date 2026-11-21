@@ -29,6 +29,7 @@ from datetime import date
 from pathlib import Path
 
 from echotales.pipeline import paths
+from echotales.pipeline.hwaccel import h264_args
 from echotales.pipeline.render.captions import build_captions, write_ass
 from echotales.pipeline.render.compose import (
     OUTPUT_FPS,
@@ -471,13 +472,13 @@ def render_shots(
         _run_ffmpeg([
             "-i", str(clip_path), "-an", "-frames:v", str(want),
             "-vf", f"scale={width}:{height}:force_original_aspect_ratio=increase,crop={width}:{height},fps={OUTPUT_FPS}",
-            "-pix_fmt", "yuv420p", str(clip_seg),
+            *h264_args(), str(clip_seg),
         ])
         got = count_frames(clip_seg)
         rest = n - got
         if rest < 0:  # the re-timed clip ran past its shot: cut it to the shot
             trimmed = segs_dir / f"{base}_clip_trim.mp4"
-            _run_ffmpeg(["-i", str(clip_seg), "-frames:v", str(n), "-pix_fmt", "yuv420p", str(trimmed)])
+            _run_ffmpeg(["-i", str(clip_seg), "-frames:v", str(n), *h264_args(), str(trimmed)])
             clip_seg, got, rest = trimmed, count_frames(trimmed), 0
         o.clip_frames, o.hold_frames, o.frames = got, rest, got + rest
         if s.mode is ShotMode.INTERPOLATE and s.end_panel_id:
@@ -496,10 +497,10 @@ def render_shots(
                 "-i", str(clip_path), "-an", "-filter_complex",
                 f"[0:v]split[f][r];[r]trim=start_frame=1:end_frame={last_i},setpts=PTS-STARTPTS,reverse[rr];"
                 f"[f][rr]concat=n=2:v=1:a=0,{fit}[o]",
-                "-map", "[o]", "-pix_fmt", "yuv420p", str(period),
+                "-map", "[o]", *h264_args(), str(period),
             ])
             looped = segs_dir / f"{base}_loop.mp4"
-            _run_ffmpeg(["-stream_loop", "-1", "-i", str(period), "-frames:v", str(n), "-pix_fmt", "yuv420p", str(looped)])
+            _run_ffmpeg(["-stream_loop", "-1", "-i", str(period), "-frames:v", str(n), *h264_args(), str(looped)])
             clip_seg.unlink()
             segment_paths.append(looped)
             measured.append(count_frames(looped))
