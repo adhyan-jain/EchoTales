@@ -154,3 +154,26 @@ def test_routes_list_queue_and_choose(server):
     assert status == 400 and err["error"] == "chapter must be a number"
     assert _call(port, "POST", "/api/novels/t/panels/choose", {"chapter": "abc", "panel_id": panel["panel_id"], "candidate_id": "r1c0"})[0] == 400
     assert _call(port, "GET", "/api/novels/zzz/panels?chapter=1")[0] == 404
+
+
+def test_a_redraw_that_fails_midway_does_not_block_the_next_one(rendered):
+    """An engine error on the second candidate left r1c0.png on disk with no index line; the next redraw reused
+    round 1 and refused to overwrite, so the panel could never be redrawn again."""
+    store, vdir = rendered
+    row = load_panel_plan(vdir)[0]
+
+    class Flaky:
+        name = "flaky"
+        calls = 0
+
+        def generate(self, req):
+            Flaky.calls += 1
+            if Flaky.calls == 2:
+                raise RuntimeError("out of memory")
+            req.out_path.parent.mkdir(parents=True, exist_ok=True)
+            req.out_path.write_bytes(b"png")
+
+    with pytest.raises(RuntimeError):
+        regen.regenerate_panel("t", chapter=1.0, panel_id=row.panel_id, engine=Flaky(), candidates=2)
+    out = regen.regenerate_panel("t", chapter=1.0, panel_id=row.panel_id, engine=Flaky(), candidates=1)
+    assert out["round"] == 2

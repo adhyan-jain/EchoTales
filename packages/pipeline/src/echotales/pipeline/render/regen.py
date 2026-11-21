@@ -131,8 +131,11 @@ def regenerate_panel(
         reserved = count_tokens(getattr(engine, "quality_prefix", "") or "")
         prompt = fit_to_budget([direction, row.prompt], limit=max(_USABLE_TOKENS - reserved, 1))
     index = _read_index(vdir, row.panel_seq)
-    rnd = 1 + max((int(r["round"]) for r in index["rounds"]), default=0)
     folder = vdir / REGEN_DIR / str(row.panel_seq)
+    # Files count too: an engine error part-way through a round leaves r<N>c0.png with no index line, and numbering from
+    # the index alone reused N and then refused to overwrite, so that panel could never be redrawn again.
+    on_disk = (int(m.group(1)) for f in folder.glob("r*c*.png") if (m := re.fullmatch(r"r(\d+)c\d+\.png", f.name)))
+    rnd = 1 + max([*(int(r["round"]) for r in index["rounds"]), *on_disk], default=0)
     made: list[dict[str, str]] = []
     for i in range(n):
         target = folder / f"r{rnd}c{i}.png"
