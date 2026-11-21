@@ -149,4 +149,8 @@ def test_routes_list_queue_and_choose(server):
     assert _call(port, "GET", "/api/novels/t/panels?chapter=1")[1]["panels"][0]["chosen"] == "r1c0"
     assert _call(port, "POST", "/api/novels/t/panels/choose", {"chapter": 1, "panel_id": panel["panel_id"], "candidate_id": "nope"})[0] == 400
     assert _call(port, "GET", "/api/novels/t/panels?chapter=7")[0] == 400
+    # A missing or non-numeric chapter is a client error with a reason, not a crash.
+    status, err = _call(port, "POST", "/api/novels/t/panels/choose", {"panel_id": panel["panel_id"], "candidate_id": "r1c0"})
+    assert status == 400 and err["error"] == "chapter must be a number"
+    assert _call(port, "POST", "/api/novels/t/panels/choose", {"chapter": "abc", "panel_id": panel["panel_id"], "candidate_id": "r1c0"})[0] == 400
     assert _call(port, "GET", "/api/novels/zzz/panels?chapter=1")[0] == 404

@@ -1936,7 +1936,7 @@ def make_handler(
                     if registry.handles.get(parts[2]) is None:
                         return self._json(404, {"error": f"unknown novel {parts[2]!r}"})
                     query = parse_qs(urlparse(self.path).query)
-                    from echotales.pipeline.render import regen
+                    from echotales.pipeline.render import regen  # type: ignore[import-untyped]
 
                     try:
                         listing = regen.list_panels(
@@ -2395,9 +2395,16 @@ def make_handler(
                     body = self._read_json()
                     from echotales.pipeline.render import regen
 
+                    raw_chapter = body.get("chapter")
+                    if raw_chapter is None:  # a missing chapter is a client error, not a crash in float()
+                        return self._json(400, {"error": "chapter must be a number"})
+                    try:
+                        chapter = float(raw_chapter)
+                    except (TypeError, ValueError):
+                        return self._json(400, {"error": "chapter must be a number"})
                     try:
                         picked = regen.choose_candidate(
-                            parts[2], chapter=float(body.get("chapter")), panel_id=str(body.get("panel_id") or ""),
+                            parts[2], chapter=chapter, panel_id=str(body.get("panel_id") or ""),
                             candidate_id=str(body.get("candidate_id") or ""), version=body.get("version") or None,
                         )
                     except (ValueError, TypeError) as exc:

@@ -15,8 +15,11 @@ import time
 from pathlib import Path
 from typing import Any
 
-from echotales.pipeline import paths
-from echotales.pipeline.render.plan import PANEL_PLAN_FILE, load_panel_plan
+from echotales.pipeline import paths  # type: ignore[import-untyped]
+from echotales.pipeline.render.plan import (  # type: ignore[import-untyped]
+    PANEL_PLAN_FILE,
+    load_panel_plan,
+)
 from echotales.pipeline.render.plan import _read_choices as read_choices
 
 CHOICES_FILE = "panel_choices.json"
@@ -33,7 +36,7 @@ class PanelRegenError(ValueError):
 
 
 def default_candidates() -> int:
-    from echotales.pipeline.config import get_settings
+    from echotales.pipeline.config import get_settings  # type: ignore[import-untyped]
 
     configured = int(get_settings().render_candidates or 0)
     return min(max(configured, 1), MAX_CANDIDATES) if configured else DEFAULT_CANDIDATES
@@ -110,8 +113,12 @@ def regenerate_panel(
     The direction goes first so `fit_to_budget` keeps it: CLIP reads 77 tokens and the recorded prompt is already
     close to that, so an appended edit would be the first thing cut and the redraw would ignore it.
     """
-    from echotales.pipeline.persona.prompt import _USABLE_TOKENS, count_tokens, fit_to_budget
-    from echotales.pipeline.render.panels import PanelImageRequest
+    from echotales.pipeline.persona.prompt import (  # type: ignore[import-untyped]
+        _USABLE_TOKENS,
+        count_tokens,
+        fit_to_budget,
+    )
+    from echotales.pipeline.render.panels import PanelImageRequest  # type: ignore[import-untyped]
 
     n = default_candidates() if candidates is None else int(candidates)
     if not 1 <= n <= MAX_CANDIDATES:
