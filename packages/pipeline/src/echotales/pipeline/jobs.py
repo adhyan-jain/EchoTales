@@ -330,6 +330,17 @@ def _run_voice_audition(novel_id: str, params: dict[str, Any]) -> None:
         raise ValueError(f"voice_audition target must be 'narrator' or 'line', not {target!r}")
 
 
+def _refuse_stub_audio(audio_dir: Any, params: dict[str, Any]) -> None:
+    """Stub audio is silent, so a video or episode made from it would finish SUCCEEDED with no sound (4.183). Same
+    message as the M4B export; allowed when the person says so (`allow_stub`) or the whole run is in stub mode
+    (`ECHOTALES_LLM_MODE=stub`, how CI and `make demo` run)."""
+    from echotales.pipeline.config import LLMMode, get_settings
+    from echotales.pipeline.voice.export import engine_of
+
+    if engine_of(Path(audio_dir)) == "stub" and not params.get("allow_stub") and get_settings().llm_mode is not LLMMode.STUB:
+        raise ValueError("the audio in this project was made by the stub engine and is silent; voice it with chatterbox first")
+
+
 def _run_video(store: Store, novel_id: str, params: dict[str, Any]) -> list[str]:
     """Chapter videos from the same code the CLI runs: `echotales anime` (`render.anime.compose_chapter_video`) for the
     `stills` and `ltx-local` engines, `render_videos` (the motion-comic path behind `render --prune-visual-narration`)
@@ -357,6 +368,7 @@ def _run_video(store: Store, novel_id: str, params: dict[str, Any]) -> list[str]
     panel_dir = params.get("panel_dir") or paths.asset_dir(novel_id, "panels")
     audio_dir = params.get("audio_dir") or paths.asset_dir(novel_id, "audio")
     out_dir = params.get("out_dir") or paths.asset_dir(novel_id, "video")
+    _refuse_stub_audio(audio_dir, params)
 
     if prune:
         from echotales.pipeline.render.compose import get_engine as get_compose_engine
@@ -403,6 +415,9 @@ def _run_episode(store: Store, novel_id: str, params: dict[str, Any]) -> list[st
 
         if refusal := resource_refusal(motion, http=True):
             raise ValueError(str(refusal))
+    from echotales.pipeline import paths
+
+    _refuse_stub_audio(params.get("audio_dir") or paths.asset_dir(novel_id, "audio"), params)
     out: list[str] = []
     try:
         for c in params["chapters"]:
