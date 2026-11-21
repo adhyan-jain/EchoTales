@@ -152,6 +152,7 @@ def plan_framing(
     names: list[str] | None = None,
     spoken: str = "",
     crowd: bool = False,
+    crowd_in_scene: bool = False,
     others_present: bool = True,
     new_place: bool = False,
     opens_chapter: bool | None = None,
@@ -184,7 +185,7 @@ def plan_framing(
         chosen = Framing("close", focus="hands", reason="the line is about hands")
     elif (obj := prop_in(text, director_props or [], names)) and (state.inserts_since >= 1 or obj in _WEAPONS):
         chosen = Framing("close", focus="prop", subject=obj, reason=f"the text centres the {obj}")
-    elif others_present and (other := _other_speaker(spoken, lead)) and not crowd and not (last and last.focus == "over-shoulder"):
+    elif others_present and (other := _other_speaker(spoken, lead)) and not crowd and not crowd_in_scene and not (last and last.focus == "over-shoulder"):
         chosen = Framing("medium", focus="over-shoulder", subject=other, reason="someone else speaks to the lead")
     elif _PEAK.search(text) or _PEAK_EXPRESSION.search(expression):
         chosen = Framing("close", reason="emotional peak")
@@ -206,9 +207,12 @@ def plan_framing(
                 if (size, focus) not in used:
                     chosen = Framing(size, focus=focus, reason=f"{chosen.reason}; a different view after {last.size} {last.focus}".strip())  # type: ignore[arg-type]
                     break
-    if crowd and chosen.size in ("medium", "wide") and chosen.focus in ("", "behind") and not (last and last.subject == "crowd"):
+    if (crowd or crowd_in_scene) and chosen.size in ("medium", "wide") and chosen.focus in ("", "behind", "over-shoulder") and not (
+            len(recent) >= 2 and all(f.subject == "crowd" for f in recent[-2:])):
         # The crowd and the lead both facing the viewer read as the lead among his own people (RI cliff r5, 6 of 13 panels): from
-        # behind the lead, with the crowd across a gap facing him, they read as opposed.
+        # behind the lead, with the crowd across a gap facing him, they read as opposed. Round 6: only the one dedicated crowd cut
+        # carried `crowd`, so this never fired (12 of 13 cliff panels had a crowd in the staging); `crowd_in_scene` is the flag
+        # for a crowd that is merely in the picture. Never three running, or the chapter is one picture.
         chosen = Framing(chosen.size, focus="behind", subject="crowd", reason=f"{chosen.reason}; crowd faces the lead")
     angle = "birds-eye" if chosen.focus == "topdown" else "over-the-shoulder" if chosen.focus == "over-shoulder" else _angle(text, expression)
     chosen = Framing(chosen.size, angle, chosen.focus, chosen.subject, chosen.reason)
@@ -225,23 +229,37 @@ _ANGLE_TEXT = {
 }
 
 
-def framing_sentence(f: Framing, lead: str, *, people: bool = True) -> str:
+def framing_sentence(f: Framing, lead: str, *, people: bool = True, alone: bool = False) -> str:
     """One plain sentence naming the shot, written for a language-model text encoder (Z-Image has no CFG: what comes first and
     plainly is what holds)."""
     who = lead or "the character"
     angle = _ANGLE_TEXT.get(f.angle, "")
     if f.focus == "prop":
         # Round 5: with only "nobody in the picture" the lamp insert drew two men and the pipe insert a couple (2 of 2 LotM inserts);
-        # the object is stated as the whole subject, a still life, never as a person's belonging.
+        # the object is stated as the whole subject, a still life, never as a person's belonging. Round 6: even "empty of people" is a
+        # person word the model draws from, so the sentence names no person at all.
         return (f"Still-life insert shot: a close view of the {f.subject} alone, an object study with the {f.subject} filling the "
-                f"frame and the room only a blurred backdrop, empty of people{angle}.")
+                f"frame and the room only a blurred backdrop{angle}.")
     if f.focus == "eyes":
         return f"Extreme close-up on {who}'s eyes and brow, the eyes filling the frame, the rest of the face cropped{angle}."
     if f.focus == "hands":
         return f"Close-up on {who}'s hands and what they hold, filling the frame, the face out of the picture{angle}."
     if f.focus == "behind" and f.subject == "crowd":
-        return (f"Seen from behind {who}: the back of his head and shoulders in the lower foreground, his back to the viewer; across "
-                f"a gap of bare ground the crowd stands packed close together, every one of them facing him{angle}.")
+        # Round 6 A/B (RI cliff p3, 2 seeds each, `out_r6_ab_crowd`): "seen from behind X, the crowd across a gap facing him" drew a
+        # second, front-facing X in the middle with the crowd standing around him facing the viewer (2 of 2: the camera behind him
+        # IS the crowd's facing direction, so the crowd faces the viewer and he is not the one they face); "over his shoulder, the
+        # crowd all glaring at him" drew him facing the viewer with the crowd behind (2 of 2). A side view with him in profile, a gap
+        # of bare ground and the crowd turned toward him drew the opposed arrangement 2 of 2 (as did a profile-left, crowd-right
+        # variant). The focus name "behind" is kept for the staging/compiler rules (no paragraph, no face, no Blocking).
+        return (f"Wide side view with the camera at the side: {who} stands alone on the left of the frame in profile, facing right, "
+                "and across a wide gap of bare ground the crowd stands on the right as a dense uneven mass of different people at "
+                f"different depths, every one of them turned toward him and glaring at him{angle}.")
+    if f.focus == "behind" and alone:
+        # Round 6 A/B (LotM p4, 3 seeds each, `out_r6_ab_lone`): "seen from behind X at a desk" drew a second man facing the viewer
+        # across the desk in 3 of 3 (also with "sits alone", 2 of 3 with "exactly one human figure"); a high corner view of the same
+        # lone man drew 0 of 3. A lone lead's second-view is therefore a corner view, not a view from behind.
+        return (f"Seen from a high corner of the room looking down: {who} is alone in the room, small in the frame, the furniture and "
+                f"objects of the room around him, the rest of the room empty and quiet{angle}.")
     if f.focus == "behind":
         return (f"Seen from directly behind {who}: the back of his head and shoulders large in the lower foreground, he is the only "
                 f"person in the picture and looks away from the viewer into the room ahead, his face hidden{angle}.")
@@ -263,18 +281,26 @@ def framing_sentence(f: Framing, lead: str, *, people: bool = True) -> str:
     return f"Medium shot of {who} from the waist up{angle}."
 
 
+def crowd_in_scene(others: object, staging: str) -> bool:
+    """True when the director's `others` is a crowd or group, or the staging sheet blocks a crowd: the crowd is in the picture even
+    when this is not the dedicated crowd cut (RI cliff r5: 12 of 13 panels, one carried the crowd flag)."""
+    kind = str(getattr(others, "kind", "") or "").lower()
+    return bool(re.search(r"\b(crowd|group|mob|army|onlookers|elders|soldiers|villagers)\b", kind)) or bool(
+        re.search(r"\bBlocking:.*\b(crowd|mob|army|onlookers)\b", staging or "", re.I | re.S))
+
+
 def staging_set(staging: str) -> str:
     """The Set clause of a staging sheet, lower-cased, '' when there is none: what "the place" is for deciding that a place started."""
     m = re.search(r"\bSet:\s*(.*?)(?=\s+(?:Blocking|Light):|\Z)", staging or "", re.S)
     return " ".join(m.group(1).lower().split()) if m else ""
 
 
-def apply_framing(direction: object, f: Framing, lead: str) -> object:
+def apply_framing(direction: object, f: Framing, lead: str, *, alone: bool = False) -> object:
     """The director's `PanelDirection` with this framing written into it (`shot`, `camera_angle`, `frame`, `frame_focus`).
     A copy: the cached direction stays what the model said, so a change of rule re-frames without re-asking."""
     return direction.model_copy(update={  # type: ignore[attr-defined]
         "shot": f.size, "camera_angle": f.angle if f.angle != "over-the-shoulder" else "eye-level",
-        "frame": framing_sentence(f, lead, people=f.focus != "prop"), "frame_focus": f.focus,
+        "frame": framing_sentence(f, lead, people=f.focus != "prop", alone=alone), "frame_focus": f.focus,
         "frame_subject": f.subject if f.focus == "prop" else "",
     })
 

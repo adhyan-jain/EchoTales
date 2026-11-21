@@ -71,6 +71,7 @@ from echotales.pipeline.render.factions import qualify_role, scene_faction
 from echotales.pipeline.render.framing import (  # type: ignore[import-untyped]
     FramingState,
     apply_framing,
+    crowd_in_scene,
     plan_framing,
     staging_set,
 )
@@ -2824,12 +2825,16 @@ def render_panels(
                     _framing = plan_framing(
                         beat_prose, expression=_direction.expression, names=_cast_labels,
                         director_props=[*_direction.props, *_direction.key_objects], spoken=_speech, crowd=is_crowd_cut,
+                        crowd_in_scene=crowd_in_scene(_direction.others, _direction.staging) or bool(_chunk_mobs),
                         others_present=bool(_direction.others) or len(_cast_labels) > 1 or "others" in _direction.staging.lower(),
                         opens_chapter=lead == 0,
                         new_place=_scene_panel_n == 0 and bool(_set_now) and _set_now != _prev_panel_set,
                         state=_framing_state,
                     )
-                    _direction = apply_framing(_direction, _framing, _cast_labels[0] if _cast_labels else "")
+                    _direction = apply_framing(
+                        _direction, _framing, _cast_labels[0] if _cast_labels else "",
+                        alone=len(_cast_labels) <= 1 and not _direction.others and not crowd_in_scene(_direction.others, _direction.staging),
+                    )
                     _scene_panel_n += 1
                     _prev_panel_set = _set_now or _prev_panel_set
                     _last_panel_direction = _direction

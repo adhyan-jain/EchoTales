@@ -588,6 +588,11 @@ Next (A3 proper): build the reader stage with a cast-discovery pass, the explici
 - **Why.** The product target stays local-first and the owner's total cloud budget is $5-10; a refusal after the fact cannot honour a cap. Nothing may be run for real until the local product is done (owner rule), so the code is verified by mock transport only and is untested against a real endpoint.
 - **Effect.** No default changes; ElevenLabs is never the default and takes no reference clip (no cloning of real people). See EVOLUTION 4.174.
 
+### D66. A crowd is staged across a gap in side view, a lone man is never drawn "from behind" (2026-11-21, panel round 6)
+- **Decided**: a medium or wide panel in a scene with a crowd (director `others`, staging Blocking, or mob detection) is a wide side view: the lead in profile on one side, a gap of bare ground, the crowd a dense uneven mass turned toward him; an insert's lead and prompt carry no person wording; a lone lead's second view is a high corner view; a staged day light is dropped when the text says night.
+- **Why**: the round-5 from-behind crowd view never fired (flag only on the crowd cut) and, once fired, drew a duplicate hero with the crowd facing the viewer; the from-behind view of a lone man at a desk drew a second man across it 3 of 3. Each wording was A/B tested on fixed seeds (EVOLUTION 4.177).
+- **Status**: built and measured (crowd misread 1 to 2 of 13, extra person 0 to 1 per sheet); shot rhythm now repetitive in those scenes.
+
 ## 4. Open questions
 - Whether the local 7B model reaches Gate A, or the reader must move to a hosted model (needs your approval; see D2). **Settled in principle 2026-11-13**: Gate A is not a blocker (D27) and a hosted tier is allowed behind an opt-in with a 10 US dollar cap (D35); each real hosted run still needs the owner's key.
 - Overwriting run-of-record databases in `data/db/` (rebuilds go to `data/scratch/reruns/` first).

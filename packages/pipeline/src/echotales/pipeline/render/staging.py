@@ -115,6 +115,12 @@ def validate_staging(
         if light_kind(set_text):
             rejects.append("lit-by clause not stated by the text")
             set_text = re.sub(r",?\s*\b(?:lit|lighted|illuminated) by [^,;.]*", "", set_text).strip(" ,")
+    # Round 6 (RI rebirth r5): the text said "sparkling in the night" and rain, the director guessed "Light: day, rain", and the
+    # windows were drawn daylit. A night the text names outranks a day the director guessed.
+    _night, _day = r"\b(?:night|midnight|moonlit|moonlight)\b", r"\b(?:day|daylight|morning|noon|afternoon|sunlight)\b"
+    if light and re.search(_day, light, re.I) and re.search(_night, scene_text, re.I) and not re.search(_day, scene_text, re.I):
+        rejects.append("staged day light against a night in the text")
+        light = ""
     if rejects:
         return SceneStaging(set=set_text, blocking=blocking, light=light), rejects
     return s, rejects
