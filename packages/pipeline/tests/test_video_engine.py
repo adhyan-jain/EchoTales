@@ -60,11 +60,11 @@ def test_wan_video_generation(sample_keyframe: Path, sample_audio: Path, tmp_pat
         keyframe_path=sample_keyframe,
         output_path=i2v_out,
         mode=WanMode.I2V,
-        num_frames=24,
+        num_frames=25,
         fps=24,
     )
     assert i2v_out.exists()
-    assert res_i2v.duration_s == pytest.approx(1.0)
+    assert res_i2v.duration_s == pytest.approx(25 / 24)
 
     # 2. Sound-to-Video Lip Sync
     s2v_out = tmp_path / "s2v.mp4"
@@ -163,3 +163,13 @@ def test_video_fallback_to_path_1(
     assert Path(fb_path).exists()
     assert Path(fb_path).suffix == ".mp4"
     assert fb_rep is not None and fb_rep.passed is False
+
+
+def test_wan_frame_count_is_always_a_valid_4n_plus_1() -> None:
+    """The worker refuses anything but 4n+1 in 5..161; `round(dur * fps)` was sent raw (EVOLUTION 4.183)."""
+    from echotales.pipeline.video.wan import valid_wan_frames
+
+    for raw in (0, 1, 24, 84, 85, 86, 160, 161, 162, 900):
+        n = valid_wan_frames(raw)
+        assert (n - 1) % 4 == 0 and 5 <= n <= 161
+    assert valid_wan_frames(84) == 85 and valid_wan_frames(900) == 161
