@@ -1833,6 +1833,9 @@ def make_handler(
                         ScreenplayShot,
                     )
                     ep_row = handle.store.get_screenplay_episode(ep_id)
+                    # With no saved episode the figure is for an invented 12-shot, 42 s episode; the flag lets the
+                    # page say so instead of showing it as this book's cost.
+                    assumed = not ep_row
                     if ep_row:
                         ep = ScreenplayEpisode.from_dict(ep_row)
                     else:
@@ -1860,7 +1863,7 @@ def make_handler(
                             ],
                         )
                     estimate = estimate_episode_cost(ep, novel_id=novel_id, tier=tier)
-                    return self._json(200, estimate.to_dict())
+                    return self._json(200, {**estimate.to_dict(), "assumed_episode": assumed})
 
                 if len(parts) == 5 and parts[:2] == ["api", "novels"] and parts[3] == "arc" and parts[4] == "audit":
                     novel_id = parts[2]
@@ -2900,7 +2903,15 @@ def make_handler(
                     refusal = _gpu_refusal(engine_name) or _stale_build_refusal(handle, parts[2], engine_name)
                     if refusal:
                         return self._json(409, _refusal_body(refusal))
-                    return self._json(202, self._enqueue(handle, "render", _with_genre(handle, dict(body))))
+                    # The same rules as `POST /api/projects/<id>/render`: this body used to go to the job as it came, so
+                    # a `panel_dir` named a folder on the server and the unfinished-job cap did not apply.
+                    try:
+                        clean = sanitize_job_params(body)
+                    except ValueError as exc:
+                        return self._json(400, {"error": str(exc)})
+                    if handle.store.count_unfinished_jobs() >= MAX_UNFINISHED_JOBS:
+                        return self._json(429, {"error": f"{MAX_UNFINISHED_JOBS} jobs are already queued or running; wait for some to finish"})
+                    return self._json(202, self._enqueue(handle, "render", _with_genre(handle, clean)))
 
                 if (
                     len(parts) == 5 and parts[:2] == ["api", "novels"]
@@ -2922,7 +2933,13 @@ def make_handler(
                     refusal = _gpu_refusal(engine_name)
                     if refusal:
                         return self._json(409, _refusal_body(refusal))
-                    return self._json(202, self._enqueue(handle, "reference_gen", _with_genre(handle, dict(body))))
+                    try:
+                        clean = sanitize_job_params(body)
+                    except ValueError as exc:
+                        return self._json(400, {"error": str(exc)})
+                    if handle.store.count_unfinished_jobs() >= MAX_UNFINISHED_JOBS:
+                        return self._json(429, {"error": f"{MAX_UNFINISHED_JOBS} jobs are already queued or running; wait for some to finish"})
+                    return self._json(202, self._enqueue(handle, "reference_gen", _with_genre(handle, clean)))
 
                 if (
                     len(parts) == 5 and parts[:2] == ["api", "projects"]

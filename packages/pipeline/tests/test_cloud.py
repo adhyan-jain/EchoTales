@@ -64,6 +64,17 @@ def test_ledger_persists_and_reloads(tmp_path: Path) -> None:
     assert again.spent_usd == 0.5 and again.entries[0].estimated_usd == 1.25 and again.summary()["calls"] == 1
 
 
+def test_two_ledger_instances_do_not_erase_each_others_reservations(tmp_path: Path) -> None:
+    """Each engine builds its own ledger on the same file; the budget must count both."""
+    a, b = CloudLedger(tmp_path / "l.json", 3.0), CloudLedger(tmp_path / "l.json", 3.0)
+    a.reserve("runpod", "video", 1.0)
+    b.reserve("runpod", "edit", 1.0)
+    a.reserve("runpod", "video", 0.5)  # saved from a's stale view, this used to drop b's entry
+    assert CloudLedger(tmp_path / "l.json", 3.0).spent_usd == 2.5
+    with pytest.raises(BudgetExceeded):
+        b.reserve("runpod", "edit", 1.0)  # b must see a's second reservation, not only its own
+
+
 def test_budget_hard_stop_refuses_before_any_submit(tmp_path: Path) -> None:
     http = FakeHTTP()
     c = _client(tmp_path, http, budget=1.0)

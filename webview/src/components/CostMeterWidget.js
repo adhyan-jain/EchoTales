@@ -141,6 +141,12 @@ export default function CostMeterWidget({ novelId, episodeId = 'ep1', onTierChan
             </div>
           </div>
 
+          {costData.assumed_episode && (
+            <p className="rounded-2xl border border-border bg-surface2 p-3 text-xs text-muted" data-testid="cost-assumed">
+              No screenplay is saved for {episodeId} yet, so this is an estimate for a typical 12-shot episode, not this book.
+            </p>
+          )}
+
           {isOverBudget && (
             <div className="flex items-center gap-3 rounded-2xl border border-danger/40 bg-danger/10 p-4 text-sm text-danger" role="alert">
               <AlertCircle className="h-5 w-5 shrink-0" />

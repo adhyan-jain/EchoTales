@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import time
 from pathlib import Path
 
@@ -205,3 +206,55 @@ class TestServerSafety:
 
         assert status == 409 and "already been applied" in body["error"]
         assert any(c.id == "c1" for c in log)
+
+
+def test_a_wider_chapter_range_does_not_reuse_a_narrower_builds_stage_digest() -> None:
+    narrow = jobs.pipeline_stage_digest("src", "0 ingest", {"chapters": "1-3"})
+    assert narrow != jobs.pipeline_stage_digest("src", "0 ingest", {"chapters": "1-10"})
+    assert narrow != jobs.pipeline_stage_digest("src", "0 ingest", {})
+    # whole-book key unchanged, so a CLI-built book still resumes
+    assert jobs.pipeline_stage_digest("src", "0 ingest", {}) == jobs.digest_text(f"src|0 ingest|v{PIPELINE_VERSION}")
+
+
+def test_cost_route_says_when_the_episode_is_an_assumed_one(live_server: LivePort) -> None:  # noqa: F811
+    assert TestUploadSafety._create(live_server, "cm")[0] == 201
+    status, body = _request(live_server, "GET", "/api/novels/cm/episodes/ep1/cost?tier=path1")
+    assert status == 200 and body["assumed_episode"] is True and body["num_shots"] == 12
+
+
+def test_render_generate_drops_server_owned_params(live_server: LivePort) -> None:  # noqa: F811
+    """`render/generate` handed the raw body to the job, so a request could name `panel_dir` (a server folder)."""
+    assert TestUploadSafety._create(live_server, "sg")[0] == 201
+    body = json.dumps({"engine": "stub", "panel_dir": "/tmp/echotales-escape"}).encode()
+    status, queued = _request(live_server, "POST", "/api/novels/sg/render/generate", body=body)
+    assert status == 202
+    job = live_server.registry.handles["sg"].store.get_job(queued["job_id"])
+    assert "panel_dir" not in json.loads(job.params_json)
+
+
+class TestRenderJobOutcome:
+    """What a Studio render job reports."""
+
+    def test_a_render_with_an_undrawn_panel_is_partial_not_succeeded(self, tmp_path: Path, monkeypatch) -> None:
+        from echotales.pipeline.render import panels
+        from echotales.pipeline.render.plan import PANEL_PLAN_FILE
+
+        store = Store(str(tmp_path / "t.db"))
+
+        def fake(novel_id, store_, *, out_dir, version, **kw):  # type: ignore[no-untyped-def]
+            vdir = Path(out_dir) / "ch1" / version
+            vdir.mkdir(parents=True)
+            row = {
+                "schema_version": 1, "novel_id": novel_id, "chapter": 1.0, "panel_seq": 0, "panel_id": "n:1:0",
+                "scene_index": 0, "slot_kind": "scene", "lead_block": 0, "block_indexes": [0], "prompt": "p",
+                "engine": "x", "width": 8, "height": 8, "seed": 1, "image_path": "p0.png", "cache_key": "k",
+                "provenance": "generated",
+            }
+            (vdir / PANEL_PLAN_FILE).write_text(json.dumps(row) + "\n", encoding="utf-8")  # no p0.png written
+
+        monkeypatch.setattr(panels, "get_engine", lambda name: object())
+        monkeypatch.setattr(panels, "render_panels", fake)
+        params = {"engine": "stub", "panel_dir": str(tmp_path / "panels"), "chapters": [1.0]}
+        run_job(store, _job(store, "n:render:1", "render"), params)
+        job = store.get_job("n:render:1")
+        assert job.status is JobStatus.PARTIAL and "1 panel(s) were not drawn" in job.error_summary
