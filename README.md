@@ -182,6 +182,46 @@ refuses before sending past `ECHOTALES_CLOUD_BUDGET_USD` (default 9). `echotales
 `cloud lora --dry-run` print a cost and send nothing; `echotales cloud ledger` prints the total. ElevenLabs uses your own
 key and a library or your own uploaded voice; do not use it to clone a real person's voice without their consent.
 
+## Run on RunPod (optional, costs money)
+
+Nothing here has run for real; the worker packages in `workers/runpod/` are contract-tested against the client only (EVOLUTION 4.180). **Hard stop: the spend ledger refuses any submit that would take the total past `ECHOTALES_CLOUD_BUDGET_USD` (default 9) before anything is sent.** The figures it uses (`ECHOTALES_CLOUD_GPU_USD_PER_HOUR=0.8`; `JOB_SECONDS` video 150, edit 25, lora 1800) are assumptions; set the rate to your endpoint's real price. Read each `workers/runpod/<name>/README.md` first (licence, VRAM, unverified points).
+
+1. **Build and push** from the repo root (`REGISTRY` is your Docker Hub or GHCR name; images are large, so pushing takes a while):
+
+   ```bash
+   docker build -f workers/runpod/wan_video/Dockerfile -t REGISTRY/echotales-wan:1 . && docker push REGISTRY/echotales-wan:1
+   docker build -f workers/runpod/qwen_image_edit/Dockerfile -t REGISTRY/echotales-qwen-edit:1 . && docker push REGISTRY/echotales-qwen-edit:1
+   docker build -f workers/runpod/lora_trainer/Dockerfile -t REGISTRY/echotales-lora:1 . && docker push REGISTRY/echotales-lora:1
+   ```
+
+   Before the LoRA build, pin `AI_TOOLKIT_REF` to an ai-toolkit commit that supports Z-Image (see its README).
+2. **Create three Serverless endpoints** in the RunPod console, one image each: Min workers 0, Max workers 1, execution timeout 1800 s (LoRA 3600 s). GPU: wan 24 GB (A5000 / 4090) or 48 GB; qwen-edit 80 GB (A100 / H100), or 48 GB with env `QWEN_OFFLOAD=1`; lora 24 GB (4090) or 48 GB. Copy each endpoint id.
+3. **`.env`** (gitignored; see `.env.example`):
+
+   ```
+   ECHOTALES_RUNPOD_API_KEY=...
+   ECHOTALES_RUNPOD_VIDEO_ENDPOINT=<wan endpoint id>
+   ECHOTALES_RUNPOD_EDIT_ENDPOINT=<qwen-edit endpoint id>
+   ECHOTALES_RUNPOD_LORA_ENDPOINT=<lora endpoint id>
+   ECHOTALES_CLOUD_BUDGET_USD=9
+   ECHOTALES_CLOUD_GPU_USD_PER_HOUR=<your endpoint's $/h>
+   ```
+4. **Estimate; this sends nothing** (20 clips is an example, count your own):
+
+   ```bash
+   echotales cloud estimate --kind video --units 20
+   # {"kind": "video", "units": 20, "estimated_usd": 0.6667, "spent_usd": 0.0, "budget_usd": 9.0,
+   #  "would_exceed": false, "assumed_seconds_each": 150.0, "submitted": false}
+   echotales cloud lora --character "Elizabeth Bennet" --references <approved-references-dir> --dry-run
+   ```
+5. **Real run.** Only `cloud lora` has a CLI; the video and keyframe engines are not wired into `anime` / `render` yet (EVOLUTION 4.174), so smoke-test them from Python. Cheapest first, ledger check after each:
+
+   ```bash
+   echotales cloud lora --character "Elizabeth Bennet" --references <approved-references-dir>
+   python -c "import base64,sys; from echotales.pipeline.video.runpod_video import RunPodVideoEngine as E; from echotales.pipeline.workers_contract import VideoWorkerRequest as R; r=E().generate(R(keyframe_b64=base64.b64encode(open(sys.argv[1],'rb').read()).decode(), prompt='slow camera push', num_frames=49, fps=24)); open('clip.mp4','wb').write(r.video_bytes)" panel.png
+   ```
+6. **Watch and cancel.** `echotales cloud ledger` prints spent, remaining and every call (an estimate counts until it is settled with the billed execution time). To stop: cancel the job, or set the endpoint's Max workers to 0 in the console; a client timeout also cancels its job. RunPod's billing page is the authority; replace the assumed rate and seconds with its figures after the first run.
+
 ## Security
 
 The Studio is a single-user tool for your own machine, and it assumes that.
