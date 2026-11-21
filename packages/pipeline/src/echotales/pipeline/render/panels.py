@@ -1757,7 +1757,7 @@ def render_panels(
     blocks_per_panel = DENSITY_BLOCKS_PER_PANEL[density]
     # The style tables are looked up by novel id alone; register this project's genre (stored, tuned or detected)
     # first, or an unlisted novel falls through to the neutral profile instead of its own (persona/genre.py).
-    from echotales.pipeline.persona.genre import use_store_genre
+    from echotales.pipeline.persona.genre import desk_objects, use_store_genre
 
     use_store_genre(store, novel_id)
     generated_by_digest: dict[str, Path] = {}
@@ -2863,7 +2863,7 @@ def render_panels(
                     )
                     _direction = apply_framing(
                         _direction, _framing, _cast_labels[0] if _cast_labels else "",
-                        alone=_alone,
+                        alone=_alone, desk=desk_objects(novel_id),
                     )
                     _scene_panel_n += 1
                     _prev_panel_set = _set_now or _prev_panel_set

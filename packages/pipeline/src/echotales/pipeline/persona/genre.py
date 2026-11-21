@@ -105,6 +105,11 @@ class GenreProfile:
     #: carries the panel and the place is dropped first; on LotM that threw away the room, the bed and the revolver,
     #: which are the beat (2026-10-18 render review). False for xianxia keeps RI's prompts exactly as tuned.
     setting_first: bool = True
+    #: What lies on a desk or table in this world, written as image words ("a quill, an inkwell and sheets of paper"), or ""
+    #: for a world where a computer or a phone is correct. A desk view ("the desk and its objects below") drew a modern computer
+    #: keyboard in 7 panels of a Regency chapter (P&P e2e 2026-11-22): the model fills "a desk" from its prior and Z-Image has no
+    #: negative prompt, so a period world names its own objects. Per genre, never per book.
+    desk_objects: str = ""
     scene_locales: dict[str, str] = field(default_factory=dict)
     appearance: dict[str, str] = field(default_factory=dict)
     #: Words whose frequency in the book suggests this genre (`detect_genre`): whole words, plural allowed, and a
@@ -152,6 +157,7 @@ GENRES: dict[str, GenreProfile] = {
         wardrobe="hanfu, wide-sleeved robes, ancient chinese clothing, sash",
         wardrobe_female="hanfu, flowing dress, ancient chinese clothing, hair ornaments",
         mismatch_props=("modern clothes", "modern clothing", "school uniform", "hoodie", "jeans", "business suit"),
+        desk_objects="an ink brush, an inkstone and paper scrolls",
         scene_locales={
             "hall": "inside a timber clan hall, carved pillars, hanging banners",
             "courtyard": "a walled stone courtyard, flagstones, low roofs beyond",
@@ -196,6 +202,7 @@ GENRES: dict[str, GenreProfile] = {
         wardrobe="victorian era, tailcoat, waistcoat, cravat, gloves",
         wardrobe_female="victorian era, long dress, corset, high collar, gloves",
         mismatch_props=("xianxia", "hanfu", "cultivator", "samurai", "kimono", "cyberpunk", "futuristic armor"),
+        desk_objects="a quill, an inkwell and sheets of paper",
         scene_locales={
             "hall": "a panelled Victorian study, bookshelves, oil lamp",
             "courtyard": "a fog-bound cobbled square, iron railings",
@@ -311,6 +318,7 @@ GENRES: dict[str, GenreProfile] = {
         wardrobe="medieval fantasy clothing, tunic, cloak, boots",
         wardrobe_female="medieval fantasy dress, laced bodice, cloak, boots",
         mismatch_props=("hanfu", "xianxia", "katana", "kimono", "modern clothing", "gun", "car"),
+        desk_objects="a quill, an inkwell and sheets of parchment",
         scene_locales={
             "hall": "a torchlit castle hall, banners, stone pillars",
             "courtyard": "a castle courtyard, flagstones, battlements",
@@ -375,6 +383,7 @@ GENRES: dict[str, GenreProfile] = {
         world_context="",
         novel_style="web-novel illustration, no further style data seeded for this novel",
         negative_culture="",
+        desk_objects="a quill, an inkwell and sheets of paper",
         scene_locales={
             "hall": "inside a large hall",
             "courtyard": "an open courtyard",
@@ -405,6 +414,11 @@ def profile(novel_id: str) -> GenreProfile:
     return GENRES[genre_of(novel_id)]
 
 
+def desk_objects(novel_id: str) -> str:
+    """What lies on a desk in this novel's world ("" when a modern object would be right); see `GenreProfile.desk_objects`."""
+    return profile(novel_id).desk_objects
+
+
 #: One FIXED style lead for every novel, with only a "Set in ..." flavour per genre (owner, 2026-11-20: colour is the primary
 #: output, "realistic instead of the too cartoonic vibe", the model being typical Korean full-colour webtoons; and one look per
 #: novel, not RI- or LotM-specific). The round-3 leads said "2D cel-shaded anime illustration ... flat cel colour", which drew
@@ -416,12 +430,12 @@ _LOOK = ("Korean webtoon colour illustration, semi-realistic manhwa style: clean
          "backgrounds, cinematic natural colour grading with deep shadows, an illustration and not a photograph.")
 _FLAVOUR: dict[str, str] = {
     "xianxia": "Set in a Chinese xianxia world, hanfu robes, guofeng painted scenery.",
-    "victorian_gothic": "Set in a Victorian gothic city, gaslamp-era clothes and streets.",
+    "victorian_gothic": "Set in a Victorian gothic city, gaslamp-era clothes and streets, every object true to the period.",
     "modern_apocalypse": "Set in a modern city under a supernatural disaster.",
     "contemporary": "Set in the present day.",
-    "western_fantasy": "Set in a western fantasy world.",
+    "western_fantasy": "Set in a western fantasy world, every object true to a pre-industrial age.",
     "science_fiction": "Set in a science-fiction future.",
-    "generic": "Set in a period drama world.",
+    "generic": "Set in a period drama world, every object and furnishing true to its period.",
 }
 STYLE_LEADS: dict[str, str] = {k: f"{_LOOK} {v}" for k, v in _FLAVOUR.items()}
 

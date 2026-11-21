@@ -280,9 +280,10 @@ _ANGLE_TEXT = {
 }
 
 
-def framing_sentence(f: Framing, lead: str, *, people: bool = True, alone: bool = False) -> str:
+def framing_sentence(f: Framing, lead: str, *, people: bool = True, alone: bool = False, desk: str = "") -> str:
     """One plain sentence naming the shot, written for a language-model text encoder (Z-Image has no CFG: what comes first and
-    plainly is what holds)."""
+    plainly is what holds). `desk` is what lies on a desk in this world (`genre.desk_objects`): "the desk and its objects" drew a
+    modern computer keyboard in 7 panels of a Regency chapter, so a period world names its own objects."""
     who = lead or "the character"
     angle = _ANGLE_TEXT.get(f.angle, "")
     if f.focus == "prop":
@@ -316,8 +317,9 @@ def framing_sentence(f: Framing, lead: str, *, people: bool = True, alone: bool 
                 "below, wind in his hair.")
     if f.focus == "down" and alone:
         # Round 7 A/B: drew the man in three-quarter back view bent over the desk, one person (3 of 3), unlike round 6's "from behind".
+        below = f"the desk below with {desk} on it" if desk else "the desk and its objects below"
         return (f"High over-the-shoulder view looking down: {who} sits alone, head bent over what lies on the desk in front of him, "
-                "only the back of his head and shoulders at the bottom of the frame and the desk and its objects below, the rest of "
+                f"only the back of his head and shoulders at the bottom of the frame and {below}, the rest of "
                 "the room empty and quiet.")
     if f.focus == "down":
         f = Framing(f.size, f.angle, "topdown", f.subject, f.reason)
@@ -378,12 +380,12 @@ def staging_set(staging: str) -> str:
     return " ".join(m.group(1).lower().split()) if m else ""
 
 
-def apply_framing(direction: object, f: Framing, lead: str, *, alone: bool = False) -> object:
+def apply_framing(direction: object, f: Framing, lead: str, *, alone: bool = False, desk: str = "") -> object:
     """The director's `PanelDirection` with this framing written into it (`shot`, `camera_angle`, `frame`, `frame_focus`).
     A copy: the cached direction stays what the model said, so a change of rule re-frames without re-asking."""
     return direction.model_copy(update={  # type: ignore[attr-defined]
         "shot": f.size, "camera_angle": f.angle if f.angle != "over-the-shoulder" else "eye-level",
-        "frame": framing_sentence(f, lead, people=f.focus != "prop", alone=alone), "frame_focus": f.focus,
+        "frame": framing_sentence(f, lead, people=f.focus != "prop", alone=alone, desk=desk), "frame_focus": f.focus,
         "frame_subject": f.subject if f.focus == "prop" else "",
     })
 
