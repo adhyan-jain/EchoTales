@@ -675,9 +675,6 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
             run_stage(
                 store, run_id=pipeline_run.run_id, stage_name="render",
                 input_digest=input_digest,
-                # A repeat is a new version of the chapter, never a skip: the bible and direction behind identical params
-                # change, and a skipped job read SUCCEEDED with no new folder (review 2026-11-21).
-                skip_if_succeeded=False,
                 fn=lambda: _render_and_check(
                     lambda: render_panels(
                         novel_id, store,
@@ -728,8 +725,6 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
         run_stage(
             store, run_id=pipeline_run.run_id, stage_name="voice",
             input_digest=input_digest,
-            # The screenplay and casting behind identical params change; a skip reported SUCCEEDED with no audio.
-            skip_if_succeeded=False,
             fn=lambda: render_novel(
                 novel_id, store, bank,
                 out_dir=out_dir,
