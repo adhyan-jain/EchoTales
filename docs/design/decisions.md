@@ -593,6 +593,11 @@ Next (A3 proper): build the reader stage with a cast-discovery pass, the explici
 - **Why**: the round-5 from-behind crowd view never fired (flag only on the crowd cut) and, once fired, drew a duplicate hero with the crowd facing the viewer; the from-behind view of a lone man at a desk drew a second man across it 3 of 3. Each wording was A/B tested on fixed seeds (EVOLUTION 4.177).
 - **Status**: built and measured (crowd misread 1 to 2 of 13, extra person 0 to 1 per sheet); shot rhythm now repetitive in those scenes.
 
+### D67. A scene's rotation uses only views the model draws as different pictures (2026-11-21, panel round 7)
+- **Decided**: a crowd scene rotates side view, reverse shot (lead out of frame), high overview, low angle on him alone and a face close-up; a lone lead rotates look-down, window profile, eye crop, plain close and medium; no third face view in a row. The rotation lives in `render/framing.py`, generic and genre-free.
+- **Why**: round 6 fixed the staging but left 4 to 5 identical side views per cliff sheet and a desk of chest-up men in LotM. Each view was A/B tested on fixed seeds; the corner, top-down and plain wide were dropped for a lone lead because the model drew them as the same man (EVOLUTION 4.182).
+- **Status**: built and measured (0 consecutive repeats, largest framing 23 to 31%); views still recur non-adjacently.
+
 ## 4. Open questions
 - Whether the local 7B model reaches Gate A, or the reader must move to a hosted model (needs your approval; see D2). **Settled in principle 2026-11-13**: Gate A is not a blocker (D27) and a hosted tier is allowed behind an opt-in with a 10 US dollar cap (D35); each real hosted run still needs the owner's key.
 - Overwriting run-of-record databases in `data/db/` (rebuilds go to `data/scratch/reruns/` first).
