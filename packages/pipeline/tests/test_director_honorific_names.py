@@ -74,3 +74,10 @@ def test_the_compiler_pairs_a_director_name_without_the_full_stop_with_the_cast_
     store = _store(tmp_path)
     pairs = _match_director_characters(store, ["t:1", "t:2"], [CharacterDirection(name="Mrs Bennet"), CharacterDirection(name="Mr Bennet")])
     assert [(cd.name, sid) for cd, sid in pairs] == [("Mrs Bennet", "t:2"), ("Mr Bennet", "t:1")]
+
+
+def test_a_bare_title_in_a_pair_is_not_a_fabricated_name(tmp_path) -> None:
+    """"Mr. and Mrs. Bennet" made the name detector flag the lone "Mr", which was then rewritten to "a figure"."""
+    d = PanelDirection(action="Mr. and Mrs. Bennet sit in the library.")
+    out = _validate_direction(d, beat_text=PASSAGE, cast=CAST, novel_id="t", store=_store(tmp_path))
+    assert "a figure" not in out.action and out.action.startswith("Mr. and")

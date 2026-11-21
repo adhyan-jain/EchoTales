@@ -42,6 +42,9 @@ if TYPE_CHECKING:
 log = logging.getLogger(__name__)
 
 
+_BARE_TITLES = frozenset({"mr", "mrs", "ms", "miss", "mister", "madam", "madame", "dr", "sir", "lady", "lord"})
+
+
 def name_key(name: str) -> str:
     """A name compared without its case, honorific full stops, spacing or possessive.
 
@@ -1332,7 +1335,9 @@ def _validate_character_names(
         # as part of the span; compare the bare name so a cast/known member
         # referenced possessively isn't misread as an unrecognised one.
         bare = re.sub(r"[’']s$", "", span.text)
-        if name_key(bare) in cast_names or bare in known_surfaces:
+        # A lone title is the detector cutting "Mr. and Mrs. Bennet" in two, not a name the director made up; stripping it wrote
+        # "a figure. and a figures. Bennet" into the action (P&P e2e, rerun 2026-11-22).
+        if name_key(bare) in cast_names or bare in known_surfaces or name_key(bare) in _BARE_TITLES:
             continue
         log.warning("director fabricated character name: %r -- stripped", span.text)
         _strip(span.text)
