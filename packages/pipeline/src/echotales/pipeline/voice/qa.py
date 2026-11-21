@@ -542,19 +542,33 @@ def audit_chapter(
     return report
 
 
-def whisper_transcriber(model_id: str = "openai/whisper-base.en", device: str = "cpu") -> Transcriber:
-    """Whisper through `transformers`, loaded on first use. CPU by default so the check never competes for the GPU."""
+def whisper_transcriber(model_id: str = "openai/whisper-base.en", device: str | None = None) -> Transcriber:
+    """Whisper through `transformers`, loaded on first use, run on CUDA in fp16 and freed after the batch.
+
+    Was `device="cpu"` "so the check never competes for the GPU"; jobs run one at a time, so nothing competes, and
+    the CPU run of a whole-chapter check was minutes of pinned cores (owner rule 2026-11-22: heavy work on the GPU).
+    `device=None` is cuda when there is one, cpu otherwise; an explicit value is honoured (`pick_device`)."""
 
     def run(paths: Sequence[Path]) -> list[str]:
         import librosa
+        import torch
+        from echotales.pipeline.hwaccel import free_cuda_cache, pick_device
         from transformers import pipeline
 
-        asr = pipeline("automatic-speech-recognition", model=model_id, device=device)
-        out = []
-        for p in paths:
-            x, sr = read_mono(p)
-            y = librosa.resample(x, orig_sr=sr, target_sr=16000) if sr != 16000 else x
-            out.append(asr({"raw": y, "sampling_rate": 16000}, chunk_length_s=30)["text"].strip())
-        return out
+        dev = pick_device(device)
+        asr = pipeline(
+            "automatic-speech-recognition", model=model_id, device=dev,
+            dtype=torch.float16 if dev.startswith("cuda") else torch.float32,
+        )
+        try:
+            out = []
+            for p in paths:
+                x, sr = read_mono(p)
+                y = librosa.resample(x, orig_sr=sr, target_sr=16000) if sr != 16000 else x
+                out.append(asr({"raw": y, "sampling_rate": 16000}, chunk_length_s=30)["text"].strip())
+            return out
+        finally:
+            del asr
+            free_cuda_cache()
 
     return run

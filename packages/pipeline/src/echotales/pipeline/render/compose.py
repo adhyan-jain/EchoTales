@@ -37,6 +37,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Protocol
 
+from echotales.pipeline.hwaccel import h264_args
 from echotales.pipeline.render.director import (
     KEN_BURNS_PAN_SCALE,
     KEN_BURNS_PAN_TRANSLATE_PCT,
@@ -216,7 +217,7 @@ def _render_segment(
                 "-t", f"{shot.duration:.3f}",
                 "-vf", f"scale={width}:{height}:force_original_aspect_ratio=increase,"
                 f"crop={width}:{height},fps={OUTPUT_FPS}",
-                "-pix_fmt", "yuv420p",
+                *h264_args(),
                 str(out_path),
             ]
         )
@@ -229,7 +230,7 @@ def _render_segment(
             "-vf", _zoompan_filter(shot, num_frames, width, height),
             "-t", f"{shot.duration:.3f}",
             *(["-frames:v", str(frames)] if frames is not None else []),
-            "-pix_fmt", "yuv420p",
+            *h264_args(),
             str(out_path),
         ]
     )
@@ -326,7 +327,7 @@ class FfmpegComposeEngine:
                 "-filter_complex",
                 f"[0:v]{','.join(vchain)}[v];[1:a]{achain}[a]",
                 "-map", "[v]", "-map", "[a]",
-                "-c:v", "libx264", "-crf", "20", "-preset", "medium", "-pix_fmt", "yuv420p",
+                *h264_args(),
             ]
         else:
             mux += ["-c:v", "copy"]

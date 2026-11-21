@@ -9856,3 +9856,43 @@ Moved here from HANDOFF on 2026-11-21 (the HANDOFF "Pick up here" of 2026-11-20 
 - **(b) Page-time conversion.** `pages/bwlook.py::to_manga_bw`: luminance, levels (at or below 0.20 solid ink, at or above 0.80 paper) and a 45 degree dot screen on the tones between, pitch 1/170 of the picture width (floor 4 px). It runs in `render_page` on the picture already fitted to its place, so the dots are not resampled, before the lettering, so bubbles and text stay black on white; the page is then converted to greyscale (the caption box is cream). `echotales pages --look bw` and the pages job `look` param; `--format` now defaults from the look (bw: right-to-left `manga`, colour: `webtoon`, as before); the version folder is `vN_manga-bw` and `pages.json` records `look`.
 - **Verified (stub engine, unit tests, no GPU).** `test_bw_look.py` (24 tests): the bw lead and mono grade (5 light kinds plus mood accents) contain no colour words and the colour grade is unchanged; a stub bw render has `look` bw in every plan row and no palette or colour-illustration wording; a composed bw panel leads with the ink lead and carries a mono grade; the default render is colour; `--look` reaches `render_panels` and an unknown value is refused; config.json `look` maps to the manga mode; the Studio job takes `look` and refuses an unknown one; a bw redraw stays bw; `to_manga_bw` gives only 0 and 255 with solid blacks, white highlights and mixed midtones; bw pages are greyscale-equal and keep black ink and white paper, colour pages are not; the format follows the look.
 - **Not verified.** No real image was drawn in bw: whether Z-Image honours the new lead, whether the greyscale pass alone gives usable manga tones, and how the converted colour panels compare to a native bw render (the A/B the owner asked for) are untested. Colour words that are not the lead or the grade still reach a bw prompt: the identity sentence's hair and robe colours, the staging sheet's Set and Light lines and the director's paragraph (kept as tone cues; the worker converts the result to greyscale). Dot pitch, black point and white point are first guesses and were not looked at on real panels. The webview was not changed (no Studio control for `look` yet), so Jest was not run. The webview server does not validate `look` at the route (the job refuses it).
+
+
+### 4.189 Heavy work on the GPU: NVENC video encodes, whisper, CLIP, OCR and TTS pick CUDA *(2026-11-22)*
+
+Owner rule (2026-11-22): every heavy task runs on the GPU (RTX 4060, 8 GB); the CPU only for extremely light work that will not spike its use; audio generation especially. Audit of every model load and heavy compute path in `packages/pipeline/src/echotales/pipeline`. New `hwaccel.py`: `pick_device` (cuda when torch sees it, an explicit `cuda` with no CUDA falls to cpu instead of dying in the loader), `free_cuda_cache`, `video_encoder` (a real one-frame `h264_nvenc` probe, cached per process; `ECHOTALES_VIDEO_ENCODER=libx264` forces the CPU encoder) and `h264_args` (NVENC `-preset p5 -rc vbr -cq 19 -b:v 0 -pix_fmt yuv420p`, else the old `libx264 -crf 20 -preset medium`).
+
+**Device table (before / after).**
+
+| Path | Model or work | Before | After |
+|---|---|---|---|
+| `voice/engine.py` ChatterboxEngine | Chatterbox TTS | cuda (crashed with no CUDA) | cuda; cpu only with no CUDA. Every caller (`jobs.py`, `commands.py`, voice runner, audition) calls `get_engine(name)` with no device, so none forces cpu |
+| `voice/qa.py` `whisper_transcriber` | whisper-base.en | cpu, fp32 | cuda, fp16, freed (`del` + `empty_cache`) after the batch; cpu/fp32 only with no CUDA |
+| `render/compose.py` `_render_segment`, mux | ffmpeg zoompan stills and captions mux | libx264 on the CPU (stills had no `-c:v`, ffmpeg default crf 23) | `h264_nvenc` when the probe passes, else libx264 |
+| `render/anime.py` (4 re-time, trim, loop calls) | ffmpeg | libx264 default | same `h264_args` |
+| `compositor/engine.py`, `comic/build.py`, `render/episode.py` | ffmpeg | libx264 (ultrafast / crf 20) | same `h264_args` (ultrafast is an x264 name, NVENC ignores it) |
+| `video/clip_gate.py` | CLIP ViT-L/14 | cuda only if the card had under 500 MiB in use, else cpu | cuda fp16 when torch has CUDA and 1.5 GiB is free; cpu only with no CUDA or no room (OOM guard) |
+| `comic/ocr.py` RapidOcr | PaddleOCR via onnxruntime | cpu | CUDA execution provider when onnxruntime has one. The installed `onnxruntime` 1.32 is CPU-only, so this is cpu here until `onnxruntime-gpu` replaces it (not installed: an environment change) |
+| `comic/ocr.py` EasyOcr | easyocr | `gpu=False` default | cuda when available (easyocr is not installed here) |
+| `comic/parallax.py` | Depth Anything V2 Small | cuda (crash with no CUDA) | cuda; cpu only with no CUDA |
+| `comic/inpaint.py` | LaMa (TorchScript) | cuda on `auto`; `lama` forced "cuda" | cuda; cpu only with no CUDA (class picks) |
+| `workers_zimage.py`, `workers_anima.py`, `workers_local.py`, `video/ltx_worker.py` | Z-Image NF4, Anima, NoobAI, LTX | cuda, no CPU offload | unchanged |
+| `render/panels.py` SDXL/SD engines, `render/motion.py` SVD | diffusers | compute on cuda, weights parked in RAM by `enable_model_cpu_offload` | unchanged: they do not fit 8 GB resident (legacy comparison engines); a change would be a quality and OOM risk |
+| `persona/prompt.py` | CLIP tokenizer | cpu | unchanged (tokenizer only) |
+| `mentions/seed.py`, `speakers/attribution.py`, `spans/delivery.py`, `render/narration_pruning.py`, `reader/*` | rules, gazetteer, Ollama | no torch/transformers/spacy import; no model load on the CPU | unchanged (LLM calls go through Ollama) |
+| RIFE | n/a | no RIFE in the tree | n/a |
+
+**Not moved, said plainly.** `librosa.pyin` pitch tracking and `librosa.resample` / `pyloudnorm` in `voice/qa.py` and `voice/audition.py` stay on the CPU: there is no GPU pyin here, and they run on short reference clips. Chatterbox re-prepares the reference-clip conditionals (librosa resample) on every `generate` call; light, left alone. The `zoompan`/`scale` ffmpeg filters, the per-frame PIL and cv2 work in `comic/build.py` and `compositor/engine.py`, and the imageio `libx264` write in `video/ltx_worker.py` (its own environment, 4 s clips that `anime.py` re-encodes through NVENC anyway) stay on the CPU. The decoder is not on the GPU either (the encode was the cost).
+
+**Tests.** `test_hwaccel.py` (23): device pick with cuda / no cuda / explicit cpu / no torch; probe result nvenc, probe failure, probe timeout, no ffmpeg, override, probed once; NVENC and x264 argument shapes; compose segments and the captions mux take the codec from `h264_args`; whisper cuda-fp16 and cpu-fp32; Chatterbox device; CLIP gate device with room, with ollama holding part of the card, without room; RapidOCR with and without the CUDA provider. `conftest.py` forces `ECHOTALES_VIDEO_ENCODER=libx264` for every other test so the suite never takes an NVENC session.
+
+**Measured, GPU runs under `data/scratch/gpu.lock` (the card was held by another job, so the runs waited for it).** Stills through the real `compose._render_segment`, 1080x1920 at 30 fps, Ken Burns zoom (the zoompan filter itself stays on the CPU, so the gain is the encode part only):
+
+| Clip | libx264 (CPU) | h264_nvenc (GPU) | Frames |
+|---|---|---|---|
+| 3 s | 4.11 s | 1.14 s | 90 / 90 |
+| 20 s | 16.39 s | 2.79 s | 600 / 600 |
+
+PSNR between the two 3 s encodes 41.5 dB (random-noise still, the worst case for size: NVENC 5.7 MB vs x264 3.5 MB at 3 s, 30.6 MB vs 15.5 MB at 20 s; cq 19 spends more bits than crf 20 on noise). Frame counts match exactly, which is what `anime.py`'s sync proof needs. Whisper-base.en on 6 real RI ch1 line clips, model load included: cpu 18.08 s, cuda fp16 7.42 s. Concat check (CPU only): two NVENC segments plus one libx264 segment joined with `-c copy` give 270 of 270 frames and decode cleanly, so a stale libx264 segment next to NVENC ones is safe. Not run: a full anime or comic episode end to end with NVENC, and Chatterbox on this change (its device was already cuda).
+
+Suite: core+pipeline 2,823 passed, 29 skipped (`-o addopts=""`); ruff 540 and mypy 583, both at the baseline.

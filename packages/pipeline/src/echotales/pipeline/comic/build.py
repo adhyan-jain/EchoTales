@@ -23,6 +23,7 @@ from echotales.pipeline.comic.parallax import DepthEstimator, parallax_warp
 from echotales.pipeline.comic.to_graph import story_bubbles
 from echotales.pipeline.comic.understand import ComicUnderstanding
 from echotales.pipeline.compositor.camera import compute_camera_trajectory
+from echotales.pipeline.hwaccel import h264_args
 from echotales.pipeline.screenplay.schema import CameraMove
 
 #: Silence before a shot's first line, after its last, and the length of a panel nobody speaks in.
@@ -232,7 +233,7 @@ def build_episode(
 
     cmd = ["ffmpeg", "-y", "-loglevel", "error", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{size[0]}x{size[1]}",
            "-r", str(fps), "-i", "-", "-i", str(wav), "-i", str(srt), "-map", "0:v", "-map", "1:a", "-map", "2:s",
-           "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "20", "-c:a", "aac", "-b:a", "160k", "-c:s", "mov_text",
+           *h264_args(), "-c:a", "aac", "-b:a", "160k", "-c:s", "mov_text",
            "-metadata", f"title={title}", "-metadata", f"comment={credit}", "-metadata", f"copyright={credit}",
            "-t", f"{total:.3f}", str(video)]
     proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)

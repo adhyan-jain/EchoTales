@@ -43,7 +43,10 @@ class DepthAnythingSmall:
 
     def __init__(self, weights: Path | str = DEPTH_WEIGHTS, device: str = "cuda") -> None:
         import torch
+        from echotales.pipeline.hwaccel import pick_device
         from transformers import AutoModelForDepthEstimation
+
+        device = pick_device(device)  # cuda stays cuda; only a machine with no CUDA drops to cpu
 
         if not Path(weights).is_dir():
             raise FileNotFoundError(f"Depth Anything V2 Small weights not found at {weights}")
