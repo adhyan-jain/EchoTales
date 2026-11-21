@@ -37,6 +37,7 @@ Master carries everything below; core+pipeline 2,820 passed, 2 skipped (`-o addo
 - A redraw with an edited direction is recompiled through the compiler and the worker route (4.187); not run on a real engine, and its candidates are not vision-checked. A redraw with no edit still draws the recorded prompt (4.179).
 - The dead-code / `py.typed` branch is pending, not merged.
 - gemma2:9b spills about 21% to CPU at the reader's 8192 context on the 8 GB card; the owner allowed it for 2026-11-20 only (D62).
+- Black-and-white manga look (4.188) is built and unit-tested only: no real bw render, no A/B of `render --look bw` against `pages --look bw` on real panels, no Studio control for `look`.
 - Pride and Prejudice stores the genre label "Victorian gothic" (a data fact, not a code default).
 - The RI hardcase gold notes quote RI verbatim; trim before the repository goes public.
 - `npm audit`: 0 critical, 16 high remain, all in react-scripts build tooling (4.184).

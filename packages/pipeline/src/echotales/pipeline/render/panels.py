@@ -148,7 +148,9 @@ def _vision_skipped(reason: str) -> list[dict[str, Any]]:
     return [{"panel": "", "skipped": True, "unchecked": True, "reason": reason}]
 
 
-def _vision_check(pending_batch: list[Any], pending_expect: dict[Any, Any], failed: list[Any]) -> list[dict[str, Any]]:
+def _vision_check(
+    pending_batch: list[Any], pending_expect: dict[Any, Any], failed: list[Any], panel_mode: str | None = None,
+) -> list[dict[str, Any]]:
     """The vision pass over a chapter's freshly drawn panels (`render/vision_pass.py`).
 
     When it is off (a single candidate was asked for, no vision model is installed, a stub run) the result is one
@@ -176,7 +178,7 @@ def _vision_check(pending_batch: list[Any], pending_expect: dict[Any, Any], fail
     items = [(req, secs) for req, secs in pending_batch if req.out_path not in drawn]
     checked: list[dict[str, Any]] = vision_pass.run(
         [r for r, _ in items], [s for _, s in items], pending_expect, vlm=vlm, candidates=n,
-        model_key=settings.render_image_model, greyscale=settings.render_panel_mode == "manga",
+        model_key=settings.render_image_model, greyscale=(panel_mode or settings.render_panel_mode) == "manga",
     )
     return checked
 
@@ -1668,6 +1670,9 @@ def render_panels(
     observer_id: str = OBSERVER_READER,
     #: "beat" (a picture per four blocks) or "dense" (a picture per block); see `compute.DENSITY_BLOCKS_PER_PANEL`.
     density: str = "beat",
+    #: `bw` draws black-and-white manga panels (the compiler's manga mode: ink lead, mono light grade, greyscale worker pass);
+    #: `colour` forces colour; None follows `render.look` / `render.panel_mode` (colour by default). EVOLUTION 4.187.
+    look: str | None = None,
 ) -> PanelReport:
     """Render one cached panel image per story-bearing block.
 
@@ -1718,6 +1723,12 @@ def render_panels(
     import shutil
 
     engine = engine or get_engine("stub")
+    from echotales.pipeline.config import LOOKS, look_error
+    from echotales.pipeline.config import get_settings as _settings_now
+
+    if (bad_look := look_error(look)) is not None:
+        raise ValueError(bad_look)
+    _panel_mode = LOOKS[look] if look else _settings_now().render_panel_mode
     # **Reserve the engine's own quality-prefix cost up front.** NoobAI/
     # Illustrious engines prepend a `quality_prefix` ahead of everything at
     # generation time (`IllustriousEngine.generate`), inside a *second*,
@@ -3017,7 +3028,7 @@ def render_panels(
                         store, novel_id,
                         list(_beat_bodies.keys()) or list(_scene_last_present_bodies.keys()),
                         story_position, _direction, location=scene_locale_text,
-                        mode=OutputMode(get_settings().render_panel_mode), is_crowd=is_crowd_cut,
+                        mode=OutputMode(_panel_mode), is_crowd=is_crowd_cut,
                         gender_hint="male" if "male" in genders else "",
                         beat_text=beat_prose, scene=_scene_ctx,
                     )
@@ -3254,6 +3265,7 @@ def render_panels(
                         prompt_tokens_before_fit=_fit_before,
                         dropped_clauses=_fit_dropped,
                         engine=engine.name,
+                        look="bw" if _panel_mode == "manga" else "colour",
                         width=width,
                         height=height,
                         seed=seed,
@@ -3313,7 +3325,7 @@ def render_panels(
                 [req for req, _ in pending_batch],
                 [secs for _, secs in pending_batch],
                 get_settings().render_image_model,
-                greyscale=get_settings().render_panel_mode == "manga",
+                greyscale=_panel_mode == "manga",
             )
             if _failed:
                 # The cache index and digest map were filled when each panel was queued, before the worker wrote
@@ -3323,7 +3335,7 @@ def render_panels(
                 for _req in _failed:
                     for _d in [d for d, src in generated_by_digest.items() if src == _req.out_path]:
                         del generated_by_digest[_d]
-            _rows = _vision_check(pending_batch, pending_expect, _failed)
+            _rows = _vision_check(pending_batch, pending_expect, _failed, _panel_mode)
             if _rows:
                 from echotales.pipeline.keyframes.qa import summarise, write_rows
 

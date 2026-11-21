@@ -112,6 +112,14 @@ def with_direction_override(direction: PanelDirection | None, text: str) -> Pane
     return base.model_copy(update=update)
 
 
+def _panel_mode_of(row: PanelPlan) -> str:
+    """The look the panel was rendered in: a black-and-white render (`render --look bw`) records `look` on its plan row, and its
+    redraw must stay black and white whatever the configured look is now."""
+    from echotales.pipeline.config import get_settings
+
+    return "manga" if row.look == "bw" else str(get_settings().render_panel_mode)
+
+
 def _compile_edited(store: Any, novel_id: str, row: PanelPlan, text: str) -> CompiledPrompt | None:
     """Re-compile one panel with an edited direction through the same compiler path a render uses (`panels.py`: brief from
     the cast at the panel's story position, then `compile_prompt` for the configured image model), so the identity lock, the
@@ -162,7 +170,7 @@ def _compile_edited(store: Any, novel_id: str, row: PanelPlan, text: str) -> Com
         scene_ctx = SceneContext(key=f"{row.chapter:g}:{scene.blocks[0]}", text=scene_text, client=None, novel_id=novel_id)
     brief = brief_from_direction(
         store, novel_id, self_ids, position, with_direction_override(row.direction, text), location=row.location,
-        mode=OutputMode(settings.render_panel_mode), is_crowd=row.slot_kind == "crowd",
+        mode=OutputMode(_panel_mode_of(row)), is_crowd=row.slot_kind == "crowd",
         gender_hint="male" if "male" in genders else "",
         beat_text=beat_text(spans, row.block_indexes, lead_text), scene=scene_ctx,
     )
@@ -235,7 +243,7 @@ def regenerate_panel(
 
             settings = get_settings()
             if generate_compiled_batch(
-                [request], [sections], settings.render_image_model, greyscale=settings.render_panel_mode == "manga",
+                [request], [sections], settings.render_image_model, greyscale=_panel_mode_of(row) == "manga",
             ):
                 raise PanelRegenError(f"panel {panel_id!r} candidate {i + 1} was not drawn; see the log for the worker's error")
         else:

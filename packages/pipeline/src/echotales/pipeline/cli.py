@@ -548,6 +548,11 @@ def build_parser() -> argparse.ArgumentParser:
         "Dense is roughly four times the images for the same number of scenes, so pair it with --max-panels",
     )
     p_render.add_argument(
+        "--look", choices=["colour", "bw"], default=None,
+        help="colour (the default) or bw, black-and-white manga panels: ink line art, screentone, solid blacks, no colour in the "
+        "prompt. Default follows render.look in config.json. Pair bw with `pages --look bw` (right-to-left manga pages)",
+    )
+    p_render.add_argument(
         "--tier", choices=["preview", "full"], default=None,
         help="preview (a handful of panels) or full (the whole chapter); default follows ECHOTALES_COMPUTE",
     )
@@ -633,7 +638,15 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_pages.add_argument("--novel", required=True)
     p_pages.add_argument("--chapters", help="range, e.g. 1-3; default: every chapter that has rendered panels")
-    p_pages.add_argument("--format", default="webtoon", choices=["manga", "comic", "webtoon"])
+    p_pages.add_argument(
+        "--format", default=None, choices=["manga", "comic", "webtoon"],
+        help="default follows --look: webtoon for colour, right-to-left manga for bw",
+    )
+    p_pages.add_argument(
+        "--look", default="colour", choices=["colour", "bw"],
+        help="bw turns the rendered panels into black-and-white manga (greyscale, dot screentone, solid blacks); lettering stays "
+        "black on white. For panels rendered in colour; a `render --look bw` render looks better. Default colour",
+    )
     p_pages.add_argument("--export", default="png", help="comma-separated: png,pdf,cbz (default: png)")
     p_pages.add_argument("--suffix", default=None, help="version suffix, e.g. v1_<suffix>; default: the format")
     p_pages.add_argument("--panel-dir", default=None, help="default: data/novels/<CODE>/panels")

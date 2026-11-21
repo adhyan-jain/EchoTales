@@ -426,9 +426,17 @@ _FLAVOUR: dict[str, str] = {
 STYLE_LEADS: dict[str, str] = {k: f"{_LOOK} {v}" for k, v in _FLAVOUR.items()}
 
 
-def style_lead(novel_id: str, *, people: bool = True) -> str:
-    """The fixed look plus the genre flavour. `people=False` is for a still-life insert: "mature faces with natural eyes" and
-    "gaslamp-era clothes" in the lead drew one or two men beside the lamp and the pipe (LotM round 5, 2 of 4 inserts)."""
+#: The black-and-white manga lead (`render --look bw`, EVOLUTION 4.187): ink, screentone and solid blacks, and no colour word anywhere
+#: in it; the colour lead above is "colour illustration ... cinematic natural colour grading", which would fight a monochrome panel.
+BW_LEAD = "Black and white manga panel: clean ink line art, screentone shading, solid blacks, no colour."
+
+
+def style_lead(novel_id: str, *, people: bool = True, look: str = "colour") -> str:
+    """The fixed look plus the genre flavour (`look="bw"`: the black-and-white manga lead instead). `people=False` is for a
+    still-life insert: "mature faces with natural eyes" and "gaslamp-era clothes" in the lead drew one or two men beside the
+    lamp and the pipe (LotM round 5, 2 of 4 inserts)."""
+    if look == "bw":
+        return BW_LEAD
     lead = STYLE_LEADS.get(genre_of(novel_id), STYLE_LEADS["generic"])
     if people:
         return lead

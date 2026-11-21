@@ -24,6 +24,18 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 _CONFIG_JSON = Path(__file__).resolve().parents[5] / "config.json"
 
 
+#: The two looks a render can have (`render --look`, `render.look` in config.json, the Studio's `look` param) and the compiler
+#: output mode each one is. `bw` is the black-and-white manga look (EVOLUTION 4.187); `colour` stays the default.
+LOOKS: dict[str, str] = {"colour": "colour", "bw": "manga"}
+
+
+def look_error(look: str | None) -> str | None:
+    """None when `look` is a known look (or None, meaning the configured one), else the sentence to refuse it with."""
+    if look is None or look in LOOKS:
+        return None
+    return f"look {look!r} is not one of {', '.join(LOOKS)}"
+
+
 def _load_config_json() -> dict[str, object]:
     if not _CONFIG_JSON.exists():
         return {}
@@ -43,6 +55,9 @@ def _load_config_json() -> dict[str, object]:
     for key in ("image_model", "panel_mode", "prompt_compiler", "director_model", "candidates", "vision_model"):
         if key in render:
             out[f"render_{key}"] = render[key]
+    # `look` is the reader-facing name for `panel_mode` (bw = the compiler's manga mode) and wins when both are given.
+    if render.get("look") in LOOKS:
+        out["render_panel_mode"] = LOOKS[render["look"]]
     persona = raw.get("persona", {})
     if "prefix_causal" in persona:
         out["persona_prefix_causal"] = persona["prefix_causal"]

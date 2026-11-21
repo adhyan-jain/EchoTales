@@ -726,7 +726,6 @@ def _compile_natural(b: PanelBrief, profile: ModelProfile, appearance: Appearanc
     )
 
 
-_MANGA_LEAD = "Black and white manga panel, screentone shading, bold ink linework."
 
 
 def _compile_composed(b: PanelBrief, profile: ModelProfile, appearance: AppearanceInText) -> CompiledPrompt:
@@ -739,7 +738,7 @@ def _compile_composed(b: PanelBrief, profile: ModelProfile, appearance: Appearan
     nothing scene-dependent is in them; wounds and clothing state live in the paragraph, which comes from the panel's text.
     Setting clauses the paragraph already says are not repeated."""
     from echotales.pipeline.persona.genre import style_lead
-    lead = _MANGA_LEAD if b.mode is OutputMode.MANGA else style_lead(b.novel_id, people=b.frame_focus != "prop")
+    lead = style_lead(b.novel_id, people=b.frame_focus != "prop", look="bw" if b.mode is OutputMode.MANGA else "colour")
     s = [PromptSection("style", lead)]
     # The framing comes straight after the style lead: Z-Image has no CFG, so the shot named first and plainly is the shot drawn.
     # Before this the compiled prompt never named a shot (16 of 16 LotM panels were one medium shot, EVOLUTION 4.171).
@@ -1217,7 +1216,7 @@ def brief_from_direction(
         empty_hands=bool(chars) and not props and not _HOLDS.search(f"{passage} {composition} {getattr(d, 'staging', '') or ''}"),
         grade=light_grade(
             (getattr(d, "staging", "") or "") if composition else "", getattr(d, "lighting", "") or "", passage,
-            f"{location} {getattr(d, 'setting', '')} {loc_detail}", composition, mood=mood,
+            f"{location} {getattr(d, 'setting', '')} {loc_detail}", composition, mood=mood, mono=mode is OutputMode.MANGA,
         ),
     )
 

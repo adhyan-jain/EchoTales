@@ -57,6 +57,19 @@ class ChapterPages:
     manifest: Path | None = None
 
 
+def resolve_format(fmt: str | None, look: str = "colour") -> str:
+    """The page format to build: the one named, else right-to-left `manga` for the black-and-white look and `webtoon` for colour
+    (the colour product is read as a vertical strip). Refuses an unknown look or format with the choices."""
+    from echotales.pipeline.config import look_error
+
+    if (bad := look_error(look)) is not None or look is None:
+        raise ValueError(bad or "look is required")
+    chosen = fmt or ("manga" if look == "bw" else "webtoon")
+    if chosen not in FORMATS:
+        raise ValueError(f"unknown page format {chosen!r}; expected one of {', '.join(FORMATS)}")
+    return chosen
+
+
 def parse_exports(spec: str | Sequence[str]) -> list[str]:
     items = [s.strip() for s in (spec.split(",") if isinstance(spec, str) else spec) if s.strip()]
     for item in items:
@@ -129,10 +142,15 @@ def build_chapter_pages(
     out_root: str | Path | None = None,
     suffix: str | None = None,
     panels_version: str | None = None,
+    look: str = "colour",
 ) -> ChapterPages:
-    """Page one chapter from its latest rendered panels. Writes `<out_root>/chN/vN_<suffix>/`."""
+    """Page one chapter from its latest rendered panels. Writes `<out_root>/chN/vN_<suffix>/`.
+
+    `look="bw"` converts the (colour) panels to black-and-white manga as they are placed (`pages/bwlook.py`); panels that were
+    already rendered black and white are screened the same way, which only makes their greys into dots."""
     if fmt not in FORMATS:
         raise ValueError(f"unknown page format {fmt!r}; expected one of {', '.join(FORMATS)}")
+    resolve_format(fmt, look)  # refuses an unknown look before any panel is read
     panel_dir = Path(panel_dir) if panel_dir is not None else Path(paths.asset_dir(novel_id, "panels"))
     out_root = Path(out_root) if out_root is not None else Path(paths.asset_dir(novel_id, "pages"))
     version_dir = (
@@ -181,7 +199,7 @@ def build_chapter_pages(
     fonts: list[int] = []
     in_gutter = 0
     for layout in layouts:
-        page, results = render_page(layout, images, lettering, rtl=rtl)
+        page, results = render_page(layout, images, lettering, rtl=rtl, look=look)
         for panel_id, res in results.items():
             overflow += [_overflow_row(o, panel_id) for o in res.overflow]
             fonts += [p.font_size for p in res.placed if p.style != "sfx"]
@@ -191,7 +209,7 @@ def build_chapter_pages(
         rendered = split_strip(rendered[0], layouts[0])
 
     base = out_root / f"ch{chapter:g}"
-    out_dir = base / f"{paths.next_version(base)}_{suffix or fmt}"
+    out_dir = base / f"{paths.next_version(base)}_{suffix or (fmt + '-bw' if look == 'bw' else fmt)}"
     chapter_row = store.get_chapter(novel_id, chapter)
     novel_row = store.get_novel(novel_id) or {}
     files = export_pages(
@@ -203,7 +221,7 @@ def build_chapter_pages(
     manifest.write_text(
         json.dumps(
             {
-                "novel": novel_id, "chapter": chapter, "format": fmt, "panels_version": version_dir.name,
+                "novel": novel_id, "chapter": chapter, "format": fmt, "look": look, "panels_version": version_dir.name,
                 "pages": len(rendered), "files": [f.name for f in files], "overflow": overflow,
                 # Legibility and placement as drawn: smallest font in px at the export size, and how many
                 # bubbles had no clear spot on the picture and went to the gutter instead.
@@ -216,7 +234,7 @@ def build_chapter_pages(
     # Repo rule: every new version is named and gets a one-line entry at the same time it is made.
     with open(base / "VERSIONS.md", "a", encoding="utf-8") as fh:
         fh.write(
-            f"\n## {out_dir.name}\n{time.strftime('%Y-%m-%d')}: {fmt} pages from panels {version_dir.name}, "
+            f"\n## {out_dir.name}\n{time.strftime('%Y-%m-%d')}: {fmt}{' black-and-white' if look == 'bw' else ''} pages from panels {version_dir.name}, "
             f"{len(rendered)} pages, {len(overflow)} lettering notes; not yet reviewed by eye.\n"
         )
     return ChapterPages(chapter, out_dir, [*files, manifest], len(rendered), version_dir.name, overflow, manifest)

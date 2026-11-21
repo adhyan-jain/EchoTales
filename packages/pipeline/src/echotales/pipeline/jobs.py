@@ -232,13 +232,15 @@ def run_stage(
     return result
 
 
-def _studio_version(out_dir: Path, chapters: list[float], engine_name: str, density: str = "beat") -> str:
+def _studio_version(
+    out_dir: Path, chapters: list[float], engine_name: str, density: str = "beat", look: str | None = None,
+) -> str:
     from echotales.pipeline.paths import next_version
 
     highest = max((int(next_version(out_dir / f"ch{c:g}")[1:]) for c in chapters), default=1)
     # The tiers draw very different numbers of pictures; the name says which one a version is (repo rule: every
     # version gets a descriptive suffix).
-    return f"v{highest}_{engine_name}-studio" + ("-dense" if density == "dense" else "")
+    return f"v{highest}_{engine_name}-studio" + ("-dense" if density == "dense" else "") + ("-bw" if look == "bw" else "")
 
 
 def _missing_panel_images(out_dir: Path, chapters: list[float], version: str) -> list[str]:
@@ -439,18 +441,20 @@ def _run_episode(store: Store, novel_id: str, params: dict[str, Any]) -> list[st
 def _run_pages(store: Store, novel_id: str, params: dict[str, Any]) -> list[str]:
     """Pages from the same code `echotales pages` runs. Returns each chapter's `pages.json`, which lists the
     files written, so a UI can link them without scanning the folder."""
-    from echotales.pipeline.pages.build import build_pages, parse_exports
+    from echotales.pipeline.pages.build import build_pages, parse_exports, resolve_format
     from echotales.pipeline.pages.composer import FORMATS
 
     if not params.get("chapters"):
         raise ValueError("no chapters chosen; pass chapters, e.g. [1], for the chapters to make pages of")
-    fmt = str(params.get("format") or "webtoon")
+    look = str(params.get("look") or "colour")
+    # The look picks the format when none is named: right-to-left manga for bw, webtoon for colour.
+    fmt = resolve_format(str(params["format"]) if params.get("format") else None, look)
     if fmt not in FORMATS:
         raise ValueError(f"page format {fmt!r} is not one of {', '.join(FORMATS)}; pick one of them")
     exports = parse_exports(params.get("export") or "png")
     built = build_pages(
         store, novel_id, [float(c) for c in params["chapters"]], fmt=fmt, exports=exports,
-        panel_dir=params.get("panel_dir"), out_root=params.get("out_dir"), suffix=params.get("suffix"),
+        panel_dir=params.get("panel_dir"), out_root=params.get("out_dir"), suffix=params.get("suffix"), look=look,
     )
     return [str(b.manifest) for b in built]
 
@@ -718,7 +722,12 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
 
         if (bad := density_error(density)) is not None:
             raise ValueError(bad)
-        version = _studio_version(Path(out_dir), wanted, engine_name, density)
+        look = params.get("look") or None
+        from echotales.pipeline.config import look_error
+
+        if (bad := look_error(look)) is not None:
+            raise ValueError(bad)
+        version = _studio_version(Path(out_dir), wanted, engine_name, density, look)
         try:
             run_stage(
                 store, run_id=pipeline_run.run_id, stage_name="render",
@@ -733,6 +742,7 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
                         max_panels=max_panels,
                         version=version,
                         density=density,
+                        look=look,
                     ),
                     Path(out_dir), wanted, version,
                 ),
