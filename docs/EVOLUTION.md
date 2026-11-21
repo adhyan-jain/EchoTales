@@ -9876,6 +9876,6 @@ Owner rule (2026-11-22): every heavy task runs on the GPU (RTX 4060, 8 GB); the 
 | 3 s | 4.11 s | 1.14 s | 90 / 90 |
 | 20 s | 16.39 s | 2.79 s | 600 / 600 |
 
-PSNR between the two 3 s encodes 41.5 dB (random-noise still, the worst case for size: NVENC 5.7 MB vs x264 3.5 MB at 3 s, 30.6 MB vs 15.5 MB at 20 s; cq 19 spends more bits than crf 20 on noise). Frame counts match exactly, which is what `anime.py`'s sync proof needs. Whisper-base.en on 6 real RI ch1 line clips, model load included: cpu 18.08 s, cuda fp16 7.42 s. Not run: a full anime or comic episode with NVENC segments concatenated (`-c copy`) end to end, and Chatterbox on this change (its device was already cuda).
+PSNR between the two 3 s encodes 41.5 dB (random-noise still, the worst case for size: NVENC 5.7 MB vs x264 3.5 MB at 3 s, 30.6 MB vs 15.5 MB at 20 s; cq 19 spends more bits than crf 20 on noise). Frame counts match exactly, which is what `anime.py`'s sync proof needs. Whisper-base.en on 6 real RI ch1 line clips, model load included: cpu 18.08 s, cuda fp16 7.42 s. Concat check (CPU only): two NVENC segments plus one libx264 segment joined with `-c copy` give 270 of 270 frames and decode cleanly, so a stale libx264 segment next to NVENC ones is safe. Not run: a full anime or comic episode end to end with NVENC, and Chatterbox on this change (its device was already cuda).
 
 Suite: core+pipeline 2,823 passed, 29 skipped (`-o addopts=""`); ruff 540 and mypy 583, both at the baseline.
