@@ -18,7 +18,7 @@ from typing import Literal
 
 Size = Literal["wide", "medium", "close"]
 #: What the picture is about, finer than `size`: "" (the person), "eyes", "hands", "prop", "over-shoulder", "establishing".
-Focus = Literal["", "eyes", "hands", "prop", "over-shoulder", "establishing", "behind", "topdown"]
+Focus = Literal["", "eyes", "hands", "prop", "over-shoulder", "establishing", "behind", "topdown", "reverse", "overview", "low", "down", "profile"]
 
 
 @dataclass(frozen=True, slots=True)
@@ -37,6 +37,10 @@ class FramingState:
 
     recent: list[Framing] = field(default_factory=list)
     inserts_since: int = 99
+    #: How many panels took a crowd view, so the crowd scene walks `_CROWD_VIEWS` instead of repeating one picture.
+    crowd_n: int = 0
+    #: Where the quiet rotation (`_CYCLE`) goes next.
+    cycle_n: int = 0
 
 
 _EYES = re.compile(r"\b(eyes?|pupils?|irises|iris|gaze[sd]?|eyeballs?|eyelids?)\b", re.I)
@@ -137,7 +141,25 @@ def _angle(text: str, expression: str) -> str:
 
 #: The views a quiet run rotates through, in the order a viewer reads them as different pictures: person, over their shoulder from
 #: behind, face, place, from above, eyes.
-_CYCLE: list[tuple[str, str]] = [("medium", ""), ("medium", "behind"), ("close", ""), ("wide", ""), ("medium", "topdown"), ("close", "eyes")]
+#: Round 7 (EVOLUTION 4.182): the lone lead's "behind" view and the plain medium read as one chest-up man at the desk (LotM r6), so the
+#: run also takes a high over-the-shoulder look down at the desk ("down") and a profile at the window ("profile").
+_CYCLE: list[tuple[str, str]] = [("medium", ""), ("close", ""), ("medium", "behind"), ("wide", ""), ("medium", "down"), ("medium", "profile"),
+                                 ("close", "eyes"), ("medium", "topdown")]
+
+#: A lone lead at one desk (LotM r7, 16 panels): the plain medium, the wide, the corner view and the top-down view were all drawn as the
+#: same chest-up man at the desk (10 of 16); only the look-down, the window profile, the eye crop and the inserts read as other pictures
+#: (`out_r7_ab/ab_lone.png`). The lone lead's quiet rotation therefore walks only those, with the plain face crop and medium between.
+_LONE_CYCLE: list[tuple[str, str]] = [("medium", "down"), ("close", ""), ("medium", "profile"), ("close", "eyes"), ("medium", "")]
+
+#: The views that are all "his face or his chest-up" to a viewer. LotM and cliff r7: four of these in a row (a medium, a close-up, an eye
+#: crop, a close-up) drew four near-identical panels, so a soft pick never makes a third in a row.
+_FACE_VIEWS = {("medium", ""), ("close", ""), ("close", "eyes")}
+
+#: The views a crowd scene walks, each a different picture of the same confrontation (RI cliff r6: 5 of 13 panels were the one side
+#: view). Side view, reverse on the crowd with the lead out of frame, a high wide with him a lone figure, a low angle on him alone
+#: against the sky, a face close-up. The first is the round-6 side view.
+_CROWD_VIEWS: list[tuple[str, str]] = [("medium", "behind"), ("medium", "reverse"), ("wide", "overview"), ("medium", "low"), ("close", "")]
+_CROWD_REPLACES = ("", "behind", "over-shoulder", "topdown", "down", "profile")
 
 
 def _key(f: Framing) -> tuple[str, str]:
@@ -154,6 +176,7 @@ def plan_framing(
     crowd: bool = False,
     crowd_in_scene: bool = False,
     others_present: bool = True,
+    alone: bool = False,
     new_place: bool = False,
     opens_chapter: bool | None = None,
     state: FramingState | None = None,
@@ -200,26 +223,40 @@ def plan_framing(
         # man, so a size is not a different picture. A text-driven pick (a peak, a place, nothing) that repeats the last view is
         # moved to the next view in `_CYCLE` that neither of the last two used.
         used = {_key(f) for f in recent[-2:]}
-        if _key(chosen) in used and last is not None:
-            start = _CYCLE.index(_key(last)) + 1 if _key(last) in _CYCLE else 0
-            for i in range(len(_CYCLE)):
-                size, focus = _CYCLE[(start + i) % len(_CYCLE)]
-                if (size, focus) not in used:
+        # Round 7: a plain "rotation" pick always walks on (a 3-view loop of medium, behind, close otherwise: the last two used
+        # always excluded only the view that had just been left, so the run never reached the other cycle entries).
+        too_much_face = len(recent) >= 2 and all(_key(f) in _FACE_VIEWS for f in recent[-2:])
+        if (_key(chosen) in used or chosen.reason == "rotation" or (too_much_face and _key(chosen) in _FACE_VIEWS)) and last is not None:
+            # A persistent pointer, not the last view's place: the text-driven wides and close-ups in between (LotM r7: a wide, a
+            # close and a corner view alternated) reset a last-view start to the same three entries and never reached the others.
+            cycle = _LONE_CYCLE if alone else _CYCLE
+            start = state.cycle_n
+            for i in range(len(cycle)):
+                size, focus = cycle[(start + i) % len(cycle)]
+                if (size, focus) not in used and not (too_much_face and (size, focus) in _FACE_VIEWS):
+                    state.cycle_n = (start + i + 1) % len(cycle)
                     chosen = Framing(size, focus=focus, reason=f"{chosen.reason}; a different view after {last.size} {last.focus}".strip())  # type: ignore[arg-type]
                     break
-    if (crowd or crowd_in_scene) and chosen.size in ("medium", "wide") and chosen.focus in ("", "behind", "over-shoulder") and not (
-            len(recent) >= 2 and all(f.subject == "crowd" for f in recent[-2:])):
+    if (crowd or crowd_in_scene) and chosen.size in ("medium", "wide") and chosen.focus in _CROWD_REPLACES:
         # The crowd and the lead both facing the viewer read as the lead among his own people (RI cliff r5, 6 of 13 panels): from
         # behind the lead, with the crowd across a gap facing him, they read as opposed. Round 6: only the one dedicated crowd cut
         # carried `crowd`, so this never fired (12 of 13 cliff panels had a crowd in the staging); `crowd_in_scene` is the flag
-        # for a crowd that is merely in the picture. Never three running, or the chapter is one picture.
-        chosen = Framing(chosen.size, focus="behind", subject="crowd", reason=f"{chosen.reason}; crowd faces the lead")
-    angle = "birds-eye" if chosen.focus == "topdown" else "over-the-shoulder" if chosen.focus == "over-shoulder" else _angle(text, expression)
+        # for a crowd that is merely in the picture. Round 7: the one side view then filled 5 of 13 panels, so the crowd scene walks
+        # `_CROWD_VIEWS`, never the view the last panel had.
+        for i in range(len(_CROWD_VIEWS)):
+            size, focus = _CROWD_VIEWS[(state.crowd_n + i) % len(_CROWD_VIEWS)]
+            if (size, focus) != (_key(last) if last else None):
+                state.crowd_n += i + 1
+                chosen = Framing(size, focus=focus, subject="crowd" if focus else "", reason=f"{chosen.reason}; crowd view {focus or 'face'}")  # type: ignore[arg-type]
+                break
+    angle = _FIXED_ANGLE.get(chosen.focus) or _angle(text, expression)
     chosen = Framing(chosen.size, angle, chosen.focus, chosen.subject, chosen.reason)
     state.recent.append(chosen)
     state.inserts_since = 0 if chosen.focus == "prop" else state.inserts_since + 1
     return chosen
 
+
+_FIXED_ANGLE = {"topdown": "birds-eye", "over-shoulder": "over-the-shoulder", "overview": "high-angle", "low": "low-angle", "down": "high-angle"}
 
 _ANGLE_TEXT = {
     "low-angle": ", seen from a low angle looking up",
@@ -244,6 +281,38 @@ def framing_sentence(f: Framing, lead: str, *, people: bool = True, alone: bool 
         return f"Extreme close-up on {who}'s eyes and brow, the eyes filling the frame, the rest of the face cropped{angle}."
     if f.focus == "hands":
         return f"Close-up on {who}'s hands and what they hold, filling the frame, the face out of the picture{angle}."
+    if f.focus == "reverse":
+        # Round 7 A/B (cliff p7, seeds 1 and 2, `out_r7_ab/ab_cliff.png`): the lead is not named so he is not drawn. With a blurred
+        # shoulder in the wording the crowd faced the camera but stood calm (2 of 2); "pointing at someone just beyond the lens"
+        # drew an accusing crowd (2 of 2) and no hero in the crowd.
+        return ("Reverse shot at ground level from where he stands: a dense crowd of different people at close and middle distance "
+                "fills the frame, their angry faces turned toward the camera, all of them glaring and pointing at someone just "
+                "beyond the lens.")
+    if f.focus == "overview":
+        # Drew him mid-sized (not small) on bare rock with the crowd a thin ring far behind: lone, and no follower reading (2 of 2).
+        # Cliff r7 seed 777 p6, p12: the lead drawn twice, full-size in the foreground (his identity sentence, now dropped for this view
+        # in the compiler) and as a tiny figure in the ring. He is only the small figure at the centre of the ring.
+        return (f"High wide establishing shot looking straight down from far above: the crowd is a loose ring of tiny people on the "
+                f"ground and {who} is one small lone figure standing on bare rock at the centre of the ring, no other figure "
+                "in the picture, the whole place visible and every figure small in it.")
+    if f.focus == "low":
+        # "head and shoulders ... no other person" drew him seated on the rock (2 of 2); this wording drew him standing, wind in
+        # the hair, nobody else (2 of 2).
+        return (f"Low angle looking up at {who} from the ground, one man alone against the open sky, upper body and face seen from "
+                "below, wind in his hair.")
+    if f.focus == "down" and alone:
+        # Round 7 A/B: drew the man in three-quarter back view bent over the desk, one person (3 of 3), unlike round 6's "from behind".
+        return (f"High over-the-shoulder view looking down: {who} sits alone, head bent over what lies on the desk in front of him, "
+                "only the back of his head and shoulders at the bottom of the frame and the desk and its objects below, the rest of "
+                "the room empty and quiet.")
+    if f.focus == "down":
+        f = Framing(f.size, f.angle, "topdown", f.subject, f.reason)
+    if f.focus == "profile":
+        # Round 7 A/B (LotM p4, 3 seeds, `out_r7_ab/ab_lone.png`): a lone man at a window in profile drew no second person (6 of 6);
+        # standing at a tall window looking out drew a clearly different picture from the seated desk views (3 of 3), "sits at
+        # the window" drew the desk view again.
+        return (f"Side view of {who} alone in profile, standing at a tall window and looking out at the street, the window and the "
+                "light outside filling the frame.")
     if f.focus == "behind" and f.subject == "crowd":
         # Round 6 A/B (RI cliff p3, 2 seeds each, `out_r6_ab_crowd`): "seen from behind X, the crowd across a gap facing him" drew a
         # second, front-facing X in the middle with the crowd standing around him facing the viewer (2 of 2: the camera behind him

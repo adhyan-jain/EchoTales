@@ -751,7 +751,7 @@ def _compile_composed(b: PanelBrief, profile: ModelProfile, appearance: Appearan
         s.append(PromptSection("grade", b.grade.replace("the subject", "the object") if insert else b.grade))
     # A view with no face in it (an insert, from behind, from above) has no paragraph and no face sentence: both describe a person
     # facing the viewer.
-    faceless = insert or b.frame_focus in ("behind", "topdown")
+    faceless = insert or b.frame_focus in _FACELESS_FOCUS
     staging_text = trim_staging(b.staging.strip(), b.frame_focus, b.shot, b.frame_subject) if b.staging else ""
     stage = PromptSection("staging", staging_text) if staging_text else None
     cropped = b.composition.strip()
@@ -768,6 +768,10 @@ def _compile_composed(b: PanelBrief, profile: ModelProfile, appearance: Appearan
     # what holds (RI cliff scene 2026-11-20: with the identity last, the robe changed colour and the hair style changed in
     # 13 panels of one scene; staging and the paragraph carried the scene and said nothing of clothes).
     for c in b.characters:
+        if b.frame_focus in ("reverse", "overview"):
+            # Round 7: a reverse shot on the crowd leaves the lead out; with his identity sentence the model drew him in the middle of
+            # the crowd, who stood around him facing the viewer (cliff r7 p4).
+            continue
         s.append(PromptSection(f"character:{c.name}", identity_sentence(c, appearance)))
         written[c.name] = appearance is not AppearanceInText.OFF
         fields[c.name] = derive_demeanour(c, b.mood, b.tension).fields_used
@@ -813,6 +817,10 @@ def _compile_composed(b: PanelBrief, profile: ModelProfile, appearance: Appearan
     )
 
 
+#: Round 7 views (EVOLUTION 4.182) with no paragraph, face or Blocking: they are not a person facing the viewer.
+_ROUND7_FOCUS = ("reverse", "overview", "low", "down", "profile")
+_FACELESS_FOCUS = ("behind", "topdown", *_ROUND7_FOCUS)
+
 _STAGE_PART = re.compile(r"\b(Set|Blocking|Light):\s*(.*?)(?=\s+(?:Set|Blocking|Light):|\Z)", re.S)
 
 
@@ -836,7 +844,7 @@ def trim_staging(staging: str, focus: str, shot: str, subject: str = "") -> str:
             keep = ("Set", "Light")
     elif focus in ("eyes", "hands"):
         keep = ("Light",)
-    elif focus in ("behind", "topdown"):
+    elif focus in ("behind", "topdown", *_ROUND7_FOCUS):
         keep = ("Set", "Light")
     elif shot == "close":
         keep = ("Set", "Light")

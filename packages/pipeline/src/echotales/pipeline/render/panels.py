@@ -2799,10 +2799,12 @@ def render_panels(
                     # and the compiled prompt never named a shot at all (round 3, EVOLUTION 4.171).
                     _cast_labels = list(_beat_entity_labels.values()) or list(_scene_last_present_entity_labels.values())
                     _set_now = staging_set(_direction.staging)
+                    _alone = len(_cast_labels) <= 1 and not _direction.others and not crowd_in_scene(_direction.others, _direction.staging)
                     _framing = plan_framing(
                         beat_prose, expression=_direction.expression, names=_cast_labels,
                         director_props=[*_direction.props, *_direction.key_objects], spoken=_speech, crowd=is_crowd_cut,
                         crowd_in_scene=crowd_in_scene(_direction.others, _direction.staging) or bool(_chunk_mobs),
+                        alone=_alone,
                         others_present=bool(_direction.others) or len(_cast_labels) > 1 or "others" in _direction.staging.lower(),
                         opens_chapter=lead == 0,
                         new_place=_scene_panel_n == 0 and bool(_set_now) and _set_now != _prev_panel_set,
@@ -2810,7 +2812,7 @@ def render_panels(
                     )
                     _direction = apply_framing(
                         _direction, _framing, _cast_labels[0] if _cast_labels else "",
-                        alone=len(_cast_labels) <= 1 and not _direction.others and not crowd_in_scene(_direction.others, _direction.staging),
+                        alone=_alone,
                     )
                     _scene_panel_n += 1
                     _prev_panel_set = _set_now or _prev_panel_set
