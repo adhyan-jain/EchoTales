@@ -39,11 +39,14 @@ def test_the_reverse_view_leaves_the_lead_out_and_the_overview_makes_him_a_small
 
 def test_a_lone_lead_run_rotates_views_with_no_view_more_than_twice_in_a_row() -> None:
     state = fr.FramingState()
-    out = [fr.plan_framing("He sat at the desk.", names=["Klein"], others_present=False, state=state, opens_chapter=False) for _ in range(12)]
+    out = [fr.plan_framing("He sat at the desk.", names=["Klein"], others_present=False, alone=True, state=state, opens_chapter=False) for _ in range(12)]
     keys = [(f.size, f.focus) for f in out]
     for i in range(2, len(keys)):
         assert not (keys[i] == keys[i - 1] == keys[i - 2])
-    assert {"down", "profile"} <= {f.focus for f in out}
+    assert {"down", "profile", "eyes"} <= {f.focus for f in out}
+    # the views the model drew as the same chest-up man at the desk are not in a lone lead's rotation (LotM r7)
+    assert not {"behind", "topdown"} & {f.focus for f in out} and not any(f.size == "wide" for f in out)
+    assert Counter(keys).most_common(1)[0][1] / len(keys) <= 0.35
 
 
 def test_a_view_with_nobody_or_one_person_keeps_only_the_place_of_the_staging() -> None:

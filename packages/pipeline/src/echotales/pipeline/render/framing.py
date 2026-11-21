@@ -39,6 +39,8 @@ class FramingState:
     inserts_since: int = 99
     #: How many panels took a crowd view, so the crowd scene walks `_CROWD_VIEWS` instead of repeating one picture.
     crowd_n: int = 0
+    #: Where the quiet rotation (`_CYCLE`) goes next.
+    cycle_n: int = 0
 
 
 _EYES = re.compile(r"\b(eyes?|pupils?|irises|iris|gaze[sd]?|eyeballs?|eyelids?)\b", re.I)
@@ -144,6 +146,11 @@ def _angle(text: str, expression: str) -> str:
 _CYCLE: list[tuple[str, str]] = [("medium", ""), ("close", ""), ("medium", "behind"), ("wide", ""), ("medium", "down"), ("medium", "profile"),
                                  ("close", "eyes"), ("medium", "topdown")]
 
+#: A lone lead at one desk (LotM r7, 16 panels): the plain medium, the wide, the corner view and the top-down view were all drawn as the
+#: same chest-up man at the desk (10 of 16); only the look-down, the window profile, the eye crop and the inserts read as other pictures
+#: (`out_r7_ab/ab_lone.png`). The lone lead's quiet rotation therefore walks only those, with the plain face crop and medium between.
+_LONE_CYCLE: list[tuple[str, str]] = [("medium", "down"), ("close", ""), ("medium", "profile"), ("close", "eyes"), ("medium", "")]
+
 #: The views a crowd scene walks, each a different picture of the same confrontation (RI cliff r6: 5 of 13 panels were the one side
 #: view). Side view, reverse on the crowd with the lead out of frame, a high wide with him a lone figure, a low angle on him alone
 #: against the sky, a face close-up. The first is the round-6 side view.
@@ -165,6 +172,7 @@ def plan_framing(
     crowd: bool = False,
     crowd_in_scene: bool = False,
     others_present: bool = True,
+    alone: bool = False,
     new_place: bool = False,
     opens_chapter: bool | None = None,
     state: FramingState | None = None,
@@ -214,10 +222,14 @@ def plan_framing(
         # Round 7: a plain "rotation" pick always walks on (a 3-view loop of medium, behind, close otherwise: the last two used
         # always excluded only the view that had just been left, so the run never reached the other cycle entries).
         if (_key(chosen) in used or chosen.reason == "rotation") and last is not None:
-            start = _CYCLE.index(_key(last)) + 1 if _key(last) in _CYCLE else 0
-            for i in range(len(_CYCLE)):
-                size, focus = _CYCLE[(start + i) % len(_CYCLE)]
+            # A persistent pointer, not the last view's place: the text-driven wides and close-ups in between (LotM r7: a wide, a
+            # close and a corner view alternated) reset a last-view start to the same three entries and never reached the others.
+            cycle = _LONE_CYCLE if alone else _CYCLE
+            start = state.cycle_n
+            for i in range(len(cycle)):
+                size, focus = cycle[(start + i) % len(cycle)]
                 if (size, focus) not in used:
+                    state.cycle_n = (start + i + 1) % len(cycle)
                     chosen = Framing(size, focus=focus, reason=f"{chosen.reason}; a different view after {last.size} {last.focus}".strip())  # type: ignore[arg-type]
                     break
     if (crowd or crowd_in_scene) and chosen.size in ("medium", "wide") and chosen.focus in _CROWD_REPLACES:
