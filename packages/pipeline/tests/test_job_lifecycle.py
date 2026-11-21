@@ -216,6 +216,12 @@ def test_a_wider_chapter_range_does_not_reuse_a_narrower_builds_stage_digest() -
     assert jobs.pipeline_stage_digest("src", "0 ingest", {}) == jobs.digest_text(f"src|0 ingest|v{PIPELINE_VERSION}")
 
 
+def test_cost_route_says_when_the_episode_is_an_assumed_one(live_server: LivePort) -> None:  # noqa: F811
+    assert TestUploadSafety._create(live_server, "cm")[0] == 201
+    status, body = _request(live_server, "GET", "/api/novels/cm/episodes/ep1/cost?tier=path1")
+    assert status == 200 and body["assumed_episode"] is True and body["num_shots"] == 12
+
+
 class TestRepeatedJobsDoWork:
     """A second identical Studio render/voice request must run again: its inputs (bible, screenplay, panels) change
     between identical params, and a skipped job reports SUCCEEDED with no new output."""

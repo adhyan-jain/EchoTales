@@ -124,4 +124,13 @@ describe('CostMeterWidget', () => {
       expect(screen.getByRole('alert')).toBeInTheDocument();
     });
   });
+
+  test('says so when the estimate is for an assumed episode, not a saved screenplay', async () => {
+    api.getEpisodeCost.mockResolvedValueOnce({
+      episode_id: 'ep1', tier: 'path1', cost_per_finished_minute_usd: 0.2, total_cost_usd: 0.1,
+      episode_duration_s: 42, num_shots: 12, breakdown: {}, assumed_episode: true,
+    });
+    renderWidget({ novelId: 'hound', episodeId: 'ep1' });
+    expect(await screen.findByTestId('cost-assumed')).toBeInTheDocument();
+  });
 });

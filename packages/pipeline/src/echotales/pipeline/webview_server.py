@@ -1833,6 +1833,9 @@ def make_handler(
                         ScreenplayShot,
                     )
                     ep_row = handle.store.get_screenplay_episode(ep_id)
+                    # With no saved episode the figure is for an invented 12-shot, 42 s episode; the flag lets the
+                    # page say so instead of showing it as this book's cost.
+                    assumed = not ep_row
                     if ep_row:
                         ep = ScreenplayEpisode.from_dict(ep_row)
                     else:
@@ -1860,7 +1863,7 @@ def make_handler(
                             ],
                         )
                     estimate = estimate_episode_cost(ep, novel_id=novel_id, tier=tier)
-                    return self._json(200, estimate.to_dict())
+                    return self._json(200, {**estimate.to_dict(), "assumed_episode": assumed})
 
                 if len(parts) == 5 and parts[:2] == ["api", "novels"] and parts[3] == "arc" and parts[4] == "audit":
                     novel_id = parts[2]
