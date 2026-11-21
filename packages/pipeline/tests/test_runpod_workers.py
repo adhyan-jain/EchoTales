@@ -110,6 +110,22 @@ def test_wan_audio_is_reported_ignored_and_last_frame_refused(monkeypatch: pytes
     assert "last_frame" in mod.handler({"input": {**base, "last_frame": _b64(PNG)}})["error"]
 
 
+def test_wan_keyframe_is_cropped_to_the_model_size_not_stretched() -> None:
+    import io
+
+    from PIL import Image
+
+    mod = _load("wan_video")
+    portrait = Image.new("RGB", (200, 400), (255, 0, 0))
+    portrait.paste((0, 0, 255), (0, 0, 200, 100))  # the top quarter is blue, so a crop and a stretch differ
+    buf = io.BytesIO()
+    portrait.save(buf, format="PNG")
+    out = mod._fit_keyframe(buf.getvalue(), 320, 180)
+    assert out.size == (320, 180)
+    # Cover-fit keeps the middle 200x112 of the picture, which is all red; a stretch would show the blue strip.
+    assert out.getpixel((160, 2)) == (255, 0, 0)
+
+
 @pytest.mark.parametrize("patch, fragment", [
     ({"keyframe": None}, "keyframe"),
     ({"keyframe": "!!not base64!!"}, "base64"),
