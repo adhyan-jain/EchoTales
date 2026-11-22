@@ -864,6 +864,10 @@ def sanitize_prompt(prompt: str) -> str:
 #: layout when the word is absent from both the passage and the cast list is a
 #: hallucination. The fix is to strip the offending field back to the safe
 #: fallback rather than pass invented content to the image engine.
+_BARE_CROWD_RE = re.compile(r"(?:a |the )?(?:crowds?|groups?|people|others|figures|mob|onlookers)", re.I)
+_GROUP_WORD_RE = re.compile(
+    r"\b(?:crowds?|mob|army|group|throng|gathered|gathering|assembled|everyone|everybody|people|villagers|elders|soldiers|disciples|"
+    r"guests|servants|onlookers|multitude|dozens|hundreds|thousands|several|many)\b", re.I)
 _HALLUCINATED_GROUP_RE = re.compile(
     r"\b(warrior\s+women?|female\s+warriors?|woman\s+warrior|"
     r"armed\s+women?|women\s+soldiers?|"
@@ -1020,6 +1024,15 @@ def _validate_direction(
             d = d.model_copy(update={"characters": kept})
     if d.others is not None and _has_hallucinated_group(d.others.kind or ""):
         log.warning("director hallucinated group in others: %r -- dropped", d.others.kind)
+        d = d.model_copy(update={"others": None})
+
+    if (d.others is not None and len(cast) >= 2 and not crowd_mood and _BARE_CROWD_RE.fullmatch((d.others.kind or "").strip())
+            and not _GROUP_WORD_RE.search(beat_text)):
+        # P&P ch1 rerun: gemma2:9b wrote `others: crowd, surrounding` for 4 of 32 panels of two people in a drawing room, and the
+        # crowd views (reverse shot on an angry crowd, high overview) were drawn for them. A bare crowd the passage never names, in
+        # a scene the scene state does not call a crowd and whose cast already holds two people, is the schema's own example copied.
+        # A one-person cast is left alone: RI's opening shouting scene has its enemies only in the director's `others`.
+        log.warning("director invented a crowd in others: %r -- dropped", d.others.kind)
         d = d.model_copy(update={"others": None})
 
     d = _validate_composition(d, beat_text=beat_text, cast=cast, novel_id=novel_id, store=store, crowd_mood=crowd_mood)

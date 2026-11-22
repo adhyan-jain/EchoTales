@@ -93,3 +93,18 @@ def _tmp():
     from pathlib import Path
 
     return Path(tempfile.mkdtemp())
+
+
+def test_a_bare_crowd_in_others_is_dropped_when_the_passage_and_the_scene_name_no_crowd() -> None:
+    # P&P ch1 rerun: `others: crowd, surrounding` on 4 of 32 panels of two people in a drawing room drew crowd views of it.
+    from echotales.pipeline.render.direction import OthersDirection
+
+    two = {"Mrs. Bennet": "", "Mr. Bennet": ""}
+    d = PanelDirection(others=OthersDirection(kind="crowd", relation_to_lead="surrounding"))
+    out = _validate_direction(d, beat_text='"Do you not want to know who has taken it?" cried his wife.', cast=two)
+    assert out.others is None
+    # a scene the scene state calls a crowd, or a passage that names one, keeps it
+    assert _validate_direction(d, beat_text="He said nothing.", cast=two, crowd_mood="hostile").others is not None
+    assert _validate_direction(d, beat_text="The villagers gathered round.", cast=two).others is not None
+    named = PanelDirection(others=OthersDirection(kind="clan elders", relation_to_lead="kneeling before"))
+    assert _validate_direction(named, beat_text="He said nothing.", cast=two).others is not None

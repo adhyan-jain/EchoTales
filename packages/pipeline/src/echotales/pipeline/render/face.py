@@ -32,7 +32,7 @@ _FAMILIES: list[tuple[str, re.Pattern[str], re.Pattern[str], str]] = [
      "chin raised, looking down"),
     ("faint smile",
      re.compile(r"\b(?:lightly laughed|laughed lightly|smiled|smiling|slight(?:ly)? (?:smile|smiled)|faint(?:ly)? smil\w*|chuckled)\b", re.I),
-     re.compile(r"\b(?:faint smile|slight smile|small smile)\b", re.I),
+     re.compile(r"\b(?:faint smile|slight smile|small smile|amused|wry smile|bemused)\b", re.I),
      "a faint smile: lips curved slightly, eyes soft and amused, brows relaxed"),
     ("startle",
      re.compile(r"(?:^|[.!?\"\u201d]\s+)\W*(?:pa|bang|crack|snap|thud|boom|bam|slam|clang|crash|smack|whack)\s*[!?]+", re.I),
@@ -85,6 +85,17 @@ _FAMILIES: list[tuple[str, re.Pattern[str], re.Pattern[str], str]] = [
 ]
 
 
+def clean_expression(text: str) -> str:
+    """The director's face phrase as plain words. gemma2:9b writes snake_case keys ("anxious_brows", "calm_expression") and whole
+    sentences ("Mr. Bennet's expression is amused as he listens") where a phrase was asked for (P&P ch1 rerun: 10 of 32 faces,
+    and the compiled face line then read "anxious_brows"); the feeling is kept, the scaffolding goes."""
+    t = " ".join((text or "").replace("_", " ").split())
+    t = re.sub(r"^.{0,40}?\bexpression (?:is|was|looks|seems|appears)\s+", "", t, flags=re.I)
+    t = re.split(r"\s+(?:as|while|when)\s+", t, maxsplit=1)[0]
+    t = re.sub(r"\s+(?:brows?|eyebrows|expression|face|look)$", "", t, flags=re.I)
+    return t.strip(" .,")
+
+
 def is_neutral(expression: str) -> bool:
     return bool(NEUTRAL.match(expression or ""))
 
@@ -116,6 +127,7 @@ def infer_expression(director_expression: str, passage: str, *, quoted_only: str
 
     `passage` is the beat's text. A passage that states a still face ("his expression did not change", "calm") is never given an
     emotion. Returns the director's phrase when nothing in the text asks for more."""
+    director_expression = clean_expression(director_expression)
     if not is_neutral(director_expression):
         # A director "frowning" on a line that says pain is pain: a weak family is replaced by a stronger cue in the text.
         if _family(director_expression) in ("frown", "thought", "confusion"):

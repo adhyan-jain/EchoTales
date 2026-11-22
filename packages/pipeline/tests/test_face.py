@@ -65,3 +65,19 @@ def test_the_directors_vocabulary_offers_no_stock_face_phrase_to_copy() -> None:
 
     src = Path(direction.__file__).read_text(encoding="utf-8")
     assert "calm unreadable stare" not in src and "thin bitter smile" not in src and "cold mocking smile, narrowed eyes" not in src
+
+
+def test_the_directors_snake_case_keys_and_sentences_become_a_plain_face_phrase() -> None:
+    # P&P ch1 rerun: "anxious_brows", "calm_expression", "Mr. Bennet's expression is amused as he listens" reached the prompt as is.
+    assert face.clean_expression("anxious_brows") == "anxious"
+    assert face.clean_expression("Mr. Bennet's expression is amused as he listens") == "amused"
+    assert face.clean_expression("eager, eyes wide") == "eager, eyes wide"
+    assert face.is_neutral(face.clean_expression("calm_expression"))
+    assert face.infer_expression("worried_brows", "The room was quiet.") == "worried"
+    assert face.infer_expression("calm_expression", "He sneered at the fools.") == "cold mocking smile"
+
+
+def test_an_amused_face_is_a_faint_smile_not_a_laughing_mouth() -> None:
+    # P&P: Mr. Bennet's dry amusement was drawn as "laughter: mouth open, eyes crinkled shut, head tipped back".
+    assert face.drawn_face("amused").startswith("a faint smile")
+    assert face.drawn_face("loud laughter").startswith("laughter")
