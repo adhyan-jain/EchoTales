@@ -45,9 +45,8 @@ from pathlib import Path
 from urllib.parse import unquote, urljoin, urlparse
 
 import httpx
-from PIL import Image
-
 from echotales.pipeline.comic.ingest import IMAGE_SUFFIXES, natural_key
+from PIL import Image
 
 USER_AGENT = (
     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
@@ -423,7 +422,7 @@ def fetch_chapter(
 def _publish(
     out: Path, candidates: list[str], *, fetch: Callable[[str, str | None, int], tuple[bytes, str]],
     referer: str | None, delay: float, concurrency: int, min_width: int, max_image_bytes: int, max_total_bytes: int,
-    sleep: Callable[[float], None], info: dict, notes: list[str], rendered: bool,
+    sleep: Callable[[float], None], info: dict[str, object], notes: list[str], rendered: bool,
 ) -> FetchResult:
     """Validate, filter and name the candidates, then replace `out` only when something usable was kept. Shared by the
     network fetch and the local import so both apply the same size, shape and width rules."""
@@ -594,7 +593,7 @@ def fetch_local(
 
 
 def _download_all(
-    urls: list[str], tmp: Path, *, fetch: Callable[[str, str | None, int], tuple[bytes, str]], referer: str,
+    urls: list[str], tmp: Path, *, fetch: Callable[[str, str | None, int], tuple[bytes, str]], referer: str | None,
     delay: float, concurrency: int, min_width: int, max_image_bytes: int, max_total_bytes: int,
     sleep: Callable[[float], None],
 ) -> list[_Got]:
