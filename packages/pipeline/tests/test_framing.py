@@ -140,3 +140,22 @@ def test_a_close_up_crop_does_not_cut_the_paragraph_at_an_honorific_full_stop() 
     text = "Mr. Bennet stands by a window, his gaze fixed on the street. The room is otherwise empty."
     assert fr.crop_composition(text, "") == "Mr. Bennet stands by a window, his gaze fixed on the street."
     assert fr.SENTENCE_SPLIT.split("Mrs. Bennet sat. Dr. Who left! Ms. Lee came?") == ["Mrs. Bennet sat.", "Dr. Who left!", "Ms. Lee came?"]
+
+
+def test_no_crowd_view_is_written_as_a_ring_or_circle() -> None:
+    # RI ch1 (v56): the overview sentence said "a loose ring of tiny people ... at the centre of the ring" and four panels
+    # (b8, b45, b57, b68) drew the assembled clan as a circle around him. Owner rule: rows and ranks, never a ring.
+    import re
+
+    for focus in ("overview", "reverse", "low", "behind"):
+        f = fr.Framing("wide", focus=focus, subject="crowd" if focus == "behind" else "")  # type: ignore[arg-type]
+        text = fr.framing_sentence(f, "Fang Yuan")
+        assert not re.search(r"\b(ring|circle|circular|around him|surround\w*)\b", text, re.I), (focus, text)
+    assert "rows" in fr.framing_sentence(fr.Framing("wide", focus="overview"), "Fang Yuan")
+
+
+def test_a_ring_or_circle_in_the_directors_paragraph_becomes_rows() -> None:
+    para = "Fang Yuan stands alone while the clan elders form a circle around him, and the youths surround him in a ring."
+    out = fr.rows_not_ring(para)
+    assert "circle" not in out and "ring" not in out and "surround" not in out and "rows" in out
+    assert fr.rows_not_ring("He wore a jade ring.") == "He wore a jade ring."

@@ -178,6 +178,23 @@ _CROWD_VIEWS: list[tuple[str, str]] = [("medium", "behind"), ("medium", "reverse
 _CROWD_REPLACES = ("", "behind", "over-shoulder", "topdown", "down", "profile")
 
 
+_RING_FORM = re.compile(r"\bform(?:s|ed|ing)?\s+(?:a|an|the)\s+(?:half[- ]?|loose |tight )?(?:circle|ring)\s+(?:around|round|about)\s+(him|her|them)\b", re.I)
+_RING_SURROUND = re.compile(r"\bsurround(?:s|ed|ing)?\s+(him|her|them)\b", re.I)
+_RING_IN = re.compile(r"\s+in\s+(?:a|an|the)\s+(?:half[- ]?|loose |tight )?(?:circle|ring)\b(?:\s+(?:around|round|about)\s+(?:him|her|them))?", re.I)
+
+
+def rows_not_ring(text: str) -> str:
+    """A crowd written as a ring, circle or "surrounding him" rewritten as rows facing him.
+
+    Owner rule (round 8, RI ch1 v56): a crowd stands in rows and ranks, never in a circle; the model draws exactly the
+    arrangement the words name, and the director's paragraph and the staging sheet still said "form a circle around him" and
+    "surround him". A ring that is an object (a jade ring) is left alone: only the group-arrangement phrases are rewritten."""
+    out = _RING_FORM.sub(lambda m: f"stand in rows facing {m.group(1)}", text)
+    out = _RING_SURROUND.sub(lambda m: f"stand in rows facing {m.group(1)}", out)
+    out = re.sub(r"(facing (?:him|her|them))" + _RING_IN.pattern, r"\1", out, flags=re.I)
+    return _RING_IN.sub(" in rows", out)
+
+
 def _key(f: Framing) -> tuple[str, str]:
     return (f.size, f.focus)
 
@@ -311,9 +328,12 @@ def framing_sentence(f: Framing, lead: str, *, people: bool = True, alone: bool 
         # Drew him mid-sized (not small) on bare rock with the crowd a thin ring far behind: lone, and no follower reading (2 of 2).
         # Cliff r7 seed 777 p6, p12: the lead drawn twice, full-size in the foreground (his identity sentence, now dropped for this view
         # in the compiler) and as a tiny figure in the ring. He is only the small figure at the centre of the ring.
-        return (f"High wide establishing shot looking straight down from far above: the crowd is a loose ring of tiny people on the "
-                f"ground and {who} is one small lone figure standing on bare rock at the centre of the ring, no other figure "
-                "in the picture, the whole place visible and every figure small in it.")
+        # Round 8 (RI ch1 v56): "a loose ring ... at the centre of the ring" drew the clan as a circle around him in 4 of 4 overview
+        # panels (b8, b45, b57, b68). Owner rule: rows, not circles; the crowd is ranks in front of him, never around him.
+        return (f"High wide establishing shot looking straight down from far above: the crowd is tiny people standing or kneeling in "
+                f"neat straight rows and ranks across the ground, all facing one way, and {who} is one small lone figure standing "
+                "alone in front of the first row, facing the rows, nobody behind him, the whole place visible and every figure "
+                "small in it.")
     if f.focus == "low":
         # "head and shoulders ... no other person" drew him seated on the rock (2 of 2); this wording drew him standing, wind in
         # the hair, nobody else (2 of 2).

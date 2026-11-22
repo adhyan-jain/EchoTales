@@ -122,3 +122,14 @@ def test_a_staging_sheet_with_a_set_is_the_only_statement_of_the_place() -> None
     assert "timber clan hall" not in out.positive and "open field" not in out.positive and "sunlight" not in out.positive
     # with no staging sheet the genre place still reaches the prompt
     assert "mountain cliff" in compile_prompt(brief(), model_profile("z-image-turbo")).positive
+
+
+def test_a_crowd_is_never_compiled_as_a_ring_or_circle() -> None:
+    # RI ch1 (v56): the clan was drawn as a circle around him in four overview panels; the compiled prompt must say rows.
+    para = "Fang Yuan stands alone while the clan elders form a circle around him, and the youths surround him in a ring."
+    staging = "Set: a hall. Blocking: Fang Yuan stands facing left; the elders form a ring around him. Light: dim."
+    out = compile_prompt(brief(composition=para, staging=staging), model_profile("z-image-turbo"))
+    import re
+
+    assert not re.search(r"\b(circle|ring|surround\w*)\b", out.positive, re.I), out.positive
+    assert "rows" in out.positive

@@ -39,6 +39,8 @@ import re
 from dataclasses import dataclass, field
 from enum import StrEnum
 
+from echotales.pipeline.render.framing import rows_not_ring
+
 log = logging.getLogger(__name__)
 
 #: Identity items written under `AppearanceInText.SHORT`: enough for the model to keep hair and clothes, few enough that
@@ -751,9 +753,9 @@ def _compile_composed(b: PanelBrief, profile: ModelProfile, appearance: Appearan
     # A view with no face in it (an insert, from behind, from above) has no paragraph and no face sentence: both describe a person
     # facing the viewer.
     faceless = insert or b.frame_focus in _FACELESS_FOCUS
-    staging_text = trim_staging(b.staging.strip(), b.frame_focus, b.shot, b.frame_subject) if b.staging else ""
+    staging_text = rows_not_ring(trim_staging(b.staging.strip(), b.frame_focus, b.shot, b.frame_subject)) if b.staging else ""
     stage = PromptSection("staging", staging_text) if staging_text else None
-    cropped = b.composition.strip()
+    cropped = rows_not_ring(b.composition.strip())
     if b.shot == "close" and b.frame_focus in ("", "eyes", "hands"):
         from echotales.pipeline.render.framing import (
             crop_composition,
@@ -787,7 +789,7 @@ def _compile_composed(b: PanelBrief, profile: ModelProfile, appearance: Appearan
         who = b.characters[0].name if b.characters else "the lead"
         stance = b.crowd.stance.lower()
         if re.search(r"\b(?:circle|ring|encircl\w*)\b", stance):
-            where = f"in a ring around {who}"
+            where = f"in rows facing {who}"  # never a ring: owner rule, round 8
         else:
             where = f"on the far side of a gap from {who}, all of them facing {who}"
         s.append(PromptSection("others", f"{_headcount(b.crowd)} {_plain(b.crowd.description)} stand packed close together {where}."))
