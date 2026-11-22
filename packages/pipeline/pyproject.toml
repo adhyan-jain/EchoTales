@@ -48,6 +48,12 @@ comic = [
     "scipy>=1.11",
 ]
 
+browser = [
+    # Optional: `echotales comic fetch --render` loads a chapter page in a headless browser and scrolls it. This extra
+    # installs no browser; run `playwright install chromium` once.
+    "playwright>=1.45",
+]
+
 [tool.uv.sources]
 echotales-core = { workspace = true }
 

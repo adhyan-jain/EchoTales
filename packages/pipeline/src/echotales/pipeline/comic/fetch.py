@@ -134,6 +134,11 @@ class PublicOnlyGuard:
 _DEFAULT_GUARD = PublicOnlyGuard()
 
 
+def default_guard() -> PublicOnlyGuard:
+    """The guard every real fetch uses; the Studio route checks a link with it before queueing the job."""
+    return _DEFAULT_GUARD
+
+
 # --- HTML extraction ---------------------------------------------------------------------------------------------
 
 def _largest_srcset(value: str) -> str | None:

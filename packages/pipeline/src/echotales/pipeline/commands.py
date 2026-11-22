@@ -1511,6 +1511,8 @@ def cmd_comic(args: argparse.Namespace) -> int:
     from echotales.pipeline.comic.ocr import OcrUnavailable
 
     try:
+        if args.comic_command == "fetch":
+            return _comic_fetch(args)
         if args.comic_command == "ingest":
             n = runner.ingest_stage(args.input, args.novel, webtoon=args.webtoon)
             print(f"{n} pages -> {runner.comic_root(args.novel) / 'pages'}")
@@ -1535,9 +1537,32 @@ def cmd_comic(args: argparse.Namespace) -> int:
             store.close()
         print(f"{built.version}: {built.video.shots} shots, {built.video.duration:.1f}s -> {built.video.video}")
         return 0
-    except (ComicInputError, OcrUnavailable, FileNotFoundError, ValueError) as exc:
+    except (ComicInputError, OcrUnavailable, FileNotFoundError, ValueError) as exc:  # a FetchError is a ValueError
         print(f"refusing: {exc}", file=sys.stderr)
         return 2
+
+
+def _comic_fetch(args: argparse.Namespace) -> int:
+    """`echotales comic fetch <url>`: the same `fetch_chapter` the Studio's `comic_fetch` job runs."""
+    from echotales.pipeline import paths
+    from echotales.pipeline.comic import fetch
+
+    print("Note: you are responsible for having the right to use the content you download.")
+    comic_id = args.id or fetch.default_comic_id(args.url)
+    out = Path(args.out) if args.out else paths.raw_comic_dir(comic_id)
+    res = fetch.fetch_chapter(args.url, out, rights_confirmed=args.i_own_rights, render=args.render, delay=args.delay)
+    widths = sorted({w for w, _ in res.dims})
+    sizes = f"{widths[0]}x{res.dims[0][1]}" if len(widths) == 1 else f"widths {widths[0]}-{widths[-1]}"
+    print(f"{len(res.images)} images ({sizes}{', rendered in a browser' if res.rendered else ''}) -> {res.out_dir}")
+    for s in res.skipped:
+        print(f"  skipped {s['url']}: {s['reason']}")
+    for note in res.notes:
+        print(f"  note: {note}")
+    if not args.i_own_rights:
+        print("  (rights not confirmed in source.json; add --i-own-rights to record your confirmation)")
+    strip = " --webtoon" if any(h >= 2.5 * w for w, h in res.dims) else ""
+    print(f"next: echotales comic build --novel <novel-id> --input {res.out_dir}{strip}")
+    return 0
 
 
 def cmd_appearance(args: argparse.Namespace) -> int:
