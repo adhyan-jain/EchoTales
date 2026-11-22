@@ -133,3 +133,25 @@ def test_a_crowd_is_never_compiled_as_a_ring_or_circle() -> None:
 
     assert not re.search(r"\b(circle|ring|surround\w*)\b", out.positive, re.I), out.positive
     assert "rows" in out.positive
+
+
+def test_blocking_names_only_people_the_panel_draws() -> None:
+    # P&P ch1 v3, p1 and p9 (wide views of one man): the scene's staging sheet blocks both spouses ("Mrs. Bennet stands on the
+    # left ...; Mr. Bennet stands on the right ...") while the panel's cast and identity sentences hold only him, so the model
+    # drew the undescribed one as an unrequested woman in grey and the named man twice. Blocking keeps only people drawn here.
+    staging = ("Set: an unspecified room indoors. Blocking: Mrs. Bennet stands on the left facing right; "
+               "Mr. Bennet stands on the right facing left. Light: dim.")
+    chars = [CharacterBrief(**dict(OLD, name="Mr. Bennet"))]
+    out = compile_prompt(brief(characters=chars, composition="Mr Bennet stands in the center of a room.", staging=staging,
+                               shot="wide"), model_profile("z-image-turbo"))
+    assert "Mrs. Bennet" not in out.positive
+    assert "Mr. Bennet stands on the right facing left" in out.positive and "Light: dim" in out.positive
+
+
+def test_blocking_keeps_crowd_clauses_and_drops_the_whole_line_when_nobody_in_it_is_drawn() -> None:
+    staging = "Set: a hall. Blocking: Fang Yuan stands facing left; the elders kneel in two rows facing him. Light: dim."
+    out = compile_prompt(brief(staging=staging, shot="wide"), model_profile("z-image-turbo"))
+    assert "Fang Yuan stands facing left" in out.positive and "elders kneel in two rows" in out.positive
+    only_others = "Set: a hall. Blocking: Elder Zhao stands on the left facing right. Light: dim."
+    out = compile_prompt(brief(staging=only_others, shot="wide"), model_profile("z-image-turbo"))
+    assert "Elder Zhao" not in out.positive and "Blocking" not in out.positive and "Set: a hall" in out.positive

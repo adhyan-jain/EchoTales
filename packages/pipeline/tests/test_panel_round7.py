@@ -87,4 +87,5 @@ def test_the_overview_and_reverse_views_carry_no_full_figure_identity_for_the_le
         assert not any(s.label.startswith("character") for s in out.sections), focus
         assert "Blocking" not in out.positive
     over = fr.framing_sentence(fr.Framing("wide", "high-angle", "overview", "crowd"), "Fang Yuan")
-    assert "centre of the ring" in over and "no other figure" in over
+    # Round 8: rows, never a ring; he is still the one small lone figure.
+    assert "in front of the first row" in over and "one small lone figure" in over and "ring" not in over

@@ -187,6 +187,9 @@ class CharacterBrief:
     #: The interval's locked hair, eyes, build and outfit plus the scene-stated state (`persona/identity_lock.py`). When
     #: set, `identity_sentence` is built from it, so every panel of the interval repeats the same words.
     locked: object | None = None
+    #: The listener of an over-the-shoulder shot: drawn once, as the back of a head in the foreground, and nowhere else in the
+    #: panel (not in the paragraph, not in Blocking, no face).
+    back_turned: bool = False
 
 
 @dataclass(slots=True)
@@ -753,7 +756,8 @@ def _compile_composed(b: PanelBrief, profile: ModelProfile, appearance: Appearan
     # A view with no face in it (an insert, from behind, from above) has no paragraph and no face sentence: both describe a person
     # facing the viewer.
     faceless = insert or b.frame_focus in _FACELESS_FOCUS
-    staging_text = rows_not_ring(trim_staging(b.staging.strip(), b.frame_focus, b.shot, b.frame_subject)) if b.staging else ""
+    staging_text = trim_staging(b.staging.strip(), b.frame_focus, b.shot, b.frame_subject) if b.staging else ""
+    staging_text = rows_not_ring(blocking_of_drawn(staging_text, [c.name for c in b.characters if not c.back_turned]))
     stage = PromptSection("staging", staging_text) if staging_text else None
     cropped = rows_not_ring(b.composition.strip())
     if b.shot == "close" and b.frame_focus in ("", "eyes", "hands"):
@@ -855,6 +859,48 @@ def trim_staging(staging: str, focus: str, shot: str, subject: str = "") -> str:
     else:
         return staging
     return " ".join(parts[k] for k in keep if k in parts)
+
+
+_BLOCKED_PERSON = re.compile(
+    r"^(?P<subj>(?:(?:Mr|Mrs|Ms|Miss|Dr|Lord|Lady|Sir|Elder|Master|Madam|Madame)\.?\s+)?[A-Z][\w'-]*(?:\s+[A-Z][\w'-]*){0,2})\s+"
+    r"(?:stands?|sits?|kneels?|leans?|walks?|waits?|crouch\w*|lies|lie|is|are|faces?|looks?|watch\w*|rests?|paces?|hovers?|"
+    r"hangs?|holds?|reclines?|perch\w*)\b")
+_BLOCKED_GROUP = {"the", "a", "an", "others", "some", "several", "all", "everyone", "everybody", "two", "three", "four", "behind", "at", "in"}
+
+
+def blocking_of_drawn(staging: str, drawn: list[str]) -> str:
+    """The staging sheet with its Blocking line cut to the people this panel draws.
+
+    P&P ch1 v3, p1 and p9: the scene's sheet blocked both spouses ("Mrs. Bennet stands on the left; Mr. Bennet stands on the
+    right") but the panel's cast held only him, so the model drew the undescribed one as an unrequested woman in grey and the
+    named one a second time. A clause is cut when it names one person (a capitalised name before a posture verb) who is not
+    among `drawn`; group clauses ("the elders kneel in two rows") are kept, and an emptied Blocking line is dropped."""
+    if not drawn or "Blocking:" not in staging:
+        return staging
+    from echotales.pipeline.render.direction import name_key
+
+    keys = [name_key(n).split() for n in drawn]
+
+    def drawn_name(subj: str) -> bool:
+        words = name_key(subj).split()
+        return any(set(words) <= set(k) or set(k) <= set(words) for k in keys)
+
+    def keep(clause: str) -> bool:
+        m = _BLOCKED_PERSON.match(clause.strip())
+        return m is None or m.group("subj").split()[0].lower() in _BLOCKED_GROUP or drawn_name(m.group("subj"))
+
+    parts = [(m.group(1), m.group(2).strip()) for m in _STAGE_PART.finditer(staging)]
+    if not parts:
+        return staging
+    out: list[str] = []
+    for label, body in parts:
+        if label == "Blocking":
+            kept = [c for c in re.split(r";\s*", body.rstrip(".")) if c.strip() and keep(c)]
+            if not kept:
+                continue
+            body = "; ".join(kept) + "."
+        out.append(f"{label}: {body}")
+    return " ".join(out)
 
 
 def _style_sentence(b: PanelBrief) -> str:
