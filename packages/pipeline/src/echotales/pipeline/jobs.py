@@ -294,16 +294,27 @@ VIDEO_ENGINES = engine_registry.names("video", surface="anime-video")
 def _run_voice_audition(novel_id: str, params: dict[str, Any]) -> None:
     """The audition job: `target` "narrator" shortlists the banks and voices one sample each; "line" voices one
     line in one voice (a bank voice or this project's own) performing an emotion."""
-    from echotales.pipeline import paths
     from echotales.pipeline.compute import voice_refusal
-    from echotales.pipeline.project_voices import with_project_voices
-    from echotales.pipeline.voice import audition, get_engine
-    from echotales.pipeline.voice.bank import VoiceBank, load_bank
+    from echotales.pipeline.voice import get_engine
+    from echotales.pipeline.voice.engine import release_engine
 
     # Before the engine is built: the card may have filled while the job queued, and Chatterbox crashes on a busy one.
     if refusal := voice_refusal(str(params.get("engine") or "chatterbox")):
         raise ValueError(str(refusal))
     engine = get_engine(str(params.get("engine") or "chatterbox"))
+    try:
+        _audition_with(engine, novel_id, params)
+    finally:
+        # The server process outlives the job; the model must not (defect 4, P&P e2e 2026-11-22).
+        release_engine(engine)
+
+
+def _audition_with(engine: Any, novel_id: str, params: dict[str, Any]) -> None:
+    from echotales.pipeline import paths
+    from echotales.pipeline.project_voices import with_project_voices
+    from echotales.pipeline.voice import audition
+    from echotales.pipeline.voice.bank import VoiceBank, load_bank
+
     root = paths.asset_dir(novel_id, "audition")
     bank_root = params.get("bank", "data/voice")
     target = params.get("target")
@@ -815,19 +826,32 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
         # Voices the person uploaded to this project (with their consent record) are cast alongside the bank's.
         bank = with_project_voices(load_bank(bank_kind, bank_root), novel_id)
         out_dir = params.get("out_dir") or str(paths.asset_dir(novel_id, "audio"))
-        run_stage(
-            store, run_id=pipeline_run.run_id, stage_name="voice",
-            input_digest=input_digest,
-            fn=lambda: render_novel(
+        from echotales.pipeline.voice.engine import release_engine
+
+        built: list[object] = []
+
+        def _voice() -> object:
+            built.append(get_voice_engine(engine_name))
+            return render_novel(
                 novel_id, store, bank,
                 out_dir=out_dir,
-                engine=get_voice_engine(engine_name),
+                engine=built[0],
                 chapters=params.get("chapters"),
                 seed=params.get("seed", 20260812),
                 synthesize=not params.get("dry_run", False),
                 reference_f0=engine_reference_f0(bank, engine_name),
-            ),
-        )
+            )
+
+        try:
+            run_stage(
+                store, run_id=pipeline_run.run_id, stage_name="voice",
+                input_digest=input_digest, fn=_voice,
+            )
+        finally:
+            # Success or failure: the Studio server keeps running, so the model would keep ~4.9 GB of VRAM and the
+            # next render job would be refused with GPU_BUSY (P&P e2e 2026-11-22, defect 4).
+            for engine in built:
+                release_engine(engine)
     elif job.kind == "voice_audition":
         # Never skipped by digest: a rerun is how a person asks for a fresh take, and a finished line sample is
         # already reused through its deterministic path.

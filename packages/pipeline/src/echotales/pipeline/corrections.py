@@ -395,6 +395,7 @@ def _apply_merge(store: Store, correction: Correction, *, seq: int) -> dict[str,
         m.target_id = into_id
     if mentions:
         store.add_mentions(mentions)
+    spans_rebound = _rebind_span_speakers(store, novel_id, from_id, into_id)
 
     store.append_event(
         ResolutionEvent(
@@ -405,6 +406,7 @@ def _apply_merge(store: Store, correction: Correction, *, seq: int) -> dict[str,
                 "from_id": from_id,
                 "into_id": into_id,
                 "mentions_rebound": len(mentions),
+                "spans_rebound": spans_rebound,
                 "source": "human_correction",
                 "correction_id": correction.id,
             },
@@ -416,7 +418,29 @@ def _apply_merge(store: Store, correction: Correction, *, seq: int) -> dict[str,
         "from_id": from_id,
         "into_id": into_id,
         "mentions_rebound": len(mentions),
+        "spans_rebound": spans_rebound,
     }
+
+
+def _rebind_span_speakers(store: Store, novel_id: str, from_id: str, into_id: str) -> int:
+    """Move the absorbed entity's spoken lines (and co-speaker slots) to the survivor.
+
+    P&P e2e 2026-11-22: after `merge_entities(Lizzy -> Elizabeth)` one dialogue line still carried Lizzy's id, so the
+    audiobook credited a character the merge had removed. Only spans that hold the id itself move; a span holding a
+    surface label is joined through the (already rebound) mentions at read time. A reviewer's HUMAN attribution keeps
+    its method: only the id changes.
+    """
+    moved = store.conn.execute(
+        "UPDATE span SET speaker_self_id=? WHERE novel_id=? AND speaker_self_id=?", (into_id, novel_id, from_id)
+    ).rowcount
+    for row in store.conn.execute(
+        "SELECT id, co_speaker_json FROM span WHERE novel_id=? AND co_speaker_json LIKE ?", (novel_id, f"%{from_id}%")
+    ).fetchall():
+        ids = [into_id if i == from_id else i for i in json.loads(row["co_speaker_json"])]
+        ids = list(dict.fromkeys(ids))
+        store.conn.execute("UPDATE span SET co_speaker_json=? WHERE id=?", (json.dumps(ids), row["id"]))
+        moved += 1
+    return moved
 
 
 def _ensure_manual_entity(

@@ -30,6 +30,7 @@ opens, measures or concatenates them is exercised for real.
 
 from __future__ import annotations
 
+import contextlib
 import struct
 import wave
 from dataclasses import dataclass
@@ -115,6 +116,14 @@ class ChatterboxEngine:
             self.sample_rate = getattr(self._model, "sr", self.sample_rate)
         return self._model
 
+    def close(self) -> None:
+        """Drop the model and return its VRAM. Without it the Studio server kept ~4.9 GB after a voice job and the
+        next render job was refused with GPU_BUSY until the process restarted (P&P e2e 2026-11-22)."""
+        from echotales.pipeline.hwaccel import free_cuda_cache
+
+        self._model = None
+        free_cuda_cache()
+
     def synthesize(self, request: SynthesisRequest) -> Path:
         import torchaudio
 
@@ -160,6 +169,15 @@ class ChatterboxEngine:
             encoding="PCM_S", bits_per_sample=16,
         )
         return request.out_path
+
+
+def release_engine(engine: object) -> None:
+    """Free an engine's model if it has something to free; an engine without `close` (stub, hosted) needs nothing."""
+    close = getattr(engine, "close", None)
+    if callable(close):
+        # Best effort: releasing must not hide the job's own result.
+        with contextlib.suppress(Exception):
+            close()
 
 
 def get_engine(name: str = "stub", **kwargs: object) -> TTSEngine:

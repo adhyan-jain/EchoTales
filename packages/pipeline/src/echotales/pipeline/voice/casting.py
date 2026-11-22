@@ -60,6 +60,10 @@ class CastingReport:
     #: Characters whose graph gender is unknown, so `nearest_bucket` offered every adult voice of both genders. On
     #: RI this was 20 of 44 speaking characters, the protagonist among them (casting audit 2026-11-19).
     unknown_gender: list[str] = field(default_factory=list)
+    #: label -> gender the text leans to, for characters whose gender is not recorded: cast from that side only.
+    leaning: dict[str, str] = field(default_factory=dict)
+    #: Labels that kept the voice a previous run gave them (`previous` in `cast_voices`).
+    kept: list[str] = field(default_factory=list)
 
     def summary(self) -> str:
         pressure = ", ".join(
@@ -74,9 +78,18 @@ class CastingReport:
         ]
         if self.unknown_gender:
             lines.append(
-                f"  {len(self.unknown_gender)} characters have no known gender and were cast gender-blind"
-                f" (set it in the bible review): {', '.join(self.unknown_gender[:8])}"
+                f"  {len(self.unknown_gender)} characters have no known gender and no lean in the text, so they were"
+                f" cast from the age-appropriate pool of both genders (set it in the bible review):"
+                f" {', '.join(self.unknown_gender[:8])}"
             )
+        if self.leaning:
+            lines.append(
+                f"  {len(self.leaning)} characters have no recorded gender but the text leans one way, so only that"
+                f" side's voices were offered: "
+                + ", ".join(f"{label} ({side})" for label, side in list(self.leaning.items())[:8])
+            )
+        if self.kept:
+            lines.append(f"  {len(self.kept)} characters kept the voice an earlier run gave them")
         for a, b in self.collisions[:5]:
             lines.append(f"    {a} shares a voice with {b}")
         return "\n".join(lines)
@@ -114,11 +127,21 @@ def cast_voices(
     store: Store | None = None,
     seed: int = DEFAULT_SEED,
     exclude: frozenset[str] = frozenset(),
+    previous: dict[str, str] | None = None,
+    lean: dict[str, str] | None = None,
 ) -> tuple[dict[str, VoiceAssignment], CastingReport]:
     """Colour the cast within buckets and return one assignment per character.
 
     `exclude` holds voices no character may take (the narrator: a character cast with the narrator's voice is
     indistinguishable from narration, the one voice heard in every chapter).
+
+    `previous` maps a character id to the voice an earlier run gave it. It is kept while that voice is still among
+    the candidates for the character's present gender and age, so it drops out exactly when the gender or age changed
+    or the bank lost the voice. Without it every tie-break came from one rng stream in profile order, so adding or
+    merging one character moved Mr. Bennet to another voice (P&P e2e 2026-11-22, defect 14).
+
+    `lean` maps a character with no recorded gender to the side the text leans to; its candidates come from that
+    side only, because a male voice for a character whose narration says "she" is worse than a neutral pool.
     """
     report = CastingReport(novel_id=novel_id)
     rng = random.Random(seed)
@@ -133,17 +156,56 @@ def cast_voices(
 
     assignments: dict[str, VoiceAssignment] = {}
     used_in_bucket: dict[str, dict[str, str]] = {}
+    previous = previous or {}
+    lean = lean or {}
+
+    def candidates_for(profile: TraitProfile) -> tuple[list[BankVoice], str]:
+        side = profile.gender if profile.gender in ("male", "female") else lean.get(profile.target_id, profile.gender)
+        found = bank.nearest_bucket(side, profile.age_band)
+        # Fall back to the full bucket only when excluding would leave nobody, so a small bank still casts.
+        return [v for v in found if v.speaker_id not in exclude] or found, side
+
+    # Characters whose earlier voice is still a valid candidate are placed first, so a character added later cannot
+    # displace them and the colouring below works around them.
+    pinned: list[str] = []
+    for profile in ordered:
+        candidates, side = candidates_for(profile)
+        old = previous.get(profile.target_id)
+        if not old or old in exclude or not any(v.speaker_id == old for v in candidates):
+            continue
+        bucket = f"{profile.gender}:{profile.age_band}"
+        used_in_bucket.setdefault(bucket, {})[profile.target_id] = old
+        assignments[profile.target_id] = VoiceAssignment(
+            target_id=profile.target_id, label=profile.label, speaker_id=old, bucket=bucket,
+            archetype=profile.archetype, prominence=profile.prominence,
+        )
+        report.assigned += 1
+        report.kept.append(profile.label)
+        pinned.append(profile.target_id)
+        if profile.gender not in ("male", "female"):
+            if side in ("male", "female"):
+                report.leaning[profile.label] = side
+            else:
+                report.unknown_gender.append(profile.label)
+    for i, a in enumerate(pinned):
+        for b in pinned[i + 1:]:
+            if b in adjacency.get(a, set()) and assignments[a].speaker_id == assignments[b].speaker_id:
+                assignments[b].collides_with = assignments[a].label
+                report.collisions.append((assignments[b].label, assignments[a].label))
 
     for profile in ordered:
-        candidates = bank.nearest_bucket(profile.gender, profile.age_band)
-        # Fall back to the full bucket only when excluding would leave nobody, so a small bank still casts.
-        candidates = [v for v in candidates if v.speaker_id not in exclude] or candidates
+        if profile.target_id in assignments:
+            continue
+        candidates, side = candidates_for(profile)
         if not candidates:
             continue
         bucket = f"{profile.gender}:{profile.age_band}"
         taken = used_in_bucket.setdefault(bucket, {})
         if profile.gender not in ("male", "female"):
-            report.unknown_gender.append(profile.label)
+            if side in ("male", "female"):
+                report.leaning[profile.label] = side
+            else:
+                report.unknown_gender.append(profile.label)
 
         neighbours = adjacency.get(profile.target_id, set())
         neighbour_voices = {

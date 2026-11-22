@@ -250,11 +250,26 @@ def render_novel(
         bank = without_voices(bank, frozenset(conflicts))
         report.pitch_conflicts = sorted(conflicts)
     narrator = _narrator_voice(bank, get_settings().voice_narrator)
+    # Unknown-gender characters whose narration leans one way are cast from that side only (P&P 2026-11-22: Lydia
+    # got a recorded-male voice), and a character keeps the voice an earlier run gave it unless its gender or age
+    # moved it out of the pool or the bank lost the voice (Mr. Bennet changed voice after a bible re-lock).
+    from echotales.pipeline.persona.gender import gender_lean
+
+    unknown = {t for t, p in profiles.items() if p.gender not in ("male", "female")}
+    previous = {
+        row["self_id"]: row["speaker_id"]
+        for row in store.conn.execute("SELECT self_id, speaker_id FROM voice_profile WHERE novel_id=?", (novel_id,))
+    }
     assignments, casting = cast_voices(
-        novel_id, profiles, bank, store=store, seed=seed, exclude=frozenset({narrator})
+        novel_id, profiles, bank, store=store, seed=seed, exclude=frozenset({narrator}),
+        previous=previous, lean=gender_lean(store, novel_id, unknown),
     )
+    _remember_casting(store, novel_id, assignments, profiles)
     _apply_voice_overrides(store, assignments, bank)
-    labels = speaker_index(store, novel_id)
+    # A merge (`corrections.merge_entities`) leaves the absorbed id on older spans and on its own label; every
+    # speaker read below goes through the survivor so a merged alias never gets a second voice or credit.
+    merged = store.merged_into(novel_id)
+    labels = {key: merged.get(eid, eid) for key, eid in speaker_index(store, novel_id).items()}
     rng = random.Random(seed)
     #: Anonymous slots keep one voice for the whole run rather than being
     #: re-rolled per line -- the slot exists precisely so two unnamed
@@ -290,7 +305,7 @@ def render_novel(
         # just the one case that was caught by ear.
         chapter_voices_used: set[str] = {narrator}
         for s in chapter_spans:
-            sid = s.speaker_self_id or ""
+            sid = merged.get(s.speaker_self_id or "", s.speaker_self_id or "")
             if sid and s.attribution_method not in _SLOT_METHODS and sid not in assignments:
                 sid = labels.get(comparison_key(sid), sid)
             if sid in assignments:
@@ -362,7 +377,7 @@ def render_novel(
             if span.span_type not in _AUDIBLE or not re.search(r"\w", span.text):
                 continue
 
-            raw_speaker = span.speaker_self_id or ""
+            raw_speaker = merged.get(span.speaker_self_id or "", span.speaker_self_id or "")
             # Anonymous/epithet slots are already ids, not labels, and must
             # not be looked up as surfaces.
             speaker_id = raw_speaker
@@ -602,6 +617,23 @@ def render_novel(
 
     _write_outputs(out_dir, manifest, casting, report.engine, bank)
     return report
+
+
+def _remember_casting(store: Store, novel_id: str, assignments: dict, profiles: dict) -> None:  # type: ignore[type-arg]
+    """Persist who was cast with which voice, before a reviewer's override is laid over it.
+
+    The override stays a separate persona attribute, so removing it falls back to the cast voice instead of to a
+    stale copy of the override."""
+    from echotales.core.models import VoiceProfile
+
+    for target_id, a in assignments.items():
+        p = profiles.get(target_id)
+        store.add_voice_profile(
+            VoiceProfile(
+                id=f"{target_id}:voice", novel_id=novel_id, self_id=target_id, speaker_id=a.speaker_id,
+                gender=p.gender if p else "unknown", age_group=p.age_band if p else "adult",
+            )
+        )
 
 
 def _apply_voice_overrides(store: Store, assignments: dict, bank: VoiceBank) -> None:  # type: ignore[type-arg]

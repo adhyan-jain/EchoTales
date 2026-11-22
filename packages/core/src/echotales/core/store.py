@@ -1881,6 +1881,30 @@ class Store:
                 confidence=r["confidence"],
             )
 
+    def merged_into(self, novel_id: str) -> dict[str, str]:
+        """Absorbed entity id -> the entity that survives, from the MERGE events (chains followed to the end).
+
+        A merge rebinds mentions and leaves the absorbed `Self`, its persona and the speaker ids already written on
+        spans where they were (P&P e2e 2026-11-22: "Lizzy" kept a trait profile and a voice of her own, and one line
+        still credited her). Every reader that keys by entity asks this instead of guessing from labels. Events are
+        scoped by their ids' prefix: the log is per database, not per novel, and ids start with the novel id.
+        """
+        direct: dict[str, str] = {}
+        for event in self.iter_events():
+            if event.type is not EventType.MERGE:
+                continue
+            src, dst = str(event.payload.get("from_id") or ""), str(event.payload.get("into_id") or "")
+            if src and dst and src != dst and src.startswith(f"{novel_id}:") and dst.startswith(f"{novel_id}:"):
+                direct[src] = dst
+        resolved: dict[str, str] = {}
+        for src in direct:
+            seen, cur = {src}, direct[src]
+            while cur in direct and cur not in seen:
+                seen.add(cur)
+                cur = direct[cur]
+            resolved[src] = cur
+        return resolved
+
     def event_counts(self) -> dict[str, int]:
         cur = self.conn.execute(
             "SELECT type, COUNT(*) AS n FROM resolution_event GROUP BY type"
