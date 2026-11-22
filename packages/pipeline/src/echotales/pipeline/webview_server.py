@@ -2808,7 +2808,10 @@ def make_handler(
                         params["corrections_path"] = str(handle.corrections.path)
                         # Shown before the long run starts; kept in the job's params so the Studio can show it
                         # again while the job runs. Measured where this project has timings, else labelled estimates.
-                        from echotales.pipeline.long_series import estimate_run, source_chapter_numbers
+                        from echotales.pipeline.long_series import (
+                            estimate_run,
+                            source_chapter_numbers,
+                        )
 
                         # Before the first ingest the store has no chapters; the uploaded EPUB's own chapter count
                         # stands in so a new book is not estimated at 0 chapters and 0 s.
