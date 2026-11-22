@@ -149,7 +149,10 @@ def suggestions(store: Store, novel_id: str) -> list[ReviewItem]:
 
     # "Miss Bennet": the one title + surname shape that stands for a given-name entity (a "Mrs." is a wife, a "Mr." a
     # man, and "Mr. Bennet" is the family itself)
-    surname_of = {y: parsed[y][2].casefold() for y in ids if parsed[y][2]}
+    surname_of: dict[str, str] = {}
+    for y in ids:
+        if sn := parsed[y][2]:
+            surname_of[y] = sn.casefold()
     for x in ids:
         title, given, surname = parsed[x]
         if title not in ("miss", "ms") or given or not surname:

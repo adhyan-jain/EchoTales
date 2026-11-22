@@ -243,6 +243,8 @@ def _gather(store: Store, novel_id: str, wanted: set[str]):
         spans = store.get_spans(novel_id, chapter)
         for s in spans:
             who = s.speaker_self_id
+            if who is None:
+                continue
             if who in wanted:
                 lines[who] += 1
             elif who in by_label:
@@ -255,21 +257,24 @@ def _gather(store: Store, novel_id: str, wanted: set[str]):
             by_block.setdefault(s.block_index, []).append(s)
         seen: set[tuple[str, str]] = set()
         for m in mentions:
-            mentions_n[m.target_id] += 1
+            tid = m.target_id
+            if tid is None:  # never reached: `mentions` keeps only target ids in `wanted`; narrows the type for mypy
+                continue
+            mentions_n[tid] += 1
             span = next((s for s in by_block.get(m.block_index, []) if s.start <= m.offset < s.end), None)
             if span is None:
                 continue
             cue = _title_gender(span, m.offset, m.text)
             if cue:
-                cues[m.target_id].append(cue)
+                cues[tid].append(cue)
             if span.span_type in narrative:
                 vote = own_pronoun_vote(span.text[m.offset - span.start + len(m.text) :])
                 if vote:
-                    votes[m.target_id].append(vote)
+                    votes[tid].append(vote)
                 text = _window(span, m.offset)
-                if (m.target_id, text) not in seen:
-                    seen.add((m.target_id, text))
-                    windows[m.target_id].append(_Window(chapter, m.offset, text))
+                if (tid, text) not in seen:
+                    seen.add((tid, text))
+                    windows[tid].append(_Window(chapter, m.offset, text))
     return cues, windows, mentions_n, lines, votes
 
 

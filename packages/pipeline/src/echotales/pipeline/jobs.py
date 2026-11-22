@@ -826,9 +826,9 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
         # Voices the person uploaded to this project (with their consent record) are cast alongside the bank's.
         bank = with_project_voices(load_bank(bank_kind, bank_root), novel_id)
         out_dir = params.get("out_dir") or str(paths.asset_dir(novel_id, "audio"))
-        from echotales.pipeline.voice.engine import release_engine
+        from echotales.pipeline.voice.engine import TTSEngine, release_engine
 
-        built: list[object] = []
+        built: list[TTSEngine] = []
 
         def _voice() -> object:
             built.append(get_voice_engine(engine_name))
