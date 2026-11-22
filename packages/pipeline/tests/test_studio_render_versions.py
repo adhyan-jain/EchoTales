@@ -54,3 +54,24 @@ def test_a_repeat_render_reruns_once_the_screenplay_changed(tmp_path) -> None:
     store.save_screenplay_episode("ep1", "t", {"title": "A", "source_chapters": [1.0]})
     click(3)
     assert len(versions()) == 2  # changed input: reran
+
+
+def test_the_version_is_named_after_the_model_that_drew_it(tmp_path, monkeypatch) -> None:
+    """P&P e2e (defect 3): the server's default engine key is "noobai" while `render.image_model` selected Z-Image, so
+    Z-Image pictures landed in `v1_noobai-studio`. The compiled route draws with `render_image_model`, so that names it."""
+    from echotales.pipeline import jobs
+    from echotales.pipeline.config import get_settings
+
+    monkeypatch.setattr(get_settings(), "render_image_model", "z-image-turbo", raising=False)
+    assert jobs._drawn_by("noobai") == "z-image-turbo"
+    assert jobs._drawn_by("stub") == "stub"
+    assert jobs._studio_version(tmp_path, [1.0], jobs._drawn_by("noobai")) == "v1_z-image-turbo-studio"
+
+
+def test_the_versions_line_says_the_verdict_is_pending(tmp_path) -> None:
+    from echotales.pipeline import jobs
+
+    (tmp_path / "ch1" / "v1_z-image-turbo-studio").mkdir(parents=True)
+    jobs._record_studio_version(tmp_path, [1.0], "v1_z-image-turbo-studio", "z-image-turbo", "j1")
+    log = (tmp_path / "ch1" / "VERSIONS.md").read_text()
+    assert "z-image-turbo" in log and "Verdict: pending review" in log
