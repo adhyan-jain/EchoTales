@@ -410,43 +410,56 @@ def fetch_chapter(
             )
         if len(candidates) > max_images:
             raise FetchError(f"the page lists {len(candidates)} images; the limit is {max_images}")
+        return _publish(
+            out, candidates, fetch=fetch, referer=page_url, delay=delay, concurrency=concurrency, min_width=min_width,
+            max_image_bytes=max_image_bytes, max_total_bytes=max_total_bytes, sleep=sleep,
+            info={"url": url, "final_url": page_url, "rights_confirmed": bool(rights_confirmed), "rendered": rendered},
+            notes=notes, rendered=rendered,
+        )
 
-        tmp = out.parent / f".{out.name}.fetching"
-        out.parent.mkdir(parents=True, exist_ok=True)
+
+def _publish(
+    out: Path, candidates: list[str], *, fetch: Callable[[str, str | None, int], tuple[bytes, str]],
+    referer: str | None, delay: float, concurrency: int, min_width: int, max_image_bytes: int, max_total_bytes: int,
+    sleep: Callable[[float], None], info: dict, notes: list[str], rendered: bool,
+) -> FetchResult:
+    """Validate, filter and name the candidates, then replace `out` only when something usable was kept. Shared by the
+    network fetch and the local import so both apply the same size, shape and width rules."""
+    tmp = out.parent / f".{out.name}.fetching"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    shutil.rmtree(tmp, ignore_errors=True)
+    tmp.mkdir()
+    try:
+        got = _download_all(
+            candidates, tmp, fetch=fetch, referer=referer, delay=delay, concurrency=concurrency,
+            min_width=min_width, max_image_bytes=max_image_bytes, max_total_bytes=max_total_bytes, sleep=sleep,
+        )
+        kept = _dominant_width([g for g in got if g.path is not None and g.drop is None])
+        for g in got:
+            if g.path is not None and g not in kept:
+                g.drop = g.drop or "width differs from the rest of the chapter"
+                g.path.unlink(missing_ok=True)
+        if not kept:
+            reasons = "; ".join(sorted({g.skip or g.drop or "" for g in got})[:3])
+            raise FetchError(f"none of the {len(candidates)} images on the page looked like a comic page ({reasons})")
+        final: list[tuple[Path, _Got]] = []
+        for n, g in enumerate(kept, 1):
+            assert g.path is not None
+            dest = tmp / f"{n:04d}{g.path.suffix}"
+            g.path.rename(dest)
+            final.append((dest, g))
+        info = {
+            **info, "fetched_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"), "image_count": len(final),
+            "images": [{"file": d.name, "width": g.width, "height": g.height, "bytes": g.size} for d, g in final],
+            "skipped": [{"url": g.url, "reason": g.skip} for g in got if g.skip],
+            "dropped_as_noise": len([g for g in got if g.drop]),
+        }
+        (tmp / "source.json").write_text(json.dumps(info, indent=2), encoding="utf-8")
+        shutil.rmtree(out, ignore_errors=True)
+        tmp.replace(out)
+    except BaseException:
         shutil.rmtree(tmp, ignore_errors=True)
-        tmp.mkdir()
-        try:
-            got = _download_all(
-                candidates, tmp, fetch=fetch, referer=page_url, delay=delay, concurrency=concurrency,
-                min_width=min_width, max_image_bytes=max_image_bytes, max_total_bytes=max_total_bytes, sleep=sleep,
-            )
-            kept = _dominant_width([g for g in got if g.path is not None and g.drop is None])
-            for g in got:
-                if g.path is not None and g not in kept:
-                    g.drop = g.drop or "width differs from the rest of the chapter"
-                    g.path.unlink(missing_ok=True)
-            if not kept:
-                reasons = "; ".join(sorted({g.skip or g.drop or "" for g in got})[:3])
-                raise FetchError(f"none of the {len(candidates)} images on the page looked like a comic page ({reasons})")
-            final: list[tuple[Path, _Got]] = []
-            for n, g in enumerate(kept, 1):
-                assert g.path is not None
-                dest = tmp / f"{n:04d}{g.path.suffix}"
-                g.path.rename(dest)
-                final.append((dest, g))
-            info = {
-                "url": url, "final_url": page_url, "fetched_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
-                "image_count": len(final), "rights_confirmed": bool(rights_confirmed), "rendered": rendered,
-                "images": [{"file": d.name, "width": g.width, "height": g.height, "bytes": g.size} for d, g in final],
-                "skipped": [{"url": g.url, "reason": g.skip} for g in got if g.skip],
-                "dropped_as_noise": len([g for g in got if g.drop]),
-            }
-            (tmp / "source.json").write_text(json.dumps(info, indent=2), encoding="utf-8")
-            shutil.rmtree(out, ignore_errors=True)
-            tmp.replace(out)
-        except BaseException:
-            shutil.rmtree(tmp, ignore_errors=True)
-            raise
+        raise
     return FetchResult(
         out_dir=out, images=[out / d.name for d, _ in final], dims=[(g.width, g.height) for _, g in final],
         skipped=[{"url": g.url, "reason": g.skip} for g in got if g.skip],
