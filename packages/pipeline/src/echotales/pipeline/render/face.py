@@ -103,6 +103,11 @@ _MOOD_FACES: list[tuple[re.Pattern[str], str]] = [
      "sorrowful, downcast"),
     (re.compile(r"\b(?:tense|anxious|wary|uneasy|ominous|foreboding|expectant|alert)\b", re.I), "tense, wary"),
     (re.compile(r"\b(?:joy\w*|cheerful|happy|playful|amus\w*|warm|hopeful)\b", re.I), "faint smile"),
+    # Round 8 (RI ch1 v56): a "pensive" or "reverent" scene fell through to the flat default (34 of 45 faces), and a menacing or
+    # triumphant one is the lead's cold smile, not a stare.
+    (re.compile(r"\b(?:pensive|contemplat\w*|thoughtful|reflective|brooding|calculating|scheming)\b", re.I), "thoughtful, eyes lowered"),
+    (re.compile(r"\b(?:reverent|solemn|sacred|ceremon\w*)\b", re.I), "solemn, eyes lowered"),
+    (re.compile(r"\b(?:triumphant|menacing|sinister|smug|cunning|sardonic)\b", re.I), "cold mocking smile"),
 ]
 
 
@@ -124,9 +129,11 @@ def infer_expression(director_expression: str, passage: str, *, quoted_only: str
     if found:
         return found
     # No cue in the line: the director's mood, a small map, not a sentiment model.
-    for cue, face_words in _MOOD_FACES:
-        if cue.search(mood or ""):
-            return face_words
+    # The earliest mood word wins ("pensive, tense" is thought, "tense, pensive" is wariness): a list-order win made every scene
+    # with "tense" anywhere in its mood the same wary face.
+    hits = [(m.start(), face_words) for cue, face_words in _MOOD_FACES if (m := cue.search(mood or ""))]
+    if hits:
+        return min(hits)[1]
     return director_expression
 
 

@@ -41,3 +41,23 @@ def test_each_family_is_written_as_facial_parts() -> None:
     assert "teeth" in face.drawn_face("furious glare, clenched teeth")
     assert face.drawn_face("calm unreadable stare").startswith("calm and still")
     assert face.drawn_face("wry half-smile") == "wry half-smile"
+
+
+def test_a_neutral_face_takes_the_scenes_mood_and_the_earliest_mood_word_wins() -> None:
+    # RI ch1 (v56): 34 of 45 director faces were the example phrase; the mood fallback knew only sad, tense and happy, so a
+    # "pensive" or "reverent" scene fell through to a flat stare and the nine "tense" ones all read the same "tense, wary".
+    quiet = "The room was quiet."
+    assert face.infer_expression("calm unreadable stare", quiet, mood="pensive, foreboding") == "thoughtful, eyes lowered"
+    assert face.infer_expression("calm unreadable stare", quiet, mood="reverent, solemn") == "solemn, eyes lowered"
+    assert face.infer_expression("calm unreadable stare", quiet, mood="triumphant, menacing") == "cold mocking smile"
+    assert face.infer_expression("calm unreadable stare", quiet, mood="tense, contemplative") == "tense, wary"
+    assert face.infer_expression("calm unreadable stare", quiet, mood="contemplative, tense") == "thoughtful, eyes lowered"
+    assert not face.is_neutral(face.infer_expression("calm unreadable stare", quiet, mood="pensive"))
+
+
+def test_the_directors_vocabulary_does_not_offer_the_neutral_face_as_an_example() -> None:
+    # The model copies the last example of a list when the line is thin (4.171); the neutral phrase is no longer one.
+    from echotales.pipeline.render import direction
+
+    src = open(direction.__file__, encoding="utf-8").read()
+    assert 'calm unreadable stare' not in src
