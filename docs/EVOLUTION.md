@@ -9966,6 +9966,6 @@ Follow-up to 4.192 open items (a), (b) and (d), plus the RI "15 of 29 lines voic
 | Lydia | unknown, libritts_r6241 (**male**) | unknown in the graph, female (name prior), libritts_r5895 (f) |
 | Maria Lucas | unknown, hifitts6671 (**male**) | unknown in the graph, female (name prior), libritts_r1462 (f) |
 | Elizabeth, Jane, Mary | female lean from pronouns | unchanged side |
-| Unknown Speaker 1 / 4 | voices from the mixed pool, one equal to Bingley's | from the 8 reserved voices, none a named character's |
+| Unknown Speaker 1 / 4 | one slot shared Mr. Hurst's voice (hifitts6670); voices moved with the cast | from the 8 reserved voices, none a named character's, same on every run |
 
 - **Not verified.** No real synthesis; the table is the casting report and the manifest only. The table ran on a corpus where Kitty/Lydia have no pronoun, as measured in 4.192. The name table is US-centric; a Regency name that is rare in US records stays unknown, which is the intended failure.
