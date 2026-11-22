@@ -3,6 +3,8 @@ calm is never overridden, and every emotion is written as the parts of a face.""
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from echotales.pipeline.render import face
 
 
@@ -59,5 +61,5 @@ def test_the_directors_vocabulary_does_not_offer_the_neutral_face_as_an_example(
     # The model copies the last example of a list when the line is thin (4.171); the neutral phrase is no longer one.
     from echotales.pipeline.render import direction
 
-    src = open(direction.__file__, encoding="utf-8").read()
+    src = Path(direction.__file__).read_text(encoding="utf-8")
     assert 'calm unreadable stare' not in src
