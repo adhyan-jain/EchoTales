@@ -14,6 +14,14 @@ export function formatDuration(seconds) {
    say "estimate", so the total never reads as a promise it cannot keep. */
 export default function RunEstimate({ estimate }) {
   if (!estimate || !Array.isArray(estimate.stages) || estimate.stages.length === 0) return null;
+  // A book not yet ingested has no chapter count; zeros would read as "free and instant" (P&P e2e).
+  if (estimate.known === false) {
+    return (
+      <div aria-label="Run estimate" className="mt-3 rounded-xl border border-border px-3 py-2 text-xs text-muted">
+        Time unknown until the book is ingested.
+      </div>
+    );
+  }
   return (
     <div aria-label="Run estimate" className="mt-3 rounded-xl border border-border px-3 py-2 text-xs text-muted">
       <ul className="space-y-1">
