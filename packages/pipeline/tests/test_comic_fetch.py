@@ -46,7 +46,7 @@ class Site:
         outer = self
 
         class H(BaseHTTPRequestHandler):
-            def do_GET(self) -> None:  # noqa: N802
+            def do_GET(self) -> None:
                 outer.seen.append((self.path, dict(self.headers)))
                 if outer.flaky.get(self.path, 0) > 0:
                     outer.flaky[self.path] -= 1
@@ -62,7 +62,7 @@ class Site:
                 self.end_headers()
                 self.wfile.write(body)
 
-            def log_message(self, *args) -> None:  # noqa: ANN002
+            def log_message(self, *args) -> None:
                 pass
 
         self.httpd = ThreadingHTTPServer(("127.0.0.1", 0), H)
@@ -190,7 +190,7 @@ def test_the_default_guard_refuses_local_and_non_http_urls(url, tmp_path) -> Non
 
 def test_a_redirect_to_a_private_address_is_refused(site, tmp_path) -> None:
     site.routes["/r"] = (302, {"Location": "http://169.254.169.254/latest/"}, b"")
-    with pytest.raises(FetchError, match="not allowed|private|refus"):
+    with pytest.raises(FetchError, match=r"not allowed|private|refus"):
         _fetch(site.base + "/r", tmp_path / "out")
 
 
@@ -308,3 +308,4 @@ def test_a_failed_fetch_keeps_an_earlier_result(site, tmp_path) -> None:
 def test_comic_id_is_derived_from_the_url() -> None:
     assert fetch.default_comic_id("https://www.example.com/en/webcomic/ep-12_the.start/?x=1") == "example.com-ep-12_the.start"
     assert fetch.default_comic_id("https://example.com/") == "example.com"
+    assert fetch.default_comic_id("https://example.com/en/ep01_Potion.html") == "example.com-ep01_Potion"

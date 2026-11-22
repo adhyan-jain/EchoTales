@@ -118,7 +118,7 @@ class PublicOnlyGuard:
                 infos = socket.getaddrinfo(host, parts.port or (443 if parts.scheme == "https" else 80), type=socket.SOCK_STREAM)
             except OSError as exc:
                 raise FetchError(f"could not find the host {host}") from exc
-            literals = [ipaddress.ip_address(info[4][0].split("%")[0]) for info in infos]
+            literals = [ipaddress.ip_address(str(info[4][0]).split("%")[0]) for info in infos]
         if not literals or not all(self.ip_allowed(ip) for ip in literals):
             raise self._refuse(host)
 
@@ -223,7 +223,7 @@ def default_comic_id(url: str) -> str:
     """`example.com-ep-12` from the host and the last path segment: a readable folder name, never from the query."""
     parts = urlparse(url)
     host = (parts.hostname or "comic").removeprefix("www.")
-    last = next((s for s in reversed(parts.path.split("/")) if s), "")
+    last = re.sub(r"\.(html?|php|aspx?)$", "", next((s for s in reversed(parts.path.split("/")) if s), ""), flags=re.I)
     raw = f"{host}-{last}" if last else host
     return re.sub(r"[^A-Za-z0-9._-]", "_", raw).lstrip(".")[:80] or "comic"
 
@@ -298,18 +298,17 @@ def playwright_available() -> bool:
 def _render(url: str, guard: PublicOnlyGuard, timeout: float) -> tuple[str, str]:
     """The page after its scripts ran and it was scrolled to the end (lazy images load on scroll). Every request the
     browser makes, redirects and sub-resources included, goes through the guard."""
-    from playwright.sync_api import Error as PlaywrightError
-    from playwright.sync_api import sync_playwright
+    from playwright.sync_api import Error as PlaywrightError, sync_playwright  # type: ignore[import-not-found,unused-ignore]  # noqa: I001
 
     def gate(route) -> None:  # type: ignore[no-untyped-def]
         target = route.request.url
-        if urlparse(target).scheme in ("data", "blob", "about"):
-            return route.continue_()
-        try:
-            guard.check_url(target)
-        except FetchError:
-            return route.abort()
-        return route.continue_()
+        if urlparse(target).scheme not in ("data", "blob", "about"):
+            try:
+                guard.check_url(target)
+            except FetchError:
+                route.abort()
+                return
+        route.continue_()
 
     try:
         with sync_playwright() as pw:

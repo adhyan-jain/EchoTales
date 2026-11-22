@@ -29,6 +29,11 @@ Pages: `echotales pages` lays the panels out as a vertical **webtoon** strip by 
 `comic` for paged layouts) and letters the bubbles in code, placed off the picture's subject where it can find a
 spot (EVOLUTION 4.185).
 
+Comic input: `echotales comic ingest|build` read a folder, `.cbz` or `.pdf`; `echotales comic fetch <chapter-url>` (or the
+Studio's "Paste a chapter link") downloads a chapter's page images into `data/raw/comics/<id>/` first. It is generic, with no
+per-site adapters, and refuses private addresses, protected or login-gated pages and oversize downloads. You are responsible
+for having the right to use what you download (EVOLUTION 4.191).
+
 ## Measured results
 
 Every number below comes from a committed record and names it. Where nothing was measured the cell says so.
