@@ -47,6 +47,8 @@ from urllib.parse import unquote, urljoin, urlparse
 import httpx
 from PIL import Image
 
+from echotales.pipeline.comic.ingest import IMAGE_SUFFIXES, natural_key
+
 USER_AGENT = (
     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
 )
@@ -466,6 +468,129 @@ def _publish(
         dropped=[{"url": g.url, "reason": g.drop} for g in got if g.drop],
         notes=notes, rendered=rendered, source_json=out / "source.json",
     )
+
+
+# --- local import (no network) -----------------------------------------------------------------------------------
+
+#: `urljoin` needs a base, and the references of a saved page are relative to its folder. This stand-in directory is
+#: never touched; a joined reference is local only if it still sits under it, so `..` and absolute paths fall outside.
+_LOCAL_ROOT = "/saved/"
+_LOCAL_PAGE_EXT = {".html", ".htm", ".xhtml"}
+_SAVED_FROM = re.compile(r"<!--\s*saved from url=(?:\(\d+\))?\s*(\S+?)\s*-->", re.I)
+
+
+class _PageUrl(HTMLParser):
+    """The canonical link and og:url of a saved page, for pages whose browser left no `saved from url` comment."""
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.canonical: str | None = None
+        self.og_url: str | None = None
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        a = {k.lower(): (v or "").strip() for k, v in attrs}
+        if tag == "link" and "canonical" in a.get("rel", "").lower().split() and a.get("href"):
+            self.canonical = self.canonical or a["href"]
+        elif tag == "meta" and a.get("property", "").lower() == "og:url" and a.get("content"):
+            self.og_url = self.og_url or a["content"]
+
+
+def saved_page_url(html: str) -> str | None:
+    """The address a saved page came from: the browser's `saved from url` comment, else canonical, else og:url."""
+    stamp = _SAVED_FROM.search(html[:4096])
+    parser = _PageUrl()
+    parser.feed(html)
+    for found in (stamp.group(1) if stamp else None, parser.canonical, parser.og_url):
+        if found and urlparse(found).scheme in ("http", "https"):
+            return found
+    return None
+
+
+def default_local_id(source: Path | str) -> str:
+    """A folder name from a saved page's file name or a folder's name, as `default_comic_id` does for a link."""
+    path = Path(source)
+    return re.sub(r"[^A-Za-z0-9._-]", "_", path.name if path.is_dir() else path.stem).lstrip(".")[:80] or "comic"
+
+
+def _local_target(rel: str, root: Path) -> Path | str:
+    """The file `rel` names under `root`, or the plain-language reason it cannot be used. Resolving first means a
+    symlink or a percent-encoded `..` that leads out of `root` is refused the same way a plain `..` is."""
+    try:
+        target = (root / rel).resolve()
+        target.relative_to(root)
+    except ValueError:
+        return "outside the page's folder; refused"
+    except OSError:
+        return "could not be read"
+    return target if target.is_file() else "file not found"
+
+
+def fetch_local(
+    source: Path | str, out_dir: Path | str, *, rights_confirmed: bool = False, min_width: int = MIN_PAGE_WIDTH,
+    max_images: int = MAX_IMAGES, max_image_bytes: int = MAX_IMAGE_BYTES, max_total_bytes: int = MAX_TOTAL_BYTES,
+) -> FetchResult:
+    """Import page images from disk instead of a link: a browser-saved page (`page.html` plus its `page_files/`) or a
+    folder of images. Same validation, caps, noise and width filtering, naming and `source.json` as `fetch_chapter`;
+    it never opens a socket. A reference to a remote image the browser did not save is reported, not fetched, and every
+    file must resolve to somewhere inside the page's (or the folder's) own directory."""
+    src = Path(source)
+    if not src.exists():
+        raise FetchError(f"no such file or folder: {src}")
+    table: dict[str, Path | str] = {}
+    page_url: str | None = None
+    if src.is_dir():
+        kind, root = "folder", src.resolve()
+        names = sorted(
+            (p.name for p in src.iterdir() if p.suffix.lower() in IMAGE_SUFFIXES and not p.is_dir()), key=natural_key
+        )
+        for name in names:
+            table[name] = _local_target(name, root)
+    elif src.is_file() and src.suffix.lower() in _LOCAL_PAGE_EXT:
+        kind, root = "saved_page", src.resolve().parent
+        if src.stat().st_size > MAX_PAGE_BYTES:
+            raise FetchError("that page is larger than 8 MB; it is probably not a chapter page")
+        html = src.read_text(encoding="utf-8", errors="replace")
+        page_url = saved_page_url(html)
+        for ref in extract_image_urls(html, f"file://{_LOCAL_ROOT}{src.name}"):
+            parts = urlparse(ref)
+            if parts.scheme != "file" or parts.netloc:
+                shown = ref if parts.scheme in ("http", "https") else f"//{parts.netloc}{parts.path}"
+                table[shown] = "remote image, not saved with the page; local mode never downloads"
+            elif parts.path.startswith(_LOCAL_ROOT):
+                rel = unquote(parts.path[len(_LOCAL_ROOT):])
+                table[rel] = _local_target(rel, root)
+            else:
+                table[unquote(parts.path)] = "outside the page's folder; refused"
+    else:
+        raise FetchError("a local source must be a saved page (.html) or a folder of images")
+    if not table:
+        raise FetchError("no page images found in " + ("that folder" if kind == "folder" else "that saved page"))
+    if len(table) > max_images:
+        raise FetchError(f"the {kind.replace('_', ' ')} lists {len(table)} images; the limit is {max_images}")
+
+    def read(key: str, referer: str | None, limit: int) -> tuple[bytes, str]:
+        target = table[key]
+        if isinstance(target, str):
+            raise FetchError(target)
+        with target.open("rb") as fh:
+            data = fh.read(limit + 1)
+        if len(data) > limit:
+            raise _TooLarge
+        return data, key
+
+    res = _publish(
+        Path(out_dir), list(table), fetch=read, referer=None, delay=0, concurrency=1, min_width=min_width,
+        max_image_bytes=max_image_bytes, max_total_bytes=max_total_bytes, sleep=lambda _s: None,
+        info={"source": kind, "url": page_url, "final_url": page_url, "origin_name": src.name,
+              "rights_confirmed": bool(rights_confirmed), "rendered": False},
+        notes=[], rendered=False,
+    )
+    if any(isinstance(t, str) and t.startswith("remote") for t in table.values()):
+        res.notes.append(
+            "Some images the page refers to were not saved with it. Scroll the chapter to the end so lazy images load, "
+            "then save it again with 'Webpage, Complete'."
+        )
+    return res
 
 
 def _download_all(

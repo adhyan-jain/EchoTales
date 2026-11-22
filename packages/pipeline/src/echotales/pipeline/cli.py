@@ -659,10 +659,14 @@ def build_parser() -> argparse.ArgumentParser:
     c_sub = p_comic.add_subparsers(dest="comic_command", required=True)
     c_fetch = c_sub.add_parser(
         "fetch",
-        help="download a chapter's page images from a link into data/raw/comics/<id>/ (you are responsible for "
-        "having the right to use what you download)",
+        help="get a chapter's page images from a link, a browser-saved page (.html) or a folder of images into "
+        "data/raw/comics/<id>/ (you are responsible for having the right to use what you download)",
     )
-    c_fetch.add_argument("url", help="the chapter page's address (http or https)")
+    c_fetch.add_argument(
+        "url", metavar="source",
+        help="the chapter page's address (http or https), a saved page (.html, with its _files folder) or a folder of "
+        "images; a saved page or folder is read from disk with no network",
+    )
     c_fetch.add_argument("--id", default=None, help="folder name under data/raw/comics/ (default: from the link)")
     c_fetch.add_argument("--out", default=None, help="folder to write the pages to (default: data/raw/comics/<id>)")
     c_fetch.add_argument("--render", action="store_true",
