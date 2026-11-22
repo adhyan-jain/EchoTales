@@ -114,7 +114,7 @@ def test_casting_uses_the_prior_and_the_report_names_it(tmp_path: Path) -> None:
 # ---------------------------------------------------------------------------- anonymous slots
 
 ANON_BANK = "ID  AGE  GENDER  ACCENTS  REGION\n" + "".join(
-    f"p{200 + i}  30  {g}    English    Surrey\n" for i, g in enumerate("FFFFFFMMMMMM")
+    f"p{200 + i}  30  {g}    English    Surrey\n" for i, g in enumerate("FFFFFFFFFFMMMMMMMMMM")
 )
 SLOTS = [f"t:anon:1:{n}" for n in range(1, 5)]
 
@@ -178,3 +178,14 @@ def test_a_slot_keeps_its_voice_when_other_characters_are_cast_differently(tmp_p
     alone, _ = _run(tmp_path, "a", [])
     crowded, _ = _run(tmp_path, "b", [("Anna", "her"), ("Ben", "his"), ("Cora", "her"), ("Dan", "his")])
     assert crowded == alone
+
+
+def test_a_named_character_never_takes_a_voice_an_unknown_speaker_slot_can_take(tmp_path: Path) -> None:
+    out = tmp_path / "c"
+    store = _anon_book(tmp_path / "db_c", [("Anna", "her"), ("Ben", "his"), ("Cora", "her"), ("Dan", "his")])
+    bank = VoiceBank(voices=parse_speaker_info(ANON_BANK))
+    render_novel("t", store, bank, out_dir=out, engine=get_engine("stub"), synthesize=False)
+    rows = [json.loads(x) for x in (out / "manifest.jsonl").read_text().splitlines() if x.strip()]
+    slot = {r["voice"] for r in rows if ":anon:" in r["speaker_id"]}
+    named = {r["voice"] for r in rows if r["speaker_label"] in ("Anna", "Ben", "Cora", "Dan")}
+    assert named and not slot & named

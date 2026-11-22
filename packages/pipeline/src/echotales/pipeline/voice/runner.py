@@ -43,7 +43,7 @@ from echotales.pipeline.spans.delivery import (
     dominant_polarity,
     extract_delivery_markers,
 )
-from echotales.pipeline.voice.bank import VoiceBank
+from echotales.pipeline.voice.bank import BankVoice, VoiceBank
 from echotales.pipeline.voice.casting import DEFAULT_SEED, cast_voices
 from echotales.pipeline.voice.delivery import pace_text, settings_for
 from echotales.pipeline.voice.engine import SynthesisRequest, TTSEngine, get_engine
@@ -202,6 +202,25 @@ def _narrator_voice(bank: VoiceBank, preferred: str = "") -> str:
 _SLOT_POOL = 4
 
 
+def _slot_pool(bank: VoiceBank, side: str, narrator: str) -> list[BankVoice]:
+    others = [v for v in bank.voices if v.speaker_id != narrator]
+    pool = [v for v in bank.nearest_bucket(side, "adult") if v.speaker_id != narrator]
+    pool = pool or [v for v in others if v.gender == side] or others
+    return sorted(pool, key=lambda v: v.speaker_id)[:_SLOT_POOL]
+
+
+def _slot_voices(bank: VoiceBank, narrator: str) -> frozenset[str]:
+    """Voices reserved for anonymous slots. Named characters are cast around them (`exclude`), so a slot never
+    sounds like a named character in the same scene -- the guarantee `chapter_voices_used` gave before slot voices
+    stopped depending on who else is cast. A gender with fewer than twice `_SLOT_POOL` voices reserves nothing:
+    on a small bank taking four of them would recast every named character of that gender."""
+    reserved: set[str] = set()
+    for side in ("male", "female"):
+        if sum(1 for v in bank.voices if v.gender == side and v.speaker_id != narrator) >= 2 * _SLOT_POOL:
+            reserved.update(v.speaker_id for v in _slot_pool(bank, side, narrator))
+    return frozenset(reserved)
+
+
 def _slot_voice(bank: VoiceBank, slot_id: str, gender: str | None, narrator: str) -> str:
     """The voice of an anonymous/epithet slot: deterministic in the slot id, independent of every other character.
 
@@ -213,10 +232,7 @@ def _slot_voice(bank: VoiceBank, slot_id: str, gender: str | None, narrator: str
     head, _, tail = slot_id.rpartition(":")
     n = zlib.crc32(head.encode()) + int(tail) if tail.isdigit() else zlib.crc32(slot_id.encode())
     side = gender if gender in ("male", "female") else ("male", "female")[n % 2]
-    others = [v for v in bank.voices if v.speaker_id != narrator]
-    pool = [v for v in bank.nearest_bucket(side, "adult") if v.speaker_id != narrator]
-    pool = pool or [v for v in others if v.gender == side] or others
-    pool = sorted(pool, key=lambda v: v.speaker_id)[:_SLOT_POOL]
+    pool = _slot_pool(bank, side, narrator)
     return pool[n % len(pool)].speaker_id if pool else narrator
 
 
@@ -286,7 +302,7 @@ def render_novel(
     }
     basis = gender_lean_basis(store, novel_id, unknown)
     assignments, casting = cast_voices(
-        novel_id, profiles, bank, store=store, seed=seed, exclude=frozenset({narrator}),
+        novel_id, profiles, bank, store=store, seed=seed, exclude=frozenset({narrator}) | _slot_voices(bank, narrator),
         previous=previous, lean={t: side for t, (side, _) in basis.items()},
         lean_basis={t: how for t, (_, how) in basis.items()},
     )
