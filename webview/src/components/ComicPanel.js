@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { api } from '../api';
 import Button from './ui/Button';
+import Input from './ui/Input';
 import JobFailure from './ui/JobFailure';
 import { useToast } from './ui/Toast';
 import { describeError } from '../lib/errors';
@@ -17,6 +18,9 @@ export default function ComicPanel({ novelId }) {
   const [fileKey, setFileKey] = useState(0);
   const [busy, setBusy] = useState('');
   const [failure, setFailure] = useState(null);
+  const [link, setLink] = useState('');
+  const [rights, setRights] = useState(false);
+  const [fetchError, setFetchError] = useState('');
   const gone = useRef(false);
 
   useEffect(() => () => { gone.current = true; }, []);
@@ -49,6 +53,31 @@ export default function ComicPanel({ novelId }) {
       await load();
     } catch (err) {
       push(describeError(err, 'Could not upload that comic.'), 'danger');
+    } finally {
+      if (!gone.current) setBusy('');
+    }
+  };
+
+  const fetchLink = async () => {
+    const url = link.trim();
+    if (!url) return;
+    setBusy('fetch');
+    setFetchError('');
+    try {
+      const queued = await api.fetchComicLink(novelId, url, rights);
+      const done = await waitForJob(novelId, queued.job_id, { cancelled: () => gone.current });
+      if (gone.current) return;
+      if (done && done.status === 'SUCCEEDED') {
+        push('Pages downloaded. Build the motion comic from the list below.', 'success');
+        setLink('');
+        await load();
+      } else {
+        setFetchError(
+          (done && done.error_summary) || 'The download did not finish. Check the link and try again.'
+        );
+      }
+    } catch (err) {
+      setFetchError(describeError(err, 'Could not start the download.'));
     } finally {
       if (!gone.current) setBusy('');
     }
@@ -102,6 +131,41 @@ export default function ComicPanel({ novelId }) {
         <Button variant="secondary" disabled={!file || !!busy} onClick={upload}>
           {busy === 'upload' ? 'Uploading…' : 'Upload comic'}
         </Button>
+      </div>
+
+      <div className="mt-5">
+        <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.14em] text-muted" htmlFor="comic-link">
+          Paste a chapter link
+        </label>
+        <div className="flex flex-wrap items-center gap-3">
+          <Input
+            id="comic-link"
+            type="url"
+            inputMode="url"
+            autoComplete="off"
+            spellCheck={false}
+            value={link}
+            onChange={(e) => setLink(e.target.value)}
+            placeholder="https://example.com/comic/chapter-1"
+            className="min-w-0 flex-1"
+          />
+          <Button variant="secondary" disabled={!link.trim() || !!busy} onClick={fetchLink}>
+            {busy === 'fetch' ? 'Downloading…' : 'Download pages'}
+          </Button>
+        </div>
+        <label className="mt-2 flex cursor-pointer items-start gap-2 text-sm text-text">
+          <input type="checkbox" className="mt-1" checked={rights} onChange={(e) => setRights(e.target.checked)} />
+          <span>I have the right to use this content.</span>
+        </label>
+        <p className="mt-1 text-xs text-muted">
+          You are responsible for having the right to use anything you download. Pages that need a login or are
+          protected are not downloaded.
+        </p>
+        {fetchError && (
+          <div role="alert" className="mt-3 rounded-xl border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-danger">
+            {fetchError}
+          </div>
+        )}
       </div>
 
       {loadError && (

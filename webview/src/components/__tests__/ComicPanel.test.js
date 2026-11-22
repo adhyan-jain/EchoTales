@@ -6,6 +6,7 @@ jest.mock('../../api', () => ({
   api: {
     listComic: jest.fn(),
     uploadComic: jest.fn(),
+    fetchComicLink: jest.fn(),
     triggerStage: jest.fn(),
     getJob: jest.fn(),
     outputFileUrl: jest.fn(),
@@ -79,4 +80,40 @@ test('a failed build is reported, not shown as built', async () => {
   mount();
   fireEvent.click(await screen.findByRole('button', { name: 'Build ep1' }));
   expect(await screen.findByText(/OCR engine unavailable/)).toBeInTheDocument();
+});
+
+test('pasting a chapter link queues the download with the rights stamp, then lists the pages', async () => {
+  api.fetchComicLink.mockResolvedValue({ job_id: 'j2', kind: 'comic_fetch', status: 'PENDING' });
+  api.getJob.mockResolvedValue({ job_id: 'j2', status: 'SUCCEEDED' });
+  mount();
+  await screen.findByText(/No comic uploaded/i);
+  const button = screen.getByRole('button', { name: 'Download pages' });
+  expect(button).toBeDisabled();
+  expect(screen.getByText(/You are responsible for having the right/i)).toBeInTheDocument();
+  fireEvent.change(screen.getByLabelText('Paste a chapter link'), { target: { value: ' https://example.com/ch1 ' } });
+  fireEvent.click(screen.getByLabelText(/I have the right to use this content/i));
+  api.listComic.mockResolvedValue({ sources: [{ name: 'example.com-ch1', pages: 5, kind: 'images' }], videos: [] });
+  fireEvent.click(button);
+  await waitFor(() => expect(api.fetchComicLink).toHaveBeenCalledWith('pc', 'https://example.com/ch1', true));
+  expect(await screen.findByText('example.com-ch1')).toBeInTheDocument();
+  expect(screen.getByText('5 pages')).toBeInTheDocument();
+});
+
+test('a refused or failed link download says why in plain language', async () => {
+  mount();
+  await screen.findByText(/No comic uploaded/i);
+  fireEvent.change(screen.getByLabelText('Paste a chapter link'), { target: { value: 'http://10.0.0.2/x' } });
+  api.fetchComicLink.mockRejectedValue(
+    Object.assign(new Error('x'), {
+      status: 400,
+      serverMessage: '10.0.0.2 is not allowed: it points at a private, local or reserved address',
+    })
+  );
+  fireEvent.click(screen.getByRole('button', { name: 'Download pages' }));
+  expect(await screen.findByText(/is not allowed: it points at a private/)).toBeInTheDocument();
+
+  api.fetchComicLink.mockResolvedValue({ job_id: 'j3', kind: 'comic_fetch', status: 'PENDING' });
+  api.getJob.mockResolvedValue({ job_id: 'j3', status: 'FAILED', error_summary: 'The site refused the request (HTTP 403).' });
+  fireEvent.click(screen.getByRole('button', { name: 'Download pages' }));
+  expect(await screen.findByText(/The site refused the request \(HTTP 403\)/)).toBeInTheDocument();
 });
