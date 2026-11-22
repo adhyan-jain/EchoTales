@@ -350,6 +350,15 @@ export const api = {
     return request(`/api/projects/${enc(novelId)}/comic`, { method: 'POST', body: form });
   },
 
+  // Queue the `comic_fetch` job: download a chapter link's page images into the project's comic sources. The server
+  // refuses a link that is not public http(s); `rightsConfirmed` is stored as the user's own stamp, never enforced.
+  fetchComicLink: (novelId, url, rightsConfirmed) =>
+    request(`/api/projects/${enc(novelId)}/comic_fetch`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url, rights_confirmed: !!rightsConfirmed }),
+    }),
+
   // The built reader companions, and the link that opens one in a new tab (which cannot send an Authorization header,
   // so the session token rides in the query string of this one route, as `outputFileUrl` does).
   listCompanions: (novelId) => request(`/api/projects/${enc(novelId)}/companions`),

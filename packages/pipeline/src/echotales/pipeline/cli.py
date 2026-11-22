@@ -657,6 +657,19 @@ def build_parser() -> argparse.ArgumentParser:
         help="comic, manga or webtoon pages into the story graph and a voiced motion-comic video (roadmap M2)",
     )
     c_sub = p_comic.add_subparsers(dest="comic_command", required=True)
+    c_fetch = c_sub.add_parser(
+        "fetch",
+        help="download a chapter's page images from a link into data/raw/comics/<id>/ (you are responsible for "
+        "having the right to use what you download)",
+    )
+    c_fetch.add_argument("url", help="the chapter page's address (http or https)")
+    c_fetch.add_argument("--id", default=None, help="folder name under data/raw/comics/ (default: from the link)")
+    c_fetch.add_argument("--out", default=None, help="folder to write the pages to (default: data/raw/comics/<id>)")
+    c_fetch.add_argument("--render", action="store_true",
+                         help="load the page in a headless browser first and scroll it (needs the optional playwright)")
+    c_fetch.add_argument("--delay", type=float, default=0.4, help="seconds to wait before each image request")
+    c_fetch.add_argument("--i-own-rights", action="store_true",
+                         help="record in source.json that you confirm you have the right to use this content")
     c_ingest = c_sub.add_parser("ingest", help="pages from a folder, .cbz or .pdf, in natural order")
     c_ingest.add_argument("--novel", required=True)
     c_ingest.add_argument("--input", required=True, help="folder of images, .cbz or .pdf")

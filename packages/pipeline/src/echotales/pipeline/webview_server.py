@@ -2783,6 +2783,18 @@ def make_handler(
                         params = _with_genre(handle, params)
                     if kind in ("pack_export", "pack_import"):
                         params["corrections_path"] = str(handle.corrections.path)
+                    if kind == "comic_fetch":
+                        from echotales.pipeline.comic import fetch as comic_fetch
+
+                        link = params.get("url")
+                        if not isinstance(link, str) or not link.strip() or len(link) > 2048:
+                            return self._json(400, {"error": "Paste the chapter's web address (it starts with http:// or https://)."})
+                        try:
+                            comic_fetch.default_guard().check_url(link.strip())
+                        except comic_fetch.FetchError as exc:
+                            return self._json(400, {"error": str(exc)})
+                        # Only the link and the user's own rights stamp reach the job; everything else is the server's.
+                        params = {"url": link.strip(), "rights_confirmed": params.get("rights_confirmed") is True}
                     if kind == "companion":
                         from echotales.pipeline.companion import parse_through
 

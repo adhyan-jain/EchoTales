@@ -108,6 +108,9 @@ JOB_KINDS = (
     "pages",
     # Comic, manga or webtoon pages into the graph and a voiced motion-comic video (roadmap M2): `echotales comic`.
     "comic",
+    # A chapter link to page images in the project's comic/source folder (`echotales comic fetch`); the link is the
+    # user's, who confirms they have the right to use it. Build the motion comic from the result with `comic`.
+    "comic_fetch",
     "refimg_search",
     "reference_gen",
     # Adaptation packs (roadmap M4): the cast, descriptions, voices, direction and corrections as one .etpack file
@@ -488,6 +491,20 @@ def _run_comic(store: Store, novel_id: str, params: dict[str, Any]) -> list[str]
         trust_speakers=bool(params.get("trust_speakers")),
     )
     return [str(built.video.video)]
+
+
+def _run_comic_fetch(novel_id: str, params: dict[str, Any]) -> list[str]:
+    """`echotales comic fetch` into `data/novels/<CODE>/comic/source/<name>`, the folder the `comic` job reads by name.
+    The folder is the server's choice (a name derived from the link, never a client path); the server route has
+    already refused a link that is not public http(s), and `fetch_chapter` checks again on every hop."""
+    from echotales.pipeline.comic import fetch, runner
+
+    link = str(params.get("url") or "")
+    name = fetch.default_comic_id(link)
+    out = runner.comic_root(novel_id) / "source" / name
+    res = fetch.fetch_chapter(link, out, rights_confirmed=params.get("rights_confirmed") is True,
+                              render=bool(params.get("render")))
+    return [str(p) for p in res.images]
 
 
 def _run_pipeline(store: Store, job_id: str, novel_id: str, params: dict[str, Any], sources_path: str):  # type: ignore[no-untyped-def]
@@ -878,6 +895,13 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
             store, run_id=pipeline_run.run_id, stage_name="comic",
             input_digest=f"{input_digest}|{time.time()}", skip_if_succeeded=False,
             fn=lambda: _run_comic(store, novel_id, params),
+        )
+    elif job.kind == "comic_fetch":
+        # Not skippable by digest: the same link serves different pages on different days.
+        run_stage(
+            store, run_id=pipeline_run.run_id, stage_name="comic_fetch",
+            input_digest=f"{input_digest}|{time.time()}", skip_if_succeeded=False,
+            fn=lambda: _run_comic_fetch(novel_id, params),
         )
     elif job.kind in ("pack_export", "pack_import"):
         from echotales.pipeline import packs, paths
