@@ -30,6 +30,7 @@ opens, measures or concatenates them is exercised for real.
 
 from __future__ import annotations
 
+import contextlib
 import struct
 import wave
 from dataclasses import dataclass
@@ -174,10 +175,9 @@ def release_engine(engine: object) -> None:
     """Free an engine's model if it has something to free; an engine without `close` (stub, hosted) needs nothing."""
     close = getattr(engine, "close", None)
     if callable(close):
-        try:
+        # Best effort: releasing must not hide the job's own result.
+        with contextlib.suppress(Exception):
             close()
-        except Exception:  # noqa: BLE001 - releasing is best effort, and must not hide the job's own result
-            pass
 
 
 def get_engine(name: str = "stub", **kwargs: object) -> TTSEngine:
