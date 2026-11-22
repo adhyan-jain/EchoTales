@@ -1241,15 +1241,26 @@ def brief_from_direction(
             chars.append(cb)
 
     frame_subject = getattr(d, "frame_subject", "") or ""
-    if frame_focus == "over-shoulder" and frame_subject and len(chars) > 1:
+    if frame_focus == "over-shoulder" and frame_subject and chars:
         # The listener named by the framing is drawn only as the back of a head; a director that listed him first must not make him
         # the lead of the face and framing sentences (the speaker leads the shot, EVOLUTION 4.190).
+        from types import SimpleNamespace
+
         from echotales.pipeline.render.direction import name_key
 
         want = set(name_key(frame_subject).split())
         for c in chars:
             have = set(name_key(c.name).split())
             c.back_turned = bool(want) and (want <= have or have <= want)
+        if not any(c.back_turned for c in chars):
+            # The director drew only the speaker (P&P rerun: 1 listener in 3 was missing from `characters`): the back figure still
+            # needs the listener's own hair and clothes, or the model invents a stranger, so he joins from the cast.
+            for _cd, sid in _match_director_characters(store, self_ids, [SimpleNamespace(name=frame_subject)])[:1]:
+                cb = character_brief(store, novel_id, sid, position, gender_hint=gender_hint, lead=False, stated_expression="",
+                                     beat_text="" if composition else beat_text, scene=scene)
+                if name_key(cb.name) not in {name_key(c.name) for c in chars}:
+                    cb.back_turned = True
+                    chars.append(cb)
         if any(c.back_turned for c in chars) and not all(c.back_turned for c in chars):
             chars.sort(key=lambda c: c.back_turned)  # stable: speaker(s) first, the listener last
             for i, c in enumerate(chars):

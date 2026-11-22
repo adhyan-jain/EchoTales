@@ -57,9 +57,11 @@ def test_a_neutral_face_takes_the_scenes_mood_and_the_earliest_mood_word_wins() 
     assert not face.is_neutral(face.infer_expression("calm unreadable stare", quiet, mood="pensive"))
 
 
-def test_the_directors_vocabulary_does_not_offer_the_neutral_face_as_an_example() -> None:
-    # The model copies the last example of a list when the line is thin (4.171); the neutral phrase is no longer one.
+def test_the_directors_vocabulary_offers_no_stock_face_phrase_to_copy() -> None:
+    # The model copies the last example of a list when the line is thin (4.171: the neutral phrase on 34 of 45 RI panels). The
+    # first round-8 fix replaced it with "thin bitter smile, eyes lowered" and gemma2:9b wrote exactly that for most of Mr.
+    # Bennet's panels in the P&P rerun, so the prompt now names no phrase at all.
     from echotales.pipeline.render import direction
 
     src = Path(direction.__file__).read_text(encoding="utf-8")
-    assert 'calm unreadable stare' not in src
+    assert "calm unreadable stare" not in src and "thin bitter smile" not in src and "cold mocking smile, narrowed eyes" not in src

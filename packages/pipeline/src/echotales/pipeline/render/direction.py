@@ -407,8 +407,8 @@ def build_prompt(
         '  visual_source "text" or "inferred" (system rule 13)',
         "  expression    ONE short anime-emotion face phrase for the lead, ALWAYS filled, drawn from this line AND the "
         "situation around it (who is speaking to whom, who is winning), independent of physical condition -- a wounded "
-        "character is not automatically pained. Examples of the vocabulary: \"cold mocking smile, narrowed eyes\", "
-        "\"contemptuous sneer\", \"furious glare, clenched teeth\", \"wide shocked eyes\", \"thin bitter smile, eyes lowered\". "
+        "character is not automatically pained. Name the feeling and one facial feature in your own words for THIS passage "
+        "(brows, eyes or mouth); never a stock phrase, and never the same phrase for two different lines. "
         "A calm or blank face only when the passage says the face does not change; a still face is otherwise a small feeling "
         "(wariness, thought, contempt, amusement). "
         "A man laughing at his enemies is mocking, never cheerful. If SPOKEN LINES show someone else speaking to the lead, "

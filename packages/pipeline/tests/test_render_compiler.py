@@ -342,3 +342,12 @@ def test_a_low_angle_and_a_profile_view_keep_the_face_sentence_but_not_the_parag
                        framing="Low angle.", face="a furious glare", composition="He stands in a hall.")
         out = compile_prompt(b, model_profile("z-image-turbo"))
         assert "Fang Yuan's face: a furious glare" in out.positive and "He stands in a hall" not in out.positive, focus
+
+
+def test_an_over_the_shoulder_listener_the_director_left_out_joins_from_the_cast_as_the_back_figure(tmp_path) -> None:
+    # P&P rerun: the director often lists only the speaker; the back-turned listener then had no identity sentence at all.
+    from echotales.pipeline.render.direction import CharacterDirection, PanelDirection
+
+    d = PanelDirection(characters=[CharacterDirection(name="Fang Yuan")], frame_focus="over-shoulder", frame_subject="Bai Ning Bing")
+    brief = brief_from_direction(_two_person_store(tmp_path), "n", ["s1", "s2"], 1.0, d)
+    assert [(c.name, c.back_turned, c.lead) for c in brief.characters] == [("Fang Yuan", False, True), ("Bai Ning Bing", True, False)]
