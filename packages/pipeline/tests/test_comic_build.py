@@ -66,6 +66,38 @@ def test_camera_window_covers_the_frame_aspect_and_stays_inside_the_panel() -> N
             assert panel[0] - 0.5 <= x0 and x1 <= panel[2] + 0.5 and panel[1] - 0.5 <= y0 and y1 <= panel[3] + 0.5
 
 
+def test_camera_window_never_leaves_a_full_page_panel_by_float_noise() -> None:
+    # A page-wide strip at x0 = 0 panned right: the window's left edge came out as -1.4e-14 and PIL's
+    # resize(box=...) raised "box offset can't be negative" (LotNB ch100 webtoon build).
+    page = Image.new("RGB", (720, 1006), (200, 200, 200))
+    for panel in [(0, 0, 720, 33), (0, 133, 720, 279), (0, 20, 720, 145)]:
+        for pan in np.linspace(-1.0, 1.0, 11):
+            win = camera_window(panel, 1280 / 720, 1.06, float(pan))
+            assert win[0] >= panel[0] and win[1] >= panel[1] and win[2] <= panel[2] and win[3] <= panel[3]
+            page.resize((320, 180), Image.Resampling.BICUBIC, box=win)
+
+
+def test_failed_encode_leaves_no_episode_mp4(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    import echotales.pipeline.comic.build as build_mod
+
+    und = _und()
+    store = Store(str(tmp_path / "c.db"))
+    comic_to_store(store, und, "pc", "Pepper and Carrot", trust_speakers=True)
+    audio = tmp_path / "audio"
+    render_novel("pc", store, VoiceBank(voices=parse_speaker_info(INFO)), out_dir=audio, engine=get_engine("stub"))
+    timings = build_timing(audio, 1.0, write=True)
+
+    def boom(*_a, **_k):
+        raise ValueError("synthetic frame failure")
+        yield  # pragma: no cover
+
+    monkeypatch.setattr(build_mod, "_shot_frames", boom)
+    with pytest.raises(ValueError, match="synthetic"):
+        build_episode(und, [PageImage(0, "p1.png", _page())], timings, tmp_path / "out",
+                      title="T", credit="c", size=(320, 180), fps=8)
+    assert not list((tmp_path / "out").glob("*.mp4"))
+
+
 def test_build_episode_renders_a_video_with_credit_and_subtitles(tmp_path: Path) -> None:
     und = _und()
     store = Store(str(tmp_path / "c.db"))
