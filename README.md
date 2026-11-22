@@ -33,7 +33,7 @@ format to right-to-left `manga`; it is unit-tested only, no real bw render has b
 Comic input: `echotales comic ingest|build` read a folder, `.cbz` or `.pdf`; `echotales comic fetch <chapter-url>` (or the
 Studio's "Paste a chapter link") downloads a chapter's page images into `data/raw/comics/<id>/` first. It is generic, with no
 per-site adapters, and refuses private addresses, protected or login-gated pages and oversize downloads. You are responsible
-for having the right to use what you download (EVOLUTION 4.191).
+for having the right to use what you download (EVOLUTION 4.191). `comic fetch` also takes a browser-saved page (`.html` plus its `_files` folder) or a folder of images and reads it from disk with no network (EVOLUTION 4.196).
 
 ## Measured results
 
