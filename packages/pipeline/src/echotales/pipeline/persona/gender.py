@@ -25,6 +25,7 @@ from echotales.core.interval import FuzzyInterval
 from echotales.core.models import Attribute, DiscoursePosition, Span
 from echotales.core.store import Store
 from echotales.pipeline.persona.split import bodies_of, standing_values
+from echotales.pipeline.persona.traits import anchored_window
 from pydantic import BaseModel, Field
 
 #: A reviewer's decision is stored with this evidence prefix so no later automatic pass overwrites it.
@@ -54,6 +55,20 @@ _FEMALE_WORDS = frozenset(
     " madam madame dame".split()
 )
 _WORD = re.compile(r"[A-Za-z]+")
+
+#: Pronouns that can only refer back to the name they follow when nothing intervenes: subject, possessive, reflexive.
+#: "him" and "hers" are left out on purpose: an object pronoun after a name ("Elizabeth remained with no cordial
+#: feelings towards him") names the *other* person, which is what put a male vote on a woman in the P&P e2e run.
+_OWN_MALE = frozenset({"he", "his", "himself"})
+_OWN_FEMALE = frozenset({"she", "her", "herself"})
+#: Narration of every kind counts, exposition included: "Mary had heard herself mentioned ... the most accomplished
+#: girl" is exposition, and leaving that span type out left Jane, Mary and Lydia with no passage at all (P&P ch3).
+_NARRATIVE = (
+    SpanType.NARRATION_ACTION, SpanType.NARRATION_DESCRIPTION, SpanType.NARRATION_EXPOSITION, SpanType.INNER_MONOLOGUE,
+)
+#: Votes a character needs before the pronoun rule may decide alone (no title, no model), and the share they must agree.
+_MIN_VOTES_ALONE = 3
+_VOTE_SHARE = 0.85
 
 _SENTENCE = re.compile(r"[^.!?…]+(?:[.!?…]+[\"'”’]*|$)\s*")
 _MAX_WINDOW_CHARS = 400
@@ -85,6 +100,8 @@ class GenderReport:
     no_persona: int = 0
     by_cue: int = 0
     by_model: int = 0
+    by_pronoun: int = 0
+    by_pronoun_and_model: int = 0
     no_evidence: int = 0
     rejected_hedged: int = 0
     rejected_quote: int = 0
@@ -96,7 +113,8 @@ class GenderReport:
     def summary(self) -> str:
         return (
             f"gender pass {self.novel_id}: {self.examined} unknown characters examined, {self.by_cue} by title cue,"
-            f" {self.by_model} by model reading; left unknown: {self.no_evidence} without gendered text,"
+            f" {self.by_pronoun} by own pronouns, {self.by_model} by model reading ({self.by_pronoun_and_model} of them"
+            f" confirmed by pronouns rather than the quote); left unknown: {self.no_evidence} without gendered text,"
             f" {self.model_unknown} model unknown, {self.rejected_hedged} hedged, {self.rejected_quote} bad quote,"
             f" {self.errors} errors; {self.skipped_known} already known, {self.skipped_human} set by a reviewer, {self.no_persona} without a persona"
         )
@@ -110,6 +128,29 @@ def _norm(text: str) -> str:
 def _side_counts(text: str) -> tuple[int, int]:
     words = [w.casefold() for w in _WORD.findall(text)]
     return sum(w in _MALE_WORDS for w in words), sum(w in _FEMALE_WORDS for w in words)
+
+
+def own_pronoun_vote(text_after_mention: str) -> str | None:
+    """`male`/`female` from the first own-pronoun after a mention, inside the clause the mention opens, else None.
+
+    The window is `traits.anchored_window` (v2): it ends at the sentence end, at the next capitalised word (another
+    name) and at a clause boundary, so the pronoun it holds is about the mention's referent and not about whoever
+    the sentence turns to next. That rule was preregistered and measured for the trait stage; this reuses it rather
+    than a looser near-the-name count, which read Ruo Nan and Melissa as men (docstring above).
+    """
+    for word in _WORD.findall(anchored_window(text_after_mention, "v2")):
+        w = word.casefold()
+        if w in _OWN_MALE:
+            return "male"
+        if w in _OWN_FEMALE:
+            return "female"
+    return None
+
+
+def lean_from_votes(votes: list[str]) -> str | None:
+    """The side every vote agrees on, when there is at least one and none disagrees (used to steer casting)."""
+    sides = set(votes)
+    return next(iter(sides)) if len(sides) == 1 else None
 
 
 def _title_gender(span: Span, offset: int, mention_text: str) -> str | None:
@@ -190,12 +231,13 @@ class _Window:
 def _gather(store: Store, novel_id: str, wanted: set[str]):
     """One pass over the book: title cues, name-anchored windows and spoken-line counts for the wanted characters."""
     cues: dict[str, list[str]] = {t: [] for t in wanted}
+    votes: dict[str, list[str]] = {t: [] for t in wanted}
     windows: dict[str, list[_Window]] = {t: [] for t in wanted}
     mentions_n: dict[str, int] = {t: 0 for t in wanted}
     labels = {e.id: e.canonical_label for e in store.all_selves(novel_id) if e.id in wanted}
     lines: dict[str, int] = {t: 0 for t in wanted}
     by_label = {label: t for t, label in labels.items()}
-    narrative = (SpanType.NARRATION_ACTION, SpanType.NARRATION_DESCRIPTION, SpanType.INNER_MONOLOGUE)
+    narrative = _NARRATIVE
     for chapter in store.chapter_numbers(novel_id):
         spans = store.get_spans(novel_id, chapter)
         for s in spans:
@@ -220,11 +262,14 @@ def _gather(store: Store, novel_id: str, wanted: set[str]):
             if cue:
                 cues[m.target_id].append(cue)
             if span.span_type in narrative:
+                vote = own_pronoun_vote(span.text[m.offset - span.start + len(m.text) :])
+                if vote:
+                    votes[m.target_id].append(vote)
                 text = _window(span, m.offset)
                 if (m.target_id, text) not in seen:
                     seen.add((m.target_id, text))
                     windows[m.target_id].append(_Window(chapter, m.offset, text))
-    return cues, windows, mentions_n, lines
+    return cues, windows, mentions_n, lines, votes
 
 
 def _pick(windows: list[_Window], k: int) -> list[_Window]:
@@ -254,8 +299,9 @@ def infer_missing_genders(
 
     report = GenderReport(novel_id=novel_id)
     todo = []
+    merged = store.merged_into(novel_id)
     for entity in store.all_selves(novel_id):
-        if not entity.kind.is_person:
+        if not entity.kind.is_person or entity.id in merged:
             continue
         # A gender row needs a body to sit on; without one the personas stage has not run, and a row on a body that
         # does not exist would be read back by nothing (ORV's database had no personas at all).
@@ -272,20 +318,37 @@ def infer_missing_genders(
     if not todo:
         return report
 
-    cues, windows, mentions_n, lines = _gather(store, novel_id, {e.id for e in todo})
+    cues, windows, mentions_n, lines, votes = _gather(store, novel_id, {e.id for e in todo})
     for entity in todo:
         if mentions_n[entity.id] < min_mentions and not lines[entity.id]:
             continue
         report.examined += 1
         found = set(cues[entity.id])
-        if len(found) == 1 and len(cues[entity.id]) >= _MIN_TITLE_MENTIONS:
+        own = lean_from_votes(votes[entity.id])
+        at = windows[entity.id][0] if windows[entity.id] else None
+        pos = DiscoursePosition(chapter=int(at.chapter), offset=at.offset) if at else entity.first_attested_pos
+        # One title mention proves little (a nickname, a quoted insult); a single one that an own-pronoun in the
+        # character's narration agrees with is two independent cues (Jane: "the eldest Miss Bennet" + "her mother").
+        if len(found) == 1 and (
+            len(cues[entity.id]) >= _MIN_TITLE_MENTIONS or own == next(iter(found))
+        ):
             gender = next(iter(found))
-            at = windows[entity.id][0] if windows[entity.id] else None
-            pos = DiscoursePosition(chapter=int(at.chapter), offset=at.offset) if at else entity.first_attested_pos
             evidence = f"title before the name in {len(cues[entity.id])} mentions"
             write_gender(store, novel_id, entity.id, gender, evidence, confidence=0.9, at=pos)
             report.by_cue += 1
             report.decided[entity.canonical_label] = (gender, "cue", evidence)
+            continue
+        tally = votes[entity.id]
+        for side in ("male", "female"):
+            if len(tally) >= _MIN_VOTES_ALONE and tally.count(side) / len(tally) >= _VOTE_SHARE:
+                evidence = f"{tally.count(side)} of {len(tally)} own pronouns after the name are {side}"
+                write_gender(store, novel_id, entity.id, side, evidence, confidence=0.8, at=pos)
+                report.by_pronoun += 1
+                report.decided[entity.canonical_label] = (side, "pronoun", evidence)
+                break
+        else:
+            side = ""
+        if side:
             continue
         if client is None:
             report.no_evidence += 1
@@ -311,16 +374,38 @@ def infer_missing_genders(
             continue
         male, female = _side_counts(result.quote)
         claimed, other = (male, female) if result.gender == "male" else (female, male)
-        if len(quote) < MIN_QUOTE_CHARS or quote not in shown or claimed == 0 or other > 0:
+        quote_ok = not (len(quote) < MIN_QUOTE_CHARS or quote not in shown or claimed == 0 or other > 0)
+        # A small model often answers right and copies the wrong words (gemma2:9b quoted "towards him" for
+        # Elizabeth and was rejected). The character's own pronouns in the text are an independent read: when every
+        # one of them agrees with the model, the verdict stands without the quote.
+        if not quote_ok and own != result.gender:
             report.rejected_quote += 1
             continue
+        if not quote_ok:
+            report.by_pronoun_and_model += 1
         home = next(w for w in picked if quote in _norm(w.text)) if any(quote in _norm(w.text) for w in picked) else picked[0]
-        evidence = f"model reading: {result.quote.strip()}"
+        evidence = (
+            f"model reading: {result.quote.strip()}" if quote_ok
+            else f"model reading, confirmed by {len(votes[entity.id])} own pronouns after the name"
+        )
         write_gender(
             store, novel_id, entity.id, result.gender, evidence, confidence=0.8,
             at=DiscoursePosition(chapter=int(home.chapter), offset=home.offset),
         )
         report.by_model += 1
-        report.decided[entity.canonical_label] = (result.gender, "model", result.quote.strip())
+        report.decided[entity.canonical_label] = (result.gender, "model", evidence)
     store.conn.commit()
     return report
+
+
+def gender_lean(store: Store, novel_id: str, target_ids: set[str]) -> dict[str, str]:
+    """Characters in `target_ids` whose own pronouns all point one way, though no gender is recorded.
+
+    Voice casting uses it to stay on the right side of a character the graph left `unknown`: P&P e2e 2026-11-22 cast
+    Lydia a recorded-male voice, gender-blind, while the narration says "she". It is a steer, not a fact: nothing
+    is written to the graph, and a single disagreeing pronoun cancels it (precision over recall).
+    """
+    if not target_ids:
+        return {}
+    votes = _gather(store, novel_id, set(target_ids))[4]
+    return {t: side for t, v in votes.items() if (side := lean_from_votes(v))}

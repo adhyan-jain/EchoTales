@@ -535,8 +535,10 @@ def load_trait_profiles(
     already does per body for appearance).
     """
     out: dict[str, TraitProfile] = {}
+    merged = store.merged_into(novel_id)
     for entity in store.all_selves(novel_id):
-        if not entity.kind.is_person:
+        # An absorbed alias is the survivor's character; a profile of its own cast it a second voice (P&P 2026-11-22).
+        if not entity.kind.is_person or entity.id in merged:
             continue
         persona_id = persona_at(store, entity.id, position)
         # whole-novel values: voice casting must commit before the narration states a gender (REPORT 8)
