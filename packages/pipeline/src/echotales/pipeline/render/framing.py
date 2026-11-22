@@ -282,6 +282,11 @@ def plan_framing(
             start = state.cycle_n
             for i in range(len(cycle)):
                 size, focus = cycle[(start + i) % len(cycle)]
+                # P&P ch1 v4 (4.194): the high and top-down views name only the lead, so with a second person in the scene the model
+                # drew her standing directly behind the seated lead, her head stacked above his (5 of 32 panels). Skipped when others
+                # are present; the lone lead's cycle keeps its own look-down.
+                if not alone and others_present and focus in ("down", "topdown"):
+                    continue
                 if (size, focus) not in used and not (too_much_face and (size, focus) in _FACE_VIEWS):
                     state.cycle_n = (start + i + 1) % len(cycle)
                     chosen = Framing(size, focus=focus, reason=f"{chosen.reason}; a different view after {last.size} {last.focus}".strip())  # type: ignore[arg-type]
