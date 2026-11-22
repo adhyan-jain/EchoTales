@@ -733,6 +733,15 @@ def _compile_natural(b: PanelBrief, profile: ModelProfile, appearance: Appearanc
 
 
 
+def _back_identity(c: CharacterBrief, appearance: AppearanceInText) -> str:
+    """The identity sentence of the back-turned listener: his own hair and clothes (so the foreground figure matches the man the
+    reader knows, P&P ch1 v3 drew an unrelated dark-coated stranger), with the face sentence swapped for the fact that it is hidden."""
+    text = identity_sentence(c, appearance).replace(_ADULT_FACE, "").rstrip(" .")
+    text = text.replace(", a smooth youthful face", "")
+    return f"{text}. He is the figure in the foreground seen from behind, his face turned away and hidden." if c.gender != "female" else (
+        f"{text}. She is the figure in the foreground seen from behind, her face turned away and hidden.")
+
+
 def _compile_composed(b: PanelBrief, profile: ModelProfile, appearance: AppearanceInText) -> CompiledPrompt:
     """Z-Image prompt in the order of the probe prompts the owner liked: a short style lead, the director's composed
     paragraph, one fixed identity sentence per visible character, then setting and light.
@@ -756,6 +765,9 @@ def _compile_composed(b: PanelBrief, profile: ModelProfile, appearance: Appearan
     # A view with no face in it (an insert, from behind, from above) has no paragraph and no face sentence: both describe a person
     # facing the viewer.
     faceless = insert or b.frame_focus in _FACELESS_FOCUS
+    # The listener of an over-the-shoulder shot is the back of a head and nothing else: the director's paragraph places him
+    # ("her husband who sits calmly in an armchair") and would draw him a second time, so it goes (P&P ch1 v3).
+    back_view = any(c.back_turned for c in b.characters)
     staging_text = trim_staging(b.staging.strip(), b.frame_focus, b.shot, b.frame_subject) if b.staging else ""
     staging_text = rows_not_ring(blocking_of_drawn(staging_text, [c.name for c in b.characters if not c.back_turned]))
     stage = PromptSection("staging", staging_text) if staging_text else None
@@ -766,7 +778,7 @@ def _compile_composed(b: PanelBrief, profile: ModelProfile, appearance: Appearan
         )
 
         cropped = crop_composition(cropped, b.frame_focus) if b.frame_focus != "hands" else ""
-    comp = None if faceless or not cropped else PromptSection("composition", cropped)
+    comp = None if faceless or back_view or not cropped else PromptSection("composition", cropped)
     written: dict[str, bool] = {}
     fields: dict[str, list[str]] = {}
     # Identity right after the style lead, before the scene: Z-Image has no CFG, so what the prompt says first and fixedly is
@@ -777,12 +789,12 @@ def _compile_composed(b: PanelBrief, profile: ModelProfile, appearance: Appearan
             # Round 7: a reverse shot on the crowd leaves the lead out; with his identity sentence the model drew him in the middle of
             # the crowd, who stood around him facing the viewer (cliff r7 p4).
             continue
-        s.append(PromptSection(f"character:{c.name}", identity_sentence(c, appearance)))
+        s.append(PromptSection(f"character:{c.name}", _back_identity(c, appearance) if c.back_turned else identity_sentence(c, appearance)))
         written[c.name] = appearance is not AppearanceInText.OFF
         fields[c.name] = derive_demeanour(c, b.mood, b.tension).fields_used
     # The lead's face as drawn parts, straight after the identity and before the scene: said once, last and in three words
     # ("cold mocking smile") it drew a mild smile; "mocking" must read as mocking (round 3, defect 7).
-    if b.face and b.characters and not faceless:
+    if b.face and b.characters and (not faceless or b.frame_focus in _FACE_FOCUS):
         s.append(PromptSection("face", f"{b.characters[0].name}'s face: {b.face}."))
     if b.empty_hands and b.characters and not faceless and b.shot != "close":
         lead_c = b.characters[0]
@@ -825,6 +837,9 @@ def _compile_composed(b: PanelBrief, profile: ModelProfile, appearance: Appearan
 #: Round 7 views (EVOLUTION 4.182) with no paragraph, face or Blocking: they are not a person facing the viewer.
 _ROUND7_FOCUS = ("reverse", "overview", "low", "down", "profile")
 _FACELESS_FOCUS = ("behind", "topdown", *_ROUND7_FOCUS)
+#: Of those, the views whose picture does show his face (a low angle from below, a profile): the face sentence stays, the paragraph and
+#: Blocking do not.
+_FACE_FOCUS = ("low", "profile")
 
 _STAGE_PART = re.compile(r"\b(Set|Blocking|Light):\s*(.*?)(?=\s+(?:Set|Blocking|Light):|\Z)", re.S)
 
@@ -1225,23 +1240,46 @@ def brief_from_direction(
             )
             chars.append(cb)
 
+    frame_subject = getattr(d, "frame_subject", "") or ""
+    if frame_focus == "over-shoulder" and frame_subject and len(chars) > 1:
+        # The listener named by the framing is drawn only as the back of a head; a director that listed him first must not make him
+        # the lead of the face and framing sentences (the speaker leads the shot, EVOLUTION 4.190).
+        from echotales.pipeline.render.direction import name_key
+
+        want = set(name_key(frame_subject).split())
+        for c in chars:
+            have = set(name_key(c.name).split())
+            c.back_turned = bool(want) and (want <= have or have <= want)
+        if any(c.back_turned for c in chars) and not all(c.back_turned for c in chars):
+            chars.sort(key=lambda c: c.back_turned)  # stable: speaker(s) first, the listener last
+            for i, c in enumerate(chars):
+                c.lead = i == 0
+        else:
+            for c in chars:
+                c.back_turned = False
     if frame_focus == "prop":
         # An insert of an object has nobody in it: the vision check must not expect a lead, nor the compiler draw one.
         chars, crowd = [], None
     lead_face = ""
-    if chars and composition:
+    if chars:
+        from echotales.pipeline.render.direction import name_key
         from echotales.pipeline.render.face import (
             drop_calm_clause,
             infer_expression,
             is_neutral,
         )
 
-        lead_dir = dir_chars[0] if dir_chars else None
+        # The director's entry for the person who leads the shot (the speaker, first in `chars`), not merely the first it listed.
+        lead_dir = next((cd for cd in dir_chars if name_key(getattr(cd, "name", "") or "") == name_key(chars[0].name)),
+                        dir_chars[0] if dir_chars else None)
         said = (getattr(lead_dir, "expression", "") if lead_dir is not None else "") or (getattr(d, "expression", "") or "")
-        # An over-the-shoulder panel's lead is the listener: the line's emotion belongs to the speaker, so only the director's
-        # own reading of the reaction is used there (render/speech.py, rule 15).
-        lead_face = said if frame_focus == "over-shoulder" else infer_expression(said, passage, mood=mood)
-        if lead_face and not is_neutral(lead_face):
+        # An over-the-shoulder panel whose lead is the one listening: the line's emotion belongs to the speaker behind, so only the
+        # director's own reading of the reaction is used there (render/speech.py, rule 15). When the lead speaks to a back-turned
+        # listener (EVOLUTION 4.190) the line IS the lead's, and is read like any other.
+        lead_face = said if frame_focus == "over-shoulder" and not any(c.back_turned for c in chars) else infer_expression(said, passage, mood=mood)
+        # Round 8 (RI ch1 v56): this block ran only when the director wrote a paragraph, so a close-up or eye crop with none got no
+        # face sentence at all (22 of 45 panels had no face line, 34 of 45 a director face that was its own example phrase).
+        if composition and lead_face and not is_neutral(lead_face):
             composition = drop_calm_clause(composition)
 
     camera = getattr(d, "camera_angle", "") or getattr(d, "camera", "") or ""

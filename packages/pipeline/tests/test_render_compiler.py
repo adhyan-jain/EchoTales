@@ -310,3 +310,35 @@ def test_brief_from_direction_passes_beat_text_and_director_v2_fields(tmp_path) 
     assert brief.crowd is not None and brief.crowd.description == "elders" and brief.crowd.count == 5
     assert brief.is_indoor is True
 
+
+
+def test_an_over_the_shoulder_brief_marks_the_named_listener_back_turned_and_keeps_the_speaker_first(tmp_path) -> None:
+    # The listener is drawn once, as the back of a head; a director that listed him first must not make him the lead of the
+    # face and framing sentences (the speaker is).
+    from echotales.pipeline.render.direction import CharacterDirection, PanelDirection
+
+    d = PanelDirection(characters=[CharacterDirection(name="Bai Ning Bing"), CharacterDirection(name="Fang Yuan")],
+                       frame_focus="over-shoulder", frame_subject="Bai Ning Bing")
+    brief = brief_from_direction(_two_person_store(tmp_path), "n", ["s1", "s2"], 1.0, d)
+    assert [(c.name, c.back_turned, c.lead) for c in brief.characters] == [("Fang Yuan", False, True), ("Bai Ning Bing", True, False)]
+
+
+def test_a_close_up_with_no_paragraph_still_gets_the_face_the_line_asks_for(tmp_path) -> None:
+    # RI ch1 (v56): the face was worked out only when the director wrote a paragraph, so close-ups and eye crops without one had
+    # no face sentence (22 of 45 panels), and the neutral example phrase decided the rest.
+    from echotales.pipeline.render.direction import CharacterDirection, PanelDirection
+
+    d = PanelDirection(shot="close", expression="calm unreadable stare", composition="", frame="Close-up shot.",
+                       characters=[CharacterDirection(name="Fang Yuan", expression="calm unreadable stare")])
+    brief = brief_from_direction(_two_person_store(tmp_path), "n", ["s1"], 1.0, d, beat_text="Fang Yuan sneered at the fools.")
+    assert "mocking" in brief.face
+    out = compile_prompt(brief, model_profile("z-image-turbo"))
+    assert "Fang Yuan's face: a cold mocking smirk" in out.positive
+
+
+def test_a_low_angle_and_a_profile_view_keep_the_face_sentence_but_not_the_paragraph() -> None:
+    for focus in ("low", "profile"):
+        b = PanelBrief(novel_id="", characters=[CharacterBrief(**FANG)], mode=OutputMode.COLOUR, shot="medium", frame_focus=focus,
+                       framing="Low angle.", face="a furious glare", composition="He stands in a hall.")
+        out = compile_prompt(b, model_profile("z-image-turbo"))
+        assert "Fang Yuan's face: a furious glare" in out.positive and "He stands in a hall" not in out.positive, focus
