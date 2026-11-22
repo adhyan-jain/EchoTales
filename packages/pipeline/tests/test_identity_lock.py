@@ -297,3 +297,34 @@ def test_defaults_are_rederived_when_the_gender_becomes_known_later(tmp_path) ->
     later = il.stored_defaults(store, "p1", "s1", "female", False)
     assert later == il.choose_defaults("s1", "female", False)
     assert il.stored_defaults(store, "p1", "s1", "", False) == later  # and the new pick is the stored one
+
+
+def test_a_wound_carried_from_an_earlier_scene_ends_where_the_text_stops_naming_it(tmp_path) -> None:
+    # RI ch1 (v56): scene 5 says "robes torn to shreds ... blood on the body" before the rebirth; the ceremony scenes that follow
+    # (new body, new place, 500 years earlier) state nothing of it, yet the carried-forward condition drew torn, bloodied white
+    # robes through the whole hall. A state carried into a later scene survives only while that scene's own narration names
+    # the damage of a person it is about; a line spoken by someone else ("new clan blood") is not the character's wound.
+    store = _store(tmp_path)
+    p = "t:self:1:body1"
+    _put_look(store, p, "1:5", outfit="deep green robes", condition="robes torn to shreds, hair disheveled, blood on the body")
+    _put_look(store, p, "1:36", outfit="ceremonial white robes")
+    _put_look(store, p, "1:47")
+    calm = "In the middle of the village was a pavilion. Fang Yuan stood in ceremonial white robes among the kneeling clan."
+    said = 'The elder said, "I wonder what new clan blood will show up." Fang Yuan stood at the back in white robes.'
+    assert il.lock_for(store, "t", "t:self:1", p, facts=FACTS, gender="male", young=False, name="Fang Yuan", manhua=True,
+                       scene=il.SceneContext("1:36", calm, None, "t")).state == ""
+    assert il.lock_for(store, "t", "t:self:1", p, facts=FACTS, gender="male", young=False, name="Fang Yuan", manhua=True,
+                       scene=il.SceneContext("1:47", said, None, "t")).state == ""
+    store.close()
+
+
+def test_a_wound_still_carries_while_the_scene_narration_names_it_on_the_character(tmp_path) -> None:
+    store = _store(tmp_path)
+    p = "t:self:1:body1"
+    _put_look(store, p, "1:5", outfit="deep green robes", condition="robes torn to shreds, blood on the body")
+    _put_look(store, p, "1:9")
+    text = "Fang Yuan staggered back, blood still dripping from his sleeve. The crowd roared."
+    lock = il.lock_for(store, "t", "t:self:1", p, facts=FACTS, gender="male", young=False, name="Fang Yuan", manhua=True,
+                       scene=il.SceneContext("1:9", text, None, "t"))
+    assert "blood" in lock.state
+    store.close()
