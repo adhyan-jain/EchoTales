@@ -16,6 +16,7 @@ jest.mock('../../api', () => ({
     generateLocationPlate: jest.fn(),
     listReviewItems: jest.fn(),
     resolveReviewItem: jest.fn(),
+    decideReviewItem: jest.fn(),
     mediaUrl: jest.fn((u) => u),
   },
 }));
@@ -158,5 +159,60 @@ describe('AssetStudio', () => {
     expect(screen.queryByText(/object Object/)).not.toBeInTheDocument();
     // A plain resolve links nothing, so the unlinked-name kind points at the Canon tab instead.
     expect(screen.queryByText('Resolve Contradiction')).not.toBeInTheDocument();
+  });
+
+  describe('merge suggestions', () => {
+    const suggestion = {
+      id: 'ms_1',
+      chapter: 0,
+      kind: 'merge_suggestion',
+      message: "'Lizzy' may be the same person as 'Elizabeth' (suggestion only; nothing was merged)",
+      resolved: false,
+      candidates: [
+        { role: 'group', from_id: 't:lizzy' },
+        { role: 'candidate', target_id: 't:eliz', label: 'Elizabeth', reason: 'short form of the name' },
+      ],
+    };
+
+    async function openQueue() {
+      api.characters.mockResolvedValueOnce({ characters: [] });
+      api.listTurnarounds.mockResolvedValueOnce([]);
+      api.listReviewItems.mockResolvedValue({ items: [suggestion], total: 1, open: 1 });
+      renderStudio({ novelId: 'pnp' });
+      fireEvent.click(screen.getByText('Bible Review Queue'));
+      await screen.findByText(/may be the same person/);
+    }
+
+    test('Merge into a candidate queues a merge, and no generic resolve is offered', async () => {
+      api.decideReviewItem.mockResolvedValueOnce({ correction_ids: ['c1'] });
+      await openQueue();
+      expect(screen.queryByText('Resolve Contradiction')).not.toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Merge into Elizabeth' }));
+
+      await waitFor(() =>
+        expect(api.decideReviewItem).toHaveBeenCalledWith('pnp', 'ms_1', { action: 'merge', into_id: 't:eliz' })
+      );
+      expect(await screen.findByText(/Apply it from the Review desk/)).toBeInTheDocument();
+    });
+
+    test('Dismiss sends dismiss and merges nothing', async () => {
+      api.decideReviewItem.mockResolvedValueOnce({ correction_ids: [] });
+      await openQueue();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Dismiss' }));
+
+      await waitFor(() => expect(api.decideReviewItem).toHaveBeenCalledWith('pnp', 'ms_1', { action: 'dismiss' }));
+    });
+
+    test('a decided suggestion shows no buttons', async () => {
+      api.characters.mockResolvedValueOnce({ characters: [] });
+      api.listTurnarounds.mockResolvedValueOnce([]);
+      api.listReviewItems.mockResolvedValue({ items: [{ ...suggestion, resolved: true }], total: 1, open: 0 });
+      renderStudio({ novelId: 'pnp' });
+      fireEvent.click(screen.getByText('Bible Review Queue'));
+      await screen.findByText(/may be the same person/);
+      expect(screen.queryByRole('button', { name: 'Dismiss' })).not.toBeInTheDocument();
+    });
   });
 });

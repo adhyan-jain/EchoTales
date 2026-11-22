@@ -15,6 +15,11 @@ function candidateLabels(item) {
     .filter(Boolean);
 }
 
+// A merge suggestion offers each possible "same person" as a button; the group entry is only evidence.
+function mergeCandidates(item) {
+  return (item.candidates || []).filter((c) => c && typeof c === 'object' && c.role === 'candidate' && c.target_id);
+}
+
 export default function AssetStudio({ novelId }) {
   const push = useToast();
   const [subTab, setSubTab] = useState('characters'); // 'characters' | 'locations' | 'review_items'
@@ -186,6 +191,17 @@ export default function AssetStudio({ novelId }) {
       loadReviewItems();
     } catch (err) {
       push(describeError(err, 'Failed to resolve review item.'), 'danger');
+    }
+  };
+
+  // Queues a merge_entities correction (or nothing, for dismiss); the graph changes only when it is applied.
+  const handleDecideMerge = async (item, decision, done) => {
+    try {
+      await api.decideReviewItem(novelId, item.id, decision);
+      push(done, 'success');
+      loadReviewItems();
+    } catch (err) {
+      push(describeError(err, 'Could not save that decision.'), 'danger');
     }
   };
 
@@ -499,7 +515,35 @@ export default function AssetStudio({ novelId }) {
                   {!item.resolved && item.kind === 'resolve_deferred' && (
                     <span className="text-xs text-muted">Decide in Canon, Names to check</span>
                   )}
-                  {!item.resolved && item.kind !== 'resolve_deferred' && (
+                  {!item.resolved && item.kind === 'merge_suggestion' && (
+                    <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Merge suggestion">
+                      {mergeCandidates(item).map((c) => (
+                        <Button
+                          key={c.target_id}
+                          variant="primary"
+                          size="sm"
+                          title={c.reason || undefined}
+                          onClick={() =>
+                            handleDecideMerge(
+                              item,
+                              { action: 'merge', into_id: c.target_id },
+                              `Merge into ${c.label || c.target_id} saved. Apply it from the Review desk.`,
+                            )
+                          }
+                        >
+                          Merge into {c.label || c.target_id}
+                        </Button>
+                      ))}
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => handleDecideMerge(item, { action: 'dismiss' }, 'Suggestion dismissed.')}
+                      >
+                        Dismiss
+                      </Button>
+                    </div>
+                  )}
+                  {!item.resolved && item.kind !== 'resolve_deferred' && item.kind !== 'merge_suggestion' && (
                     <Button variant="secondary" size="sm" onClick={() => handleResolveReviewItem(item.id)}>
                       Resolve Contradiction
                     </Button>
