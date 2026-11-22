@@ -92,6 +92,21 @@ class TestSplitOnEmphasis:
         text = "He said, “Speak.” Then he left."
         assert len(split_block(text, [])) == len(split_quoted(text))
 
+    def test_an_italic_word_inside_a_quote_does_not_split_the_quote(self) -> None:
+        """P&P e2e (defect 6): Mrs. Bennet's italic "have" became an INNER_MONOLOGUE span and left the tail of her
+        speech as an unattributed quote voiced by an unknown speaker."""
+        text = "“I am sure I have had my share of beauty, but I do not pretend to be anything now,” said Mrs. Bennet."
+        i = text.index("have")
+        spans = split_block(text, [(i, i + 4)])
+        assert [s.is_emphasised for s in spans] == [False, False]
+        assert spans[0].is_quoted and spans[0].text.endswith("now,”")
+        assert types(text, italics=[(i, i + 4)])[0] is SpanType.DIALOGUE
+
+    def test_a_quote_that_is_itself_italic_still_splits_as_a_thought(self) -> None:
+        text = "“Where am I?” Calming himself down, he repeated the question."
+        assert SpanType.INNER_MONOLOGUE in types(text, italics=[(1, 12)])
+        assert SpanType.INNER_MONOLOGUE in types(text, italics=[(0, 13)])
+
     def test_emphasis_and_quotes_both_split(self) -> None:
         text = "He thought, “yes.” Truly? He wondered."
         spans = split_block(text, [(19, 26)])

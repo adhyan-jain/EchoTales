@@ -40,7 +40,11 @@ _NON_DIEGETIC_PATTERNS = [
         r"^\s*(?:please )?(?:support|donate|patreon|ko-?fi)\b",
         r"^\s*join (?:our|the) discord\b",
         r"^\s*translat(?:or|ed) by\b.*\bedit(?:or|ed) by\b",
-        r"^\s*copyright\b|\ball rights reserved\b",
+        # A leading bracket or paren is the Gutenberg illustration-credit form ("[Copyright 1894 by George Allen.]"),
+        # which the bare `^copyright` missed (P&P e2e: voiced as an inner-monologue line).
+        r"^[\s\[(_*]*(?:copyright\b|\u00a9)|\ball rights reserved\b",
+        # A short publisher imprint line, not prose that happens to open with "Published by".
+        r"^[\s\[(_*]*(?:published|printed)\s+by\s+(?-i:[A-Z])[^.!?]{0,80}(?:,|\.)[\s\])_*]*$",
         r"^\s*isbn\b",
     )
 ]
