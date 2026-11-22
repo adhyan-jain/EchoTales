@@ -37,6 +37,8 @@ NOVEL_CODES = {
 
 DATA_ROOT = Path("data")
 DB_DIR = DATA_ROOT / "db"
+#: Inputs the user supplies, gitignored (copyrighted material): `data/raw/comics/<id>/` holds a fetched chapter's pages.
+RAW_DIR = DATA_ROOT / "raw"
 NOVELS_DIR = DATA_ROOT / "novels"
 SCRATCH_DIR = DATA_ROOT / "scratch"
 EXPORTS_DIR = DATA_ROOT / "exports"
@@ -63,6 +65,11 @@ CLOUD_LEDGER_PATH = CACHE_DIR / "cloud" / "ledger.json"
 def research_run_dir(hypothesis_id: str, run_id: str, *, data_root: Path | str = DATA_ROOT) -> Path:
     """`data/eval/research/<hypothesis>/<run-id>/` -- one experiment run's artifacts."""
     return Path(data_root) / "eval" / "research" / hypothesis_id / run_id
+
+
+def raw_comic_dir(comic_id: str, *, data_root: Path | str = DATA_ROOT) -> Path:
+    """`data/raw/comics/<id>/` -- the page images `echotales comic fetch` saved from a chapter link."""
+    return Path(data_root) / "raw" / "comics" / comic_id
 
 
 def novel_code(novel_id: str) -> str:
