@@ -96,6 +96,16 @@ def test_runs_the_cli_composer_once_per_chapter_and_succeeds(store: Store, tmp_p
     assert seen == [(1.0, "stills"), (2.0, "stills")]
 
 
+def test_the_suffix_param_names_the_version_folder(store: Store, tmp_path: Path, monkeypatch) -> None:
+    """P&P e2e (defect 8): `{"suffix": "stills-v2panels-maleB"}` was accepted and ignored, so the folder kept the default."""
+    _panel_plan(tmp_path)
+    seen: list[object] = []
+    monkeypatch.setattr(anime, "compose_chapter_video", lambda n, c, **kw: seen.append(kw.get("suffix")))
+    job = _run(store, {"chapters": [1], "suffix": "stills-v2panels-maleB"})
+    assert job.status == JobStatus.SUCCEEDED, job.error_summary
+    assert seen == ["stills-v2panels-maleB"]
+
+
 def test_an_identical_rerun_is_not_skipped_as_already_done(store: Store, tmp_path: Path, monkeypatch) -> None:
     """Panels and audio change between runs while the params do not; a stale 'already succeeded' skip would hide that."""
     _panel_plan(tmp_path)

@@ -118,6 +118,7 @@ def build_captions(
     durations: dict[str, float],
     *,
     include_narration: bool = True,
+    gaps_before: dict[str, float] | None = None,
 ) -> list[Caption]:
     """Timed caption cards for one chapter, in reading order.
 
@@ -131,6 +132,10 @@ def build_captions(
     the next line's start: the cards stay in sync with the voice, and a card
     that would be unreadably short is better than one that contradicts what
     is being said.
+
+    `gaps_before` maps `span_id` to the silence the audio plays before that line (`LineTiming.gap_before`). Without
+    it the clock butts lines together, which is right only for a video whose audio is butted the same way; against
+    `chapter.wav` the cards would drift early by every pause so far.
     """
     captions: list[Caption] = []
     clock = 0.0
@@ -140,6 +145,7 @@ def build_captions(
         duration = durations.get(span_id)
         if duration is None:
             continue
+        clock += (gaps_before or {}).get(span_id, 0.0)
         start, clock = clock, clock + duration
 
         span_type = str(getattr(line, "span_type", ""))

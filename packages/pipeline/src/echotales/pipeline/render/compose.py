@@ -288,12 +288,14 @@ class FfmpegComposeEngine:
         return self.assemble(segment_paths, audio_paths, out_path, work_dir)
 
     def assemble(
-        self, segment_paths: list[Path], audio_paths: list[Path], out_path: Path, work_dir: Path
+        self, segment_paths: list[Path], audio_paths: list[Path], out_path: Path, work_dir: Path,
+        audio_wav: Path | None = None,
     ) -> Path:
         """Concatenate already-rendered segments, mux the voice track and burn captions.
 
         Split out of `render` unchanged so `render/anime.py`, which renders its own segments (stills
         and generated clips), reuses the same concat, audio and caption path instead of a second one.
+        `audio_wav` is a finished track (with its pauses) used as is instead of butting `audio_paths` together.
         """
         concat_list = work_dir / "concat.txt"
         concat_list.write_text(
@@ -303,7 +305,10 @@ class FfmpegComposeEngine:
         _run_ffmpeg(["-f", "concat", "-safe", "0", "-i", str(concat_list), "-c", "copy", str(video_only)])
 
         audio_path = work_dir / "audio.wav"
-        concatenate_audio(audio_paths, audio_path)
+        if audio_wav is not None:
+            audio_path = audio_wav
+        else:
+            concatenate_audio(audio_paths, audio_path)
 
         # Captions are burned in the same pass that muxes the audio, so the
         # chapter is encoded once rather than twice. Without them the video

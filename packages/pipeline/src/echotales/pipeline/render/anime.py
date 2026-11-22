@@ -24,6 +24,7 @@ import os
 import re
 import subprocess
 import time
+import wave
 from dataclasses import asdict, dataclass, field
 from datetime import date
 from pathlib import Path
@@ -56,6 +57,7 @@ from echotales.pipeline.video.clip_gate import ClipImageEmbedder, Embedder, Gate
 from echotales.pipeline.video.local import ClipEngine, ClipRequest, ClipResult, VideoEnvError
 from echotales.pipeline.voice.timing import (
     TIMING_FILE,
+    Clock,
     LineTiming,
     build_timing,
     chapter_dir,
@@ -292,8 +294,12 @@ def render_shots(
     emotions: dict[str, tuple[str, int]] | None = None,
     embedder: Embedder | None = None,
     loop_subtle: bool = True,
+    clock: Clock = "gapped",
 ) -> AnimeResult:
-    """Plan, generate, gate and compose one chapter. `out_root` is `<novel>/video/ch<N>`."""
+    """Plan, generate, gate and compose one chapter. `out_root` is `<novel>/video/ch<N>`.
+
+    `clock` is which timeline the picture and its audio follow: "gapped" (the default) carries the pauses between
+    lines, as `chapter.wav` and the M4B do; "gapless" butts the line WAVs together (the episode composer's clock)."""
     panels_dir, audio_dir, out_root = Path(panels_dir), Path(audio_dir), Path(out_root)
     try:
         panels = load_panel_plan(panels_dir)
@@ -305,7 +311,7 @@ def render_shots(
         raise AnimeRefusal(f"{panels_dir / PANEL_PLAN_FILE} is empty")
     chapter = panels[0].chapter
     timing = _load_timing(audio_dir, chapter)
-    shots = plan_shots(panels, timing, capability, budget, emotions=emotions)
+    shots = plan_shots(panels, timing, capability, budget, emotions=emotions, clock=clock)
     if capability.can_generate and engine is None:
         raise AnimeRefusal(f"capability {capability.engine_id} can generate clips but no engine was given")
 
@@ -533,10 +539,15 @@ def render_shots(
     compose = FfmpegComposeEngine(width=width, height=height)
     if captions:
         per_span = {t.span_id: t.duration for t in timing}
-        cards = build_captions(list(timing), per_span)
+        cards = build_captions(
+            list(timing), per_span,
+            gaps_before={t.span_id: t.gap_before for t in timing} if clock == "gapped" else None,
+        )
         if cards:
             compose.captions_path = write_ass(cards, out_dir / f"ch{chapter:g}.ass", width=width, height=height)
-    video = compose.assemble(segment_paths, [Path(t.audio_path) for t in timing], out_dir / f"ch{chapter:g}.mp4", segs_dir)
+    audio_paths = [Path(t.audio_path) for t in timing]
+    track = _gapped_track(timing, segs_dir / "chapter_audio.wav") if clock == "gapped" else None
+    video = compose.assemble(segment_paths, audio_paths, out_dir / f"ch{chapter:g}.mp4", segs_dir, audio_wav=track)
     final_frames = count_frames(video)
     # `-shortest` against the audio can drop the last frame (4667 of 4668 on a 155.6 s chapter); more than one
     # frame would mean the mux, not the plan, broke sync.
@@ -563,6 +574,26 @@ def render_shots(
     (out_dir / "summary.json").write_text(json.dumps(summary, indent=1), encoding="utf-8")
     _append_versions(out_root, out_dir.name, summary, panels_dir.name, budget)
     return AnimeResult(out_dir=out_dir, video=video, outcomes=[outcomes[s.shot_index] for s in shots], summary=summary)
+
+
+def _gapped_track(timing: list[LineTiming], out_path: Path) -> Path:
+    """The chapter's audio with the pauses `chapter.wav` has, built from the same line WAVs and `gap_before` values so
+    it cannot disagree with the shot plan. A stale or missing `chapter.wav` is not trusted for the picture's clock."""
+    with wave.open(timing[0].audio_path, "rb") as first:
+        params = first.getparams()
+    frame = params.sampwidth * params.nchannels
+    with wave.open(str(out_path), "wb") as out:
+        out.setparams(params)
+        for t in timing:
+            with wave.open(t.audio_path, "rb") as fh:
+                if (fh.getnchannels(), fh.getsampwidth(), fh.getframerate()) != (
+                    params.nchannels, params.sampwidth, params.framerate,
+                ):
+                    raise ValueError(f"{t.audio_path} has a different WAV format than {timing[0].audio_path}")
+                if t.gap_before:
+                    out.writeframes(b"\x00" * round(params.framerate * t.gap_before) * frame)
+                out.writeframes(fh.readframes(fh.getnframes()))
+    return out_path
 
 
 def _append_versions(out_root: Path, name: str, summary: dict, panels_version: str, budget: ShotBudget) -> None:
@@ -603,6 +634,8 @@ def compose_chapter_video(
     seed: int = 0,
     captions: bool = True,
     loop_subtle: bool = True,
+    suffix: str | None = None,
+    clock: Clock = "gapped",
 ) -> AnimeResult:
     """One chapter's video, resolved from a novel's default folders. `echotales anime` and the Studio `video` job both
     call this, so the two cannot drift on which panel version is picked or how the budget is built. A missing panel
@@ -628,5 +661,5 @@ def compose_chapter_video(
         panels_dir=panels_dir, audio_dir=audio_dir, out_root=out_root,
         capability=LOCAL_LTX if local else STILLS,
         engine=LocalLTXEngine(work_dir=out_root / "worker") if local else None,
-        budget=budget, captions=captions, loop_subtle=loop_subtle,
+        budget=budget, captions=captions, loop_subtle=loop_subtle, suffix=suffix, clock=clock,
     )

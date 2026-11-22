@@ -498,7 +498,7 @@ def compose_episode(
 
         body_video = compose_chapter_video(
             novel_id, chapter, engine="ltx-local", panel_dir=panels_dir.parent.parent, audio_dir=audio_dir,
-            out_dir=out_root.parent, panels_version=panels_dir.name, seed=seed, captions=False,
+            out_dir=out_root.parent, panels_version=panels_dir.name, seed=seed, captions=False, clock="gapless",
         ).video
 
     tag = re.sub(r"[^a-z0-9-]+", "-", (suffix or f"episode-{timing}-{motion}").lower()).strip("-")
