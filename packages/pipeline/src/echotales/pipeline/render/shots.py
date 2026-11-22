@@ -30,7 +30,7 @@ from echotales.pipeline.render.director import _delivery_intensity
 from echotales.pipeline.render.motion import match_tag
 from echotales.pipeline.render.plan import PanelPlan
 from echotales.pipeline.screenplay.schema import CameraMove, Transition
-from echotales.pipeline.voice.timing import LineTiming
+from echotales.pipeline.voice.timing import Clock, LineTiming
 from pydantic import BaseModel, Field
 
 SHOTS_SCHEMA_VERSION = 1
@@ -421,8 +421,14 @@ def plan_shots(
     budget: ShotBudget,
     *,
     emotions: dict[str, tuple[str, int]] | None = None,
+    clock: Clock = "gapless",
 ) -> list[ShotSpec]:
-    """One `ShotSpec` per panel visit (a run of lines over one panel), tiling the chapter's gapless audio exactly."""
+    """One `ShotSpec` per panel visit (a run of lines over one panel), tiling the chapter's audio exactly.
+
+    `clock="gapped"` is the chapter's real audio (`chapter.wav`, the M4B): a shot also holds through the pause before
+    the next visit's first line, so the picture is as long as the audio. P&P ch1 lost 22 s of 290 s on the gapless
+    clock because the pauses were never on the timeline. `"gapless"` (line WAVs back to back) stays the default for the
+    episode composer, which lays its own audio out on that clock."""
     if not panels:
         if timing:
             raise ValueError(f"{len(timing)} voiced lines but no panels to show them over")
@@ -437,6 +443,8 @@ def plan_shots(
         nxt = runs[i + 1][0] if i + 1 < len(runs) else None
         start = cursor
         end = lines[-1].end_gapless
+        if clock == "gapped":
+            end = runs[i + 1][1][0].start_gapped if i + 1 < len(runs) else lines[-1].end_gapped
         cursor = end
         duration = end - start
         pair = pair_difference(panel, nxt) if nxt else None

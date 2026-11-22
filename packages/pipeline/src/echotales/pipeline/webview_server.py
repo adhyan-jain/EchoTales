@@ -2848,10 +2848,18 @@ def make_handler(
                         params["corrections_path"] = str(handle.corrections.path)
                         # Shown before the long run starts; kept in the job's params so the Studio can show it
                         # again while the job runs. Measured where this project has timings, else labelled estimates.
-                        from echotales.pipeline.long_series import estimate_run
+                        from echotales.pipeline.long_series import (
+                            estimate_run,
+                            source_chapter_numbers,
+                        )
 
+                        # Before the first ingest the store has no chapters; the uploaded EPUB's own chapter count
+                        # stands in so a new book is not estimated at 0 chapters and 0 s.
+                        _sources = params.get("sources_path") or str(registry.project_asset_dir(parts[2]) / "sources.toml")
                         params["estimate"] = estimate_run(
-                            handle.store, parts[2], params.get("chapters"), stages=pipeline_stage_names(params)
+                            handle.store, parts[2], params.get("chapters"), stages=pipeline_stage_names(params),
+                            source_chapters=None if handle.store.chapter_numbers(parts[2])
+                            else source_chapter_numbers(_sources, parts[2]),
                         )
                     if kind == "video":
                         # Folders come from the project, never the client (same rule as the voice job below).

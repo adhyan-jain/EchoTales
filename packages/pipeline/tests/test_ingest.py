@@ -131,10 +131,20 @@ class TestClassifyBlock:
             "Advertisement",
             "Please support us on Patreon",
             "All rights reserved",
+            # P&P e2e (defect 6): the Gutenberg illustration credit is bracketed and italic, and the bare
+            # `^copyright` rule missed it, so it was voiced as an inner-monologue line.
+            "[Copyright 1894 by George Allen.]",
+            "(Copyright 1894 by George Allen.)",
+            "\u00a9 1894 George Allen.",
+            "Published by George Allen, Charing Cross Road, London.",
         ],
     )
     def test_navigation_and_promo_are_non_diegetic(self, text: str) -> None:
         assert classify_block(text).block_type is BlockType.NON_DIEGETIC
+
+    def test_prose_that_merely_starts_like_front_matter_stays_prose(self) -> None:
+        assert classify_block("Copyrighted nonsense, he muttered, and walked on.").block_type is BlockType.PROSE
+        assert classify_block("Published by the end of the week, the news spread.").block_type is BlockType.PROSE
 
     def test_translator_notes_are_separated(self) -> None:
         out = classify_block("TL Note: 'Gu' refers to a venomous insect.")

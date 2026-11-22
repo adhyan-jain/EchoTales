@@ -152,3 +152,25 @@ def test_cost_is_zero_locally_and_follows_the_hourly_rate_when_given() -> None:
     assert ls.estimate_run(store, "t", None, stages=("render",))["cost_usd"] == 0.0
     est = ls.estimate_run(store, "t", None, stages=("render",), gpu_hourly_usd=3600.0)
     assert est["cost_usd"] == pytest.approx(est["seconds"])
+
+
+# --- estimate before the first ingest (P&P e2e defect 5) ---------------------
+
+
+def test_a_book_not_yet_ingested_is_unknown_not_zero() -> None:
+    """The 202 body of `POST .../pipeline` read `chapters: 0` and 0 s for every stage on a new project."""
+    est = ls.estimate_run(Store(":memory:"), "t", None, stages=("render",))
+    assert est["known"] is False and est["chapters"] is None and est["seconds"] is None and est["cost_usd"] is None
+    assert est["stages"][0]["seconds"] is None and "ingest" in est["note"]
+    assert "unknown" in ls.format_estimate(est)
+
+
+def test_the_chapter_count_comes_from_the_uploaded_source_when_nothing_is_ingested(tmp_path) -> None:
+    store = Store(":memory:")
+    est = ls.estimate_run(store, "t", "1-2", stages=("render",), source_chapters=[1.0, 2.0, 3.0])
+    assert est["known"] is True and est["chapters"] == 2
+    assert est["stages"][0]["seconds"] == pytest.approx(2 * ls.DEFAULT_SECONDS_PER_CHAPTER["render"])
+
+
+def test_source_chapter_numbers_reads_the_epub_without_ingesting(tmp_path) -> None:
+    assert ls.source_chapter_numbers(tmp_path / "missing.toml", "t") == []

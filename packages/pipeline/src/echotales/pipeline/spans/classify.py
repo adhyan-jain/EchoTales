@@ -183,6 +183,18 @@ def split_block(text: str, italic_ranges: list[tuple[int, int]] | None = None) -
     ]
     quotes = _quote_runs(text)
 
+    # An italic word inside a speech is the speaker's stress ("I <i>have</i> had my share of beauty", P&P ch1), not a
+    # switch to inner monologue; splitting there cut Mrs. Bennet's quote in three and left its tail an unattributed
+    # quote voiced by an unknown speaker. Only an italic run that is a small part of the quote counts as stress: one
+    # that covers most of it is the quoted thought itself ("<i>"Where am I?"</i>"), which must still split.
+    def _inline_stress(r_start: int, r_end: int) -> bool:
+        return any(
+            q_start <= r_start and r_end <= q_end and (r_end - r_start) * 2 < (q_end - q_start)
+            for q_start, q_end in quotes
+        )
+
+    ranges = [r for r in ranges if not _inline_stress(*r)]
+
     # A quote nested well inside one continuous emphasis run is a scare-quoted
     # phrase inside a single train of thought ("...phrases like 'you are
     # plagued with bad luck,' or 'nothing you do will happen smoothly?' No,

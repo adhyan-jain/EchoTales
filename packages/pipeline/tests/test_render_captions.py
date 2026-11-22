@@ -38,6 +38,12 @@ class TestTiming:
         caps = build_captions(lines, {"s1": 2.0, "s2": 3.0, "s3": 1.5})
         assert [(c.start, c.end) for c in caps] == [(0.0, 2.0), (2.0, 5.0), (5.0, 6.5)]
 
+    def test_cards_follow_a_track_that_has_pauses(self) -> None:
+        """Against `chapter.wav` the cards must start after each pause, or they drift early by every pause so far."""
+        lines = [_Line("s1", "NARRATION_ACTION", "He walked."), _Line("s2", "DIALOGUE", "Hand it over.", "Bai")]
+        caps = build_captions(lines, {"s1": 2.0, "s2": 3.0}, gaps_before={"s1": 0.0, "s2": 0.5})
+        assert [(c.start, c.end) for c in caps] == [(0.0, 2.0), (2.5, 5.5)]
+
     def test_a_line_with_no_measured_audio_is_skipped(self) -> None:
         """An unsynced caption is worse than an absent one -- it lands over
         the wrong picture and desyncs everything after it."""

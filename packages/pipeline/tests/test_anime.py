@@ -96,15 +96,28 @@ class TestCompose:
         panels, audio = build_chapter(tmp_path)
         timing = build_timing(audio, 1.0)
         result = _compose(tmp_path, FakeEngine(), panels=panels, audio=audio)
-        total = sum(t.duration for t in timing)
+        total = timing[-1].end_gapped
         s = result.summary
         assert s["final"] == {"hold": 2, "generated": 3, "cached": 0, "fallback": 0}
         assert s["expected_frames"] == round(total * 30) == s["segment_frames"] == s["video_frames"]
         assert abs(_duration(result.video) - total) < 0.1
-        shots = plan_shots(load_panel_plan(panels), timing, FAKE_CAP, ShotBudget())
+        shots = plan_shots(load_panel_plan(panels), timing, FAKE_CAP, ShotBudget(), clock="gapped")
         for shot, o in zip(shots, result.outcomes, strict=True):
             assert o.frames == round(shot.end * 30) - round(shot.start * 30)
             assert o.looped or o.clip_frames + o.hold_frames == o.frames
+
+    def test_video_carries_the_chapter_pauses_so_it_is_as_long_as_chapter_wav(self, tmp_path) -> None:
+        """P&P e2e (defect 7): the picture was timed on the line WAVs butted together, so every chapter video lost the
+        inter-line pauses `chapter.wav` and the M4B carry (22 s of 290 s on ch1)."""
+        panels, audio = build_chapter(tmp_path)
+        timing = build_timing(audio, 1.0)
+        gapped = timing[-1].end_gapped
+        assert gapped > sum(t.duration for t in timing) + 0.5  # the fixture has pauses, or this proves nothing
+        result = _compose(tmp_path, FakeEngine(), panels=panels, audio=audio)
+        assert result.summary["expected_frames"] == round(gapped * 30)
+        assert abs(_duration(result.video) - gapped) < 0.1
+        shots = result.summary
+        assert abs(shots["audio_seconds"] - gapped) < 1e-6
 
     def test_interleaved_panel_blocks_compose_as_cut_backs(self, tmp_path) -> None:
         """RI v55: one image holds blocks 0 and 2, another block 1. The planner used to refuse the chapter."""
@@ -119,10 +132,12 @@ class TestCompose:
         result = _compose(tmp_path, FakeEngine(), panels=panels, audio=audio)
         assert [o.panel_id for o in result.outcomes] == ["t:1:0", "t:1:1", "t:1:0"]
         s = result.summary
-        assert s["expected_frames"] == s["segment_frames"] == s["video_frames"] == round(6.0 * 30)
+        gapped = build_timing(audio, 1.0)[-1].end_gapped
+        assert s["expected_frames"] == s["segment_frames"] == s["video_frames"] == round(gapped * 30)
 
     def test_each_mode_is_laid_out_as_designed(self, tmp_path) -> None:
-        result = _compose(tmp_path, FakeEngine(), loop_subtle=False)
+        # The gapless clock: the frame counts below are the shots' own audio, without the pause each shot now also holds.
+        result = _compose(tmp_path, FakeEngine(), loop_subtle=False, clock="gapless")
         o = result.outcomes
         # INTERPOLATE to the next panel: a hold first, then the clip ends the shot.
         assert o[0].clip_frames > 0 and o[0].hold_frames > 0
@@ -342,7 +357,9 @@ class TestLooping:
     def test_the_turnaround_has_no_jump_and_no_repeated_frame(self, tmp_path) -> None:
         from echotales.pipeline.video.clip_gate import decode_gray
 
-        result = _compose(tmp_path, FakeEngine())
+        # Gapless so the shot is shorter than one loop period; a longer shot reaches the 24 -> 30 fps resampling, which
+        # repeats a frame on its own and is not the turnaround this test is about.
+        result = _compose(tmp_path, FakeEngine(), clock="gapless")
         o = result.outcomes[2]
         frames = decode_gray(result.out_dir / "segments" / "s0002_loop.mp4", OUT_W, OUT_H)
         d = np.abs(np.diff(frames, axis=0)).mean(axis=(1, 2))

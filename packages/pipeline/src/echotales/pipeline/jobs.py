@@ -235,6 +235,17 @@ def run_stage(
     return result
 
 
+def _drawn_by(engine_name: str) -> str:
+    """What names a Studio version: the stub, or the model that draws. Every real engine key goes through the compiled
+    route, which draws with `render.image_model`, so the server's default key ("noobai") named Z-Image pictures
+    `v1_noobai-studio` (P&P e2e 2026-11-22)."""
+    if engine_name == "stub":
+        return "stub"
+    from echotales.pipeline.config import get_settings
+
+    return get_settings().render_image_model
+
+
 def _studio_version(
     out_dir: Path, chapters: list[float], engine_name: str, density: str = "beat", look: str | None = None,
 ) -> str:
@@ -268,9 +279,12 @@ def _record_studio_version(out_dir: Path, chapters: list[float], version: str, e
     what = (
         "placeholder panels from the stub engine, not a real render"
         if engine_name == "stub"
-        else f"{engine_name} engine; not yet reviewed"
+        else f"drawn by {engine_name}"
     )
-    line = f"\n## {version}\nQueued from the Studio ({job_id}, {time.strftime('%Y-%m-%d')}): {what}.\n"
+    line = (
+        f"\n## {version}\nQueued from the Studio ({job_id}, {time.strftime('%Y-%m-%d')}): {what}. "
+        "Verdict: pending review, nobody has looked at these panels yet.\n"
+    )
     for c in chapters:
         chapter_dir = out_dir / f"ch{c:g}"
         if (chapter_dir / version).is_dir():
@@ -417,6 +431,7 @@ def _run_video(store: Store, novel_id: str, params: dict[str, Any]) -> list[str]
     for chapter in chapters:
         result = anime.compose_chapter_video(
             novel_id, chapter, engine=engine, panel_dir=panel_dir, audio_dir=audio_dir, out_dir=out_dir,
+            suffix=str(params["suffix"]) if params.get("suffix") else None,
         )
         out.append(str(result.video) if result is not None else "")
     return out
@@ -755,7 +770,8 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
 
         if (bad := look_error(look)) is not None:
             raise ValueError(bad)
-        version = _studio_version(Path(out_dir), wanted, engine_name, density, look)
+        drawn_by = _drawn_by(engine_name)
+        version = _studio_version(Path(out_dir), wanted, drawn_by, density, look)
 
         def _direct_and_draw() -> Any:
             # The CLI's own path (`commands.py::cmd_render`): the panel director reads each scene and the image engine draws from
@@ -794,7 +810,7 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
             )
         finally:
             # Also after a partial render: the version folder exists and the convention wants its VERSIONS.md line.
-            _record_studio_version(Path(out_dir), wanted, version, engine_name, job.job_id)
+            _record_studio_version(Path(out_dir), wanted, version, drawn_by, job.job_id)
     elif job.kind == "voice":
         input_digest = digest_text(f"{input_digest}|{_output_inputs_fingerprint(store, novel_id, 'voice')}")
         from echotales.pipeline import paths

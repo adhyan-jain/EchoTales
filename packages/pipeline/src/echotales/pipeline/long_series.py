@@ -189,6 +189,22 @@ def _measured_seconds_per_chapter(store: Store, novel_id: str, stage: str, total
     return statistics.median(rates) if rates else None
 
 
+def source_chapter_numbers(sources_path: str | Path, novel_id: str) -> list[float]:
+    """Chapter numbers the novel's source would ingest, parsed from the EPUB without touching the store. Empty when
+    there is no source or it cannot be read: the estimate then says it is unknown rather than guessing."""
+    from echotales.pipeline.ingest.sources import get_source
+
+    try:
+        config = get_source(novel_id, sources_path)
+        epub, adapter = config.open_adapter()
+        try:
+            return [c.number for c in adapter.chapters(config.chapters)]
+        finally:
+            epub.close()
+    except Exception:  # an unreadable source is "unknown", not an error on the estimate path
+        return []
+
+
 def estimate_run(
     store: Store,
     novel_id: str,
@@ -196,9 +212,24 @@ def estimate_run(
     *,
     stages: tuple[str, ...] = DEFAULT_STAGES,
     gpu_hourly_usd: float = 0.0,
+    source_chapters: list[float] | None = None,
 ) -> dict[str, Any]:
-    """Seconds (and dollars at `gpu_hourly_usd`; a local run costs nothing per run) for `stages` over `chapters`."""
-    available = store.chapter_numbers(novel_id)
+    """Seconds (and dollars at `gpu_hourly_usd`; a local run costs nothing per run) for `stages` over `chapters`.
+
+    Before the first ingest the store has no chapters, so a new book read `chapters: 0` and 0 s for every stage (P&P
+    e2e): `source_chapters` (the uploaded EPUB's chapters) stands in for them, and with neither the result says
+    `known: False` and carries no numbers rather than a confident zero."""
+    available = store.chapter_numbers(novel_id) or list(source_chapters or [])
+    if not available:
+        return {
+            "novel_id": novel_id, "known": False, "chapters": None, "seconds": None, "cost_usd": None,
+            "measured": False,
+            "stages": [
+                {"stage": s, "chapters": None, "seconds_per_chapter": None, "seconds": None, "basis": "unknown"}
+                for s in stages
+            ],
+            "note": "unknown until ingest: the book has no chapters in this project yet and no readable source",
+        }
     count = len(select_chapters(available, chapters))
     rows = []
     for stage in stages:
@@ -211,6 +242,7 @@ def estimate_run(
     total = sum(r["seconds"] for r in rows)
     return {
         "novel_id": novel_id,
+        "known": True,
         "chapters": count,
         "stages": rows,
         "seconds": total,
@@ -221,6 +253,8 @@ def estimate_run(
 
 
 def format_estimate(est: dict[str, Any]) -> str:
+    if not est.get("known", True):
+        return f"estimate for {est['novel_id']}: unknown ({est['note']})"
     lines = [f"estimate for {est['novel_id']}, {est['chapters']} chapter(s)"]
     for r in est["stages"]:
         lines.append(
