@@ -27,7 +27,8 @@ modes (`ECHOTALES_LLM_MODE=stub`) run everything without one.
 
 Pages: `echotales pages` lays the panels out as a vertical **webtoon** strip by default (`--format manga` or
 `comic` for paged layouts) and letters the bubbles in code, placed off the picture's subject where it can find a
-spot (EVOLUTION 4.185).
+spot (EVOLUTION 4.185). `--look bw` (also `render --look bw`) gives a black-and-white screentone look and defaults the
+format to right-to-left `manga`; it is unit-tested only, no real bw render has been looked at (EVOLUTION 4.188).
 
 Comic input: `echotales comic ingest|build` read a folder, `.cbz` or `.pdf`; `echotales comic fetch <chapter-url>` (or the
 Studio's "Paste a chapter link") downloads a chapter's page images into `data/raw/comics/<id>/` first. It is generic, with no

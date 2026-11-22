@@ -23,9 +23,32 @@ conflated.
 | `docs/design/consistency_plan.md` | Approved-reference identity and location consistency plan (2026-10-18). Superseded 2026-11-19 by `community_roadmap.md` M1. |
 | `docs/archive/COMPLETION_PLAN.md` | *What to build next and why*, across research/patent/product. The old multi-track plan (2026-09-23). Superseded 2026-11-19 by `community_roadmap.md`; history only. |
 
-**Last updated:** 2026-11-21 (EVOLUTION 4.186).
+**Last updated:** 2026-11-22 (EVOLUTION 4.195).
 
-## Pick up here - 2026-11-21 (state of master at 5f33ad4; EVOLUTION 4.168-4.186)
+## Pick up here - 2026-11-22 (state of master at 7265fcd; EVOLUTION 4.187-4.195, decisions D67-D68)
+
+Master carries everything below; core+pipeline 3,068 passed, 2 skipped (`-o addopts=""`, as reported for this run), webview jest 258 (29 suites). This section supersedes the 2026-11-21 one below it where they differ (the 2026-11-21 "Open" list is partly closed here: panel round 7 is merged, and P&P ch1-3 and RI ch1 have now had a real run).
+
+**Done since 2026-11-21 (details in EVOLUTION):** render exits non-zero over undrawn panels, vision-check skips are recorded, a redraw with an edited direction goes through the compiler (4.187); black-and-white manga look, `render --look bw` and `pages --look bw` (4.188); heavy work GPU-first: NVENC video encodes (stills 3 s clip 4.11 s to 1.14 s measured), whisper, CLIP, OCR and TTS pick CUDA (4.189); a real P&P ch1 end-to-end run found and fixed seven defects: Studio render built no director, "Mr." gender, honorific names, speaker not drawn, desk keyboard (4.190); `echotales comic fetch <url>` and the Studio's "Paste a chapter link" (4.191; measured on two Pepper & Carrot episode pages only); P&P ch1-3 casting: women without gender, merges ignored by voice, voices that moved, VRAM held, merge suggestions in the review queue (4.192); first-name gender prior, stable Unknown Speaker voices, Studio merge buttons (4.193); panel rounds 7 and 8, rows not rings, over-the-shoulder capped, no top-down view with a second person (4.182, 4.194; D67, D68); video pauses, video `suffix`, Studio version name, copyright and italic-in-quote spans, estimate before ingest (4.195). The narrator in `config.json` is `hifitts9136` (no longer the `p227` placeholder).
+
+**Open:**
+- The owner has not listened to or watched the showcase: `data/exports/showcase_20261122/` exists but was empty when this section was written. No blind listen of the P&P voices after the 4.192/4.193 casting changes (the casting tables there are casting reports and manifests, not real synthesis).
+- `onnxruntime-gpu` is not adopted: the installed `onnxruntime` 1.32 is CPU-only, so comic OCR runs on the CPU although the code picks CUDA when a provider exists (4.189, an environment change, not made).
+- RI crowd lines stay unattributed by design: 15 of 27 RI ch1 dialogue spans are crowds with no tag in the text and the reader's UNKNOWN branch clears the speaker (4.193, report only; no re-slotting after the reader).
+- Mr. Bennet is drawn 25-30: the graph holds no age and no kinship fact (the `relation` table is empty for P&P), and the vocabulary has no middle-aged band (4.190 item 6, no hook yet).
+- `comic fetch --render` and its automatic Playwright retry have never run: Playwright is not installed here, only the missing-dependency message is tested (4.191). The fetch was run on two CC-BY pages, no scanlation site.
+- Panel round 8's top-down fix (D68) is unit-tested and was not re-rendered; the black-and-white look (4.188) has no real bw render, no A/B of `render --look bw` against `pages --look bw`, and no Studio control for `look`.
+- Kitty, Lydia and Maria Lucas stay `unknown` in the graph (no pronoun in ch1-3); casting uses the name prior, a reviewer can set the gender (4.192, 4.193). A bible re-lock plus real synthesis was not re-run to confirm voices stay put.
+- A redraw with an edited direction (4.187) was never run on a real engine and its candidates are not vision-checked.
+- Carried from 2026-11-21 and not re-checked: the dead-code / `py.typed` branch is pending; gemma2:9b spills about 21% to CPU at 8192 context on the 8 GB card (owner allowed it for 2026-11-20 only, D62); the RI hardcase gold notes quote RI verbatim (trim before the repository goes public); `npm audit` 0 critical, 16 high in react-scripts build tooling; the local image worker ignores reference images; benchmark references are model drafts (`checked_by_human: false`).
+
+**Needs the owner:**
+1. Listen to and watch the showcase (`data/exports/showcase_20261122/`) and pick or confirm the narrator by ear (`config.json` `voice.narrator`, now `hifitts9136`).
+2. Hand-check the benchmark references (`echotales benchmark check`).
+3. The RunPod run (runbook: README "Run on RunPod"); nothing has run against a real endpoint.
+4. The deploy go.
+
+## Pick up here - 2026-11-21 (superseded by 2026-11-22 above; state of master at 5f33ad4; EVOLUTION 4.168-4.186)
 
 Master carries everything below; core+pipeline 2,820 passed, 2 skipped (`-o addopts=""`, as reported for this run), webview jest 251. The older dated sections below this one are history: where one conflicts with this section, this one wins, and the numbered log is `docs/EVOLUTION.md`. The 2026-11-20 round-2 entry that stood here was moved into EVOLUTION 4.186 (it was numbered 4.140 by mistake; the real 4.140 is the 2026-11-13 direction entry). Numbers 4.175 and 4.182 are reserved for other branches.
 
