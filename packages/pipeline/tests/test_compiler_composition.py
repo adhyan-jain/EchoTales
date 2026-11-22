@@ -122,3 +122,64 @@ def test_a_staging_sheet_with_a_set_is_the_only_statement_of_the_place() -> None
     assert "timber clan hall" not in out.positive and "open field" not in out.positive and "sunlight" not in out.positive
     # with no staging sheet the genre place still reaches the prompt
     assert "mountain cliff" in compile_prompt(brief(), model_profile("z-image-turbo")).positive
+
+
+def test_a_crowd_is_never_compiled_as_a_ring_or_circle() -> None:
+    # RI ch1 (v56): the clan was drawn as a circle around him in four overview panels; the compiled prompt must say rows.
+    para = "Fang Yuan stands alone while the clan elders form a circle around him, and the youths surround him in a ring."
+    staging = "Set: a hall. Blocking: Fang Yuan stands facing left; the elders form a ring around him. Light: dim."
+    out = compile_prompt(brief(composition=para, staging=staging), model_profile("z-image-turbo"))
+    import re
+
+    assert not re.search(r"\b(circle|ring|surround\w*)\b", out.positive, re.I), out.positive
+    assert "rows" in out.positive
+
+
+def test_blocking_names_only_people_the_panel_draws() -> None:
+    # P&P ch1 v3, p1 and p9 (wide views of one man): the scene's staging sheet blocks both spouses ("Mrs. Bennet stands on the
+    # left ...; Mr. Bennet stands on the right ...") while the panel's cast and identity sentences hold only him, so the model
+    # drew the undescribed one as an unrequested woman in grey and the named man twice. Blocking keeps only people drawn here.
+    staging = ("Set: an unspecified room indoors. Blocking: Mrs. Bennet stands on the left facing right; "
+               "Mr. Bennet stands on the right facing left. Light: dim.")
+    chars = [CharacterBrief(**dict(OLD, name="Mr. Bennet"))]
+    out = compile_prompt(brief(characters=chars, composition="Mr Bennet stands in the center of a room.", staging=staging,
+                               shot="wide"), model_profile("z-image-turbo"))
+    assert "Mrs. Bennet" not in out.positive
+    assert "Mr. Bennet stands on the right facing left" in out.positive and "Light: dim" in out.positive
+
+
+def test_blocking_keeps_crowd_clauses_and_drops_the_whole_line_when_nobody_in_it_is_drawn() -> None:
+    staging = "Set: a hall. Blocking: Fang Yuan stands facing left; the elders kneel in two rows facing him. Light: dim."
+    out = compile_prompt(brief(staging=staging, shot="wide"), model_profile("z-image-turbo"))
+    assert "Fang Yuan stands facing left" in out.positive and "elders kneel in two rows" in out.positive
+    only_others = "Set: a hall. Blocking: Elder Zhao stands on the left facing right. Light: dim."
+    out = compile_prompt(brief(staging=only_others, shot="wide"), model_profile("z-image-turbo"))
+    assert "Elder Zhao" not in out.positive and "Blocking" not in out.positive and "Set: a hall" in out.positive
+
+
+OTS_STAGING = ("Set: a drawing room. Blocking: Mrs. Bennet stands on the left facing right; Mr. Bennet sits on the right facing left. "
+               "Light: warm.")
+OTS_PARA = "Mrs. Bennet stands excitedly by the fireplace as she speaks to her husband who sits calmly in an armchair."
+
+
+def _ots_brief(**over) -> PanelBrief:
+    mrs = CharacterBrief(name="Mrs. Bennet", gender="female", age_band="adult", appearance={"hair_color": "black"}, lead=True)
+    mr = CharacterBrief(name="Mr. Bennet", gender="male", age_band="adult", appearance={"hair_color": "grey"}, back_turned=True)
+    fields = dict(novel_id="", characters=[mrs, mr], mode=OutputMode.COLOUR, composition=OTS_PARA, staging=OTS_STAGING,
+                  shot="medium", frame_focus="over-shoulder", frame_subject="Mr. Bennet", face="an eager smile",
+                  framing="Over-the-shoulder shot: the back of Mr. Bennet.")
+    fields.update(over)
+    return PanelBrief(**fields)
+
+
+def test_an_over_the_shoulder_listener_is_drawn_once_as_the_back_of_a_head_and_nowhere_else() -> None:
+    # P&P ch1 v3: 15 of 32 panels drew the back-turned listener AND the same man seated (the paragraph and Blocking still
+    # placed him), a third figure. Now his only mention is the foreground back figure, dressed in his identity cues.
+    out = compile_prompt(_ots_brief(), model_profile("z-image-turbo"))
+    text = out.positive
+    assert "sits calmly" not in text and "sits on the right" not in text, text
+    assert "Mrs. Bennet stands on the left" in text
+    back = [s.text for s in out.sections if s.label == "character:Mr. Bennet"]
+    assert len(back) == 1 and "grey hair" in back[0] and "from behind" in back[0] and "face" in back[0]
+    assert "adult face with a defined jaw" not in back[0]
+    assert "Mrs. Bennet's face: an eager smile" in text and "Mr. Bennet's face" not in text

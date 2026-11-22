@@ -605,3 +605,8 @@ Next (A3 proper): build the reader stage with a cast-discovery pass, the explici
 
 ## 5. Maintenance rule
 Whenever a decision is made or reversed, or a phase step lands, add or update an entry here in the same turn, with the measured result when there is one. Bug-level detail goes to `docs/EVOLUTION.md`; open work to `docs/HANDOFF.md`.
+
+### D68. A scene with a second person takes no high or top-down view (2026-11-22, panel round 8)
+- **Decided**: the framing rotation skips the "down" and "topdown" views when others are present and the lead is not alone; those views stay for the lone lead only. Over-the-shoulder is capped at one exchange panel in three.
+- **Why**: those views name only the lead, so the second person was drawn standing directly behind him with heads stacked (5 of 32 P&P panels, EVOLUTION 4.194).
+- **Status**: unit-tested; not yet re-rendered.

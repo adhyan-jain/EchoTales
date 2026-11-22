@@ -41,6 +41,10 @@ class FramingState:
     crowd_n: int = 0
     #: Where the quiet rotation (`_CYCLE`) goes next.
     cycle_n: int = 0
+    #: Panels that were an exchange between two people, and how many of them took the over-the-shoulder view: it is capped at one
+    #: exchange panel in three (P&P ch1 v3: 15 of 32 panels, a mechanical alternation).
+    exchange_n: int = 0
+    ots_n: int = 0
 
 
 _EYES = re.compile(r"\b(eyes?|pupils?|irises|iris|gaze[sd]?|eyeballs?|eyelids?)\b", re.I)
@@ -66,7 +70,7 @@ _PEAK = re.compile(
     r"anger|angry|glar\w*|sneer\w*|mock\w*|scorn\w*|contempt\w*|smirk\w*|laugh\w*|cried|cry|weep\w*|sob\w*|tears|trembl\w*|"
     r"gasp\w*|gaped|pain\w*|agon\w*|ache|ouch|fear\w*|afraid|frighten\w*|disbelief|incredul\w*)\b)", re.I)
 _PEAK_EXPRESSION = re.compile(
-    r"\b(shock\w*|stun\w*|wide|furious|fury|glare|glaring|sneer\w*|mock\w*|contempt\w*|smirk\w*|scorn\w*|laugh\w*|"
+    r"\b(shock\w*|stun\w*|furious|fury|glare|glaring|sneer\w*|mock\w*|contempt\w*|smirk\w*|scorn\w*|laugh\w*|"
     r"tears|cry\w*|terrif\w*|fear\w*|afraid|pain\w*|agony|rage|anger\w*|disbelief|horror|screaming|clenched)\b", re.I)
 
 _HIGH = re.compile(r"\b(knelt|kneel\w*|collaps\w*|fell|fallen|crouch\w*|cower\w*|begs|begged|begging|crawl\w*|sank|slump\w*|defeat\w*|helpless)\b", re.I)
@@ -178,6 +182,23 @@ _CROWD_VIEWS: list[tuple[str, str]] = [("medium", "behind"), ("medium", "reverse
 _CROWD_REPLACES = ("", "behind", "over-shoulder", "topdown", "down", "profile")
 
 
+_RING_FORM = re.compile(r"\bform(?:s|ed|ing)?\s+(?:a|an|the)\s+(?:half[- ]?|loose |tight )?(?:circle|ring)\s+(?:around|round|about)\s+(him|her|them)\b", re.I)
+_RING_SURROUND = re.compile(r"\bsurround(?:s|ed|ing)?\s+(him|her|them)\b", re.I)
+_RING_IN = re.compile(r"\s+in\s+(?:a|an|the)\s+(?:half[- ]?|loose |tight )?(?:circle|ring)\b(?:\s+(?:around|round|about)\s+(?:him|her|them))?", re.I)
+
+
+def rows_not_ring(text: str) -> str:
+    """A crowd written as a ring, circle or "surrounding him" rewritten as rows facing him.
+
+    Owner rule (round 8, RI ch1 v56): a crowd stands in rows and ranks, never in a circle; the model draws exactly the
+    arrangement the words name, and the director's paragraph and the staging sheet still said "form a circle around him" and
+    "surround him". A ring that is an object (a jade ring) is left alone: only the group-arrangement phrases are rewritten."""
+    out = _RING_FORM.sub(lambda m: f"stand in rows facing {m.group(1)}", text)
+    out = _RING_SURROUND.sub(lambda m: f"stand in rows facing {m.group(1)}", out)
+    out = re.sub(r"(facing (?:him|her|them))" + _RING_IN.pattern, r"\1", out, flags=re.I)
+    return _RING_IN.sub(" in rows", out)
+
+
 def _key(f: Framing) -> tuple[str, str]:
     return (f.size, f.focus)
 
@@ -211,6 +232,17 @@ def plan_framing(
     short = len(text.split()) <= 45
     narration = _unquoted(text)
 
+    # An exchange: someone else speaks to the lead, or the lead speaks to a named cast member. It may take the over-the-shoulder view,
+    # but only one such panel in three: the cap is counted over exchange panels, so the other two keep a face or the rotation.
+    exchange: tuple[str, str] | None = None
+    if others_present and not crowd and not crowd_in_scene:
+        if other := _other_speaker(spoken, lead):
+            exchange = (other, "someone else speaks to the lead")
+        elif to := _addressee(spoken, lead, names):
+            exchange = (to, f"the lead speaks to {to}")
+    if exchange:
+        state.exchange_n += 1
+
     chosen: Framing | None = None
     # `opens_chapter` is for a render of a block range that starts mid-chapter (b79 "a pair of clear eyes" was drawn as an
     # establishing shot only because it was the first panel of the slice); None means "the first panel I am given".
@@ -224,10 +256,9 @@ def plan_framing(
         chosen = Framing("close", focus="hands", reason="the line is about hands")
     elif (obj := prop_in(text, director_props or [], names)) and (state.inserts_since >= 1 or obj in _WEAPONS):
         chosen = Framing("close", focus="prop", subject=obj, reason=f"the text centres the {obj}")
-    elif others_present and (other := _other_speaker(spoken, lead)) and not crowd and not crowd_in_scene and not (last and last.focus == "over-shoulder"):
-        chosen = Framing("medium", focus="over-shoulder", subject=other, reason="someone else speaks to the lead")
-    elif others_present and (to := _addressee(spoken, lead, names)) and not crowd and not crowd_in_scene and not (last and last.focus == "over-shoulder"):
-        chosen = Framing("medium", focus="over-shoulder", subject=to, reason=f"the lead speaks to {to}")
+    elif exchange and state.ots_n * 3 < state.exchange_n and not (last and last.focus == "over-shoulder"):
+        chosen = Framing("medium", focus="over-shoulder", subject=exchange[0], reason=exchange[1])
+        state.ots_n += 1
     elif _PEAK.search(text) or _PEAK_EXPRESSION.search(expression):
         chosen = Framing("close", reason="emotional peak")
     elif not _PERSON_WORDS.search(text) and not any(n.lower() in text.lower() for n in names) and _PLACE.search(text):
@@ -251,6 +282,11 @@ def plan_framing(
             start = state.cycle_n
             for i in range(len(cycle)):
                 size, focus = cycle[(start + i) % len(cycle)]
+                # P&P ch1 v4 (4.194): the high and top-down views name only the lead, so with a second person in the scene the model
+                # drew her standing directly behind the seated lead, her head stacked above his (5 of 32 panels). Skipped when others
+                # are present; the lone lead's cycle keeps its own look-down.
+                if not alone and others_present and focus in ("down", "topdown"):
+                    continue
                 if (size, focus) not in used and not (too_much_face and (size, focus) in _FACE_VIEWS):
                     state.cycle_n = (start + i + 1) % len(cycle)
                     chosen = Framing(size, focus=focus, reason=f"{chosen.reason}; a different view after {last.size} {last.focus}".strip())  # type: ignore[arg-type]
@@ -311,9 +347,12 @@ def framing_sentence(f: Framing, lead: str, *, people: bool = True, alone: bool 
         # Drew him mid-sized (not small) on bare rock with the crowd a thin ring far behind: lone, and no follower reading (2 of 2).
         # Cliff r7 seed 777 p6, p12: the lead drawn twice, full-size in the foreground (his identity sentence, now dropped for this view
         # in the compiler) and as a tiny figure in the ring. He is only the small figure at the centre of the ring.
-        return (f"High wide establishing shot looking straight down from far above: the crowd is a loose ring of tiny people on the "
-                f"ground and {who} is one small lone figure standing on bare rock at the centre of the ring, no other figure "
-                "in the picture, the whole place visible and every figure small in it.")
+        # Round 8 (RI ch1 v56): "a loose ring ... at the centre of the ring" drew the clan as a circle around him in 4 of 4 overview
+        # panels (b8, b45, b57, b68). Owner rule: rows, not circles; the crowd is ranks in front of him, never around him.
+        return (f"High wide establishing shot looking straight down from far above: the crowd is tiny people standing or kneeling in "
+                f"neat straight rows and ranks across the ground, all facing one way, and {who} is one small lone figure standing "
+                "alone in front of the first row, facing the rows, nobody behind him, the whole place visible and every figure "
+                "small in it.")
     if f.focus == "low":
         # "head and shoulders ... no other person" drew him seated on the rock (2 of 2); this wording drew him standing, wind in
         # the hair, nobody else (2 of 2).
@@ -356,9 +395,15 @@ def framing_sentence(f: Framing, lead: str, *, people: bool = True, alone: bool 
         return (f"High top-down view looking straight down from directly above: {who} small in the frame, the top of his head and "
                 "shoulders, the table or ground around him filling the picture.")
     if f.focus == "over-shoulder":
-        other = f.subject if f.subject and f.subject != "the speaker" else "one of the people around him"
-        return (f"Over-the-shoulder shot: the back of the head and shoulder of {other} at the edge of the frame in the foreground, "
-                f"{who} large in the middle of the frame, his face turned toward the viewer beyond it.")
+        if f.subject and f.subject != "the speaker":
+            # Round 8 (P&P ch1 v3, 15 of 32 panels): the model drew the named listener's back AND the same man seated beside it
+            # (a third figure); the sentence now says the back IS the listener and that two people are in the room. The compiler
+            # also drops the paragraph and Blocking lines that placed him, and gives the back figure his identity cues.
+            return (f"Over-the-shoulder shot of a conversation between two people: in the foreground at the edge of the frame, the back "
+                    f"of the head and shoulders of {f.subject}, seen only from behind with the face hidden, and {who} large in the "
+                    "middle of the frame facing the viewer and speaking. Only these two people are in the room.")
+        return (f"Over-the-shoulder shot: the back of the head and shoulder of one of the people around, at the edge of the frame in the "
+                f"foreground, and {who} large in the middle of the frame, facing the viewer beyond it.")
     if f.focus == "establishing" or f.size == "wide":
         return (f"Wide establishing shot from far back{angle}: the whole place fills the frame and "
                 f"{'any people are small in it' if people else 'it is empty of people'}.")
@@ -390,7 +435,7 @@ def apply_framing(direction: object, f: Framing, lead: str, *, alone: bool = Fal
     return direction.model_copy(update={  # type: ignore[attr-defined]
         "shot": f.size, "camera_angle": f.angle if f.angle != "over-the-shoulder" else "eye-level",
         "frame": framing_sentence(f, lead, people=f.focus != "prop", alone=alone, desk=desk), "frame_focus": f.focus,
-        "frame_subject": f.subject if f.focus == "prop" else "",
+        "frame_subject": f.subject if f.focus in ("prop", "over-shoulder") else "",
     })
 
 

@@ -74,7 +74,7 @@ def test_the_lead_speaking_to_someone_faces_the_viewer_and_the_listener_is_the_b
     out = _run([("x", {}), ('"Have you heard?"', {"spoken": spoken}), ('"Have you heard?"', {"spoken": spoken})], names=names)
     assert out[1].focus == "over-shoulder" and out[1].subject == "Mr. Bennet"
     sentence = fr.framing_sentence(out[1], "Mrs. Bennet")
-    assert "Mr. Bennet at the edge of the frame" in sentence and "Mrs. Bennet large in the middle" in sentence
+    assert "head and shoulders of Mr. Bennet" in sentence and "Mrs. Bennet large in the middle" in sentence
     assert out[2].focus != "over-shoulder", "never two over-the-shoulder shots in a row"
 
 
@@ -140,3 +140,41 @@ def test_a_close_up_crop_does_not_cut_the_paragraph_at_an_honorific_full_stop() 
     text = "Mr. Bennet stands by a window, his gaze fixed on the street. The room is otherwise empty."
     assert fr.crop_composition(text, "") == "Mr. Bennet stands by a window, his gaze fixed on the street."
     assert fr.SENTENCE_SPLIT.split("Mrs. Bennet sat. Dr. Who left! Ms. Lee came?") == ["Mrs. Bennet sat.", "Dr. Who left!", "Ms. Lee came?"]
+
+
+def test_no_crowd_view_is_written_as_a_ring_or_circle() -> None:
+    # RI ch1 (v56): the overview sentence said "a loose ring of tiny people ... at the centre of the ring" and four panels
+    # (b8, b45, b57, b68) drew the assembled clan as a circle around him. Owner rule: rows and ranks, never a ring.
+    import re
+
+    for focus in ("overview", "reverse", "low", "behind"):
+        f = fr.Framing("wide", focus=focus, subject="crowd" if focus == "behind" else "")  # type: ignore[arg-type]
+        text = fr.framing_sentence(f, "Fang Yuan")
+        assert not re.search(r"\b(ring|circle|circular|around him|surround\w*)\b", text, re.I), (focus, text)
+    assert "rows" in fr.framing_sentence(fr.Framing("wide", focus="overview"), "Fang Yuan")
+
+
+def test_a_ring_or_circle_in_the_directors_paragraph_becomes_rows() -> None:
+    para = "Fang Yuan stands alone while the clan elders form a circle around him, and the youths surround him in a ring."
+    out = fr.rows_not_ring(para)
+    assert "circle" not in out and "ring" not in out and "surround" not in out and "rows" in out
+    assert fr.rows_not_ring("He wore a jade ring.") == "He wore a jade ring."
+
+
+def test_over_the_shoulder_is_at_most_one_in_three_exchange_panels_and_never_two_in_a_row() -> None:
+    # P&P ch1 v3: 15 of 32 panels were over-the-shoulder, a mechanical Mrs-line / Mr-line alternation.
+    spoken = "- Mrs. Bennet says to Mr. Bennet: have you heard"
+    names = ["Mrs. Bennet", "Mr. Bennet"]
+    state = fr.FramingState()
+    out = [fr.plan_framing("x", names=names, state=state)]
+    out += [fr.plan_framing('"Have you heard?"', names=names, spoken=spoken, state=state) for _ in range(12)]
+    ots = [o.focus == "over-shoulder" for o in out[1:]]
+    assert 3 <= sum(ots) <= 4, ots
+    assert not any(a and b for a, b in itertools.pairwise(ots)), ots
+
+
+def test_the_over_the_shoulder_sentence_names_two_people_and_does_not_assume_the_lead_is_male() -> None:
+    f = fr.Framing("medium", "over-the-shoulder", "over-shoulder", "Mr. Bennet")
+    text = fr.framing_sentence(f, "Mrs. Bennet")
+    assert "Mr. Bennet" in text and "Mrs. Bennet" in text and "seen only from behind" in text
+    assert "his face" not in text and "only these two people" in text.lower()

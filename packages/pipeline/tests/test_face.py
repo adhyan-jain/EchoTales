@@ -3,6 +3,8 @@ calm is never overridden, and every emotion is written as the parts of a face.""
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from echotales.pipeline.render import face
 
 
@@ -41,3 +43,51 @@ def test_each_family_is_written_as_facial_parts() -> None:
     assert "teeth" in face.drawn_face("furious glare, clenched teeth")
     assert face.drawn_face("calm unreadable stare").startswith("calm and still")
     assert face.drawn_face("wry half-smile") == "wry half-smile"
+
+
+def test_a_neutral_face_takes_the_scenes_mood_and_the_earliest_mood_word_wins() -> None:
+    # RI ch1 (v56): 34 of 45 director faces were the example phrase; the mood fallback knew only sad, tense and happy, so a
+    # "pensive" or "reverent" scene fell through to a flat stare and the nine "tense" ones all read the same "tense, wary".
+    quiet = "The room was quiet."
+    assert face.infer_expression("calm unreadable stare", quiet, mood="pensive, foreboding") == "thoughtful, eyes lowered"
+    assert face.infer_expression("calm unreadable stare", quiet, mood="reverent, solemn") == "solemn, eyes lowered"
+    assert face.infer_expression("calm unreadable stare", quiet, mood="triumphant, menacing") == "cold mocking smile"
+    assert face.infer_expression("calm unreadable stare", quiet, mood="tense, contemplative") == "tense, wary"
+    assert face.infer_expression("calm unreadable stare", quiet, mood="contemplative, tense") == "thoughtful, eyes lowered"
+    assert not face.is_neutral(face.infer_expression("calm unreadable stare", quiet, mood="pensive"))
+
+
+def test_the_directors_vocabulary_offers_no_stock_face_phrase_to_copy() -> None:
+    # The model copies the last example of a list when the line is thin (4.171: the neutral phrase on 34 of 45 RI panels). The
+    # first round-8 fix replaced it with "thin bitter smile, eyes lowered" and gemma2:9b wrote exactly that for most of Mr.
+    # Bennet's panels in the P&P rerun, so the prompt now names no phrase at all.
+    from echotales.pipeline.render import direction
+
+    src = Path(direction.__file__).read_text(encoding="utf-8")
+    assert "calm unreadable stare" not in src and "thin bitter smile" not in src and "cold mocking smile, narrowed eyes" not in src
+
+
+def test_the_directors_snake_case_keys_and_sentences_become_a_plain_face_phrase() -> None:
+    # P&P ch1 rerun: "anxious_brows", "calm_expression", "Mr. Bennet's expression is amused as he listens" reached the prompt as is.
+    assert face.clean_expression("anxious_brows") == "anxious"
+    assert face.clean_expression("Mr. Bennet's expression is amused as he listens") == "amused"
+    assert face.clean_expression("eager, eyes wide") == "eager, eyes wide"
+    assert face.is_neutral(face.clean_expression("calm_expression"))
+    assert face.infer_expression("worried_brows", "The room was quiet.") == "worried"
+    assert face.infer_expression("calm_expression", "He sneered at the fools.") == "cold mocking smile"
+
+
+def test_an_amused_face_is_a_faint_smile_not_a_laughing_mouth() -> None:
+    # P&P: Mr. Bennet's dry amusement was drawn as "laughter: mouth open, eyes crinkled shut, head tipped back".
+    assert face.drawn_face("amused").startswith("a faint smile")
+    assert face.drawn_face("loud laughter").startswith("laughter")
+
+
+def test_eyes_wide_with_eagerness_is_not_shock() -> None:
+    # P&P ch1 rerun: the director's "eager, eyes wide" matched the bare word "wide" and was drawn as "shock: eyes wide open, mouth
+    # open" (and, in framing, as an emotional-peak close-up) on 6 of 32 panels of Mrs. Bennet's eagerness.
+    from echotales.pipeline.render.framing import _PEAK_EXPRESSION
+
+    assert not face.drawn_face("eager, eyes wide").startswith("shock")
+    assert not _PEAK_EXPRESSION.search("eager, eyes wide")
+    assert face.drawn_face("wide shocked eyes").startswith("shock") and _PEAK_EXPRESSION.search("wide shocked eyes")

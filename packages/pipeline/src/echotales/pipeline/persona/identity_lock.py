@@ -309,6 +309,34 @@ def scene_look(store: object, ctx: SceneContext | None, persona_id: str, name: s
     )
 
 
+#: What a body or its clothes look like when damaged: the words that make a carried-forward condition checkable against a scene.
+_DAMAGE = re.compile(
+    r"\b(torn|tore|tear(?:s|ing)?|shred\w*|rip(?:ped|s)?|blood\w*|bleed\w*|bled|wound\w*|injur\w*|bruis\w*|gash\w*|bandag\w*|"
+    r"stain\w*|soak\w*|drench\w*|burn(?:t|ed|s)?|scorch\w*|batter\w*|dishevel\w*|ragged|scratch\w*|mangled|crippled)\b", re.I)
+_PRONOUN = re.compile(r"\b(he|she|his|her|him|hers)\b", re.I)
+_SPOKEN = re.compile(r'"[^"]*"|“[^”]*”')
+
+
+def _damage_still_stated(condition: str, scene_text: str, name: str) -> bool:
+    """False when `condition` names damage and this scene's narration never names that damage on the character.
+
+    RI ch1 (v56): the condition stated in the opening battle ("robes torn to shreds, blood on the body") was carried into every
+    later scene of the same body, so the hall ceremony 500 years earlier, after the rebirth, drew torn bloodied white robes in 21
+    of 45 panels. No body epoch was split there (`persona/split.py` needs two chapters after the change), so the boundary cannot
+    come from the graph; the text decides. A sentence counts when it is narration (a spoken "clan blood" is someone's line) and
+    names the character or a pronoun. A condition with no damage word in it (a mask, a limp) is not judged and keeps carrying."""
+    words = {m.group(1).lower()[:4] for m in _DAMAGE.finditer(condition)}
+    if not words:
+        return True
+    tokens = [t.lower() for t in re.findall(r"[A-Za-z]{3,}", name)]
+    for sent in re.split(r"(?<=[.!?])\s+", _SPOKEN.sub(" ", scene_text)):
+        if not (_PRONOUN.search(sent) or any(re.search(rf"\b{re.escape(t)}", sent, re.I) for t in tokens)):
+            continue
+        if any(m.group(1).lower()[:4] in words for m in _DAMAGE.finditer(sent)):
+            return True
+    return False
+
+
 def resolve_look(store: object, ctx: SceneContext | None, persona_id: str, name: str) -> CharacterLook | None:
     """This scene's look, completed from the neighbouring scenes of the same chapter and body.
 
@@ -343,7 +371,7 @@ def resolve_look(store: object, ctx: SceneContext | None, persona_id: str, name:
     return CharacterLook(
         outfit=own.outfit or pick("outfit", [before, after]),
         hair=own.hair or pick("hair", [before, after]),
-        condition=own.condition or pick("condition", [before]),
+        condition=own.condition or (carried if (carried := pick("condition", [before])) and _damage_still_stated(carried, ctx.text, name) else ""),
     )
 
 

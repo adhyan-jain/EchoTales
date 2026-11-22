@@ -32,7 +32,7 @@ _FAMILIES: list[tuple[str, re.Pattern[str], re.Pattern[str], str]] = [
      "chin raised, looking down"),
     ("faint smile",
      re.compile(r"\b(?:lightly laughed|laughed lightly|smiled|smiling|slight(?:ly)? (?:smile|smiled)|faint(?:ly)? smil\w*|chuckled)\b", re.I),
-     re.compile(r"\b(?:faint smile|slight smile|small smile)\b", re.I),
+     re.compile(r"\b(?:faint smile|slight smile|small smile|amused|wry smile|bemused)\b", re.I),
      "a faint smile: lips curved slightly, eyes soft and amused, brows relaxed"),
     ("startle",
      re.compile(r"(?:^|[.!?\"\u201d]\s+)\W*(?:pa|bang|crack|snap|thud|boom|bam|slam|clang|crash|smack|whack)\s*[!?]+", re.I),
@@ -44,7 +44,7 @@ _FAMILIES: list[tuple[str, re.Pattern[str], re.Pattern[str], str]] = [
      "a quiet bitter smile: one corner of the mouth lifted without joy, eyes lowered and tired, brows slightly drawn"),
     ("shock",
      re.compile(r"\b(?:shock\w*|stun\w*|startl\w*|astonish\w*|gasp\w*|gaped|dumbfound\w*|disbelief|incredul\w*|\?!|!\?)", re.I),
-     re.compile(r"\b(?:shock\w*|wide|stun\w*|startl\w*|astonish\w*|surpris\w*|gasp\w*|disbelief)\b", re.I),
+     re.compile(r"\b(?:shock\w*|stun\w*|startl\w*|astonish\w*|surpris\w*|gasp\w*|disbelief)\b", re.I),
      "shock: eyes wide open with small pupils, eyebrows raised high, mouth open"),
     ("fury",
      re.compile(r"\b(?:furious|fury|rage|enrag\w*|anger|angry|glar\w*|roar\w*|snarl\w*|hatred|seething)\b", re.I),
@@ -85,6 +85,17 @@ _FAMILIES: list[tuple[str, re.Pattern[str], re.Pattern[str], str]] = [
 ]
 
 
+def clean_expression(text: str) -> str:
+    """The director's face phrase as plain words. gemma2:9b writes snake_case keys ("anxious_brows", "calm_expression") and whole
+    sentences ("Mr. Bennet's expression is amused as he listens") where a phrase was asked for (P&P ch1 rerun: 10 of 32 faces,
+    and the compiled face line then read "anxious_brows"); the feeling is kept, the scaffolding goes."""
+    t = " ".join((text or "").replace("_", " ").split())
+    t = re.sub(r"^.{0,40}?\bexpression (?:is|was|looks|seems|appears)\s+", "", t, flags=re.I)
+    t = re.split(r"\s+(?:as|while|when)\s+", t, maxsplit=1)[0]
+    t = re.sub(r"\s+(?:brows?|eyebrows|expression|face|look)$", "", t, flags=re.I)
+    return t.strip(" .,")
+
+
 def is_neutral(expression: str) -> bool:
     return bool(NEUTRAL.match(expression or ""))
 
@@ -103,6 +114,11 @@ _MOOD_FACES: list[tuple[re.Pattern[str], str]] = [
      "sorrowful, downcast"),
     (re.compile(r"\b(?:tense|anxious|wary|uneasy|ominous|foreboding|expectant|alert)\b", re.I), "tense, wary"),
     (re.compile(r"\b(?:joy\w*|cheerful|happy|playful|amus\w*|warm|hopeful)\b", re.I), "faint smile"),
+    # Round 8 (RI ch1 v56): a "pensive" or "reverent" scene fell through to the flat default (34 of 45 faces), and a menacing or
+    # triumphant one is the lead's cold smile, not a stare.
+    (re.compile(r"\b(?:pensive|contemplat\w*|thoughtful|reflective|brooding|calculating|scheming)\b", re.I), "thoughtful, eyes lowered"),
+    (re.compile(r"\b(?:reverent|solemn|sacred|ceremon\w*)\b", re.I), "solemn, eyes lowered"),
+    (re.compile(r"\b(?:triumphant|menacing|sinister|smug|cunning|sardonic)\b", re.I), "cold mocking smile"),
 ]
 
 
@@ -111,6 +127,7 @@ def infer_expression(director_expression: str, passage: str, *, quoted_only: str
 
     `passage` is the beat's text. A passage that states a still face ("his expression did not change", "calm") is never given an
     emotion. Returns the director's phrase when nothing in the text asks for more."""
+    director_expression = clean_expression(director_expression)
     if not is_neutral(director_expression):
         # A director "frowning" on a line that says pain is pain: a weak family is replaced by a stronger cue in the text.
         if _family(director_expression) in ("frown", "thought", "confusion"):
@@ -124,9 +141,11 @@ def infer_expression(director_expression: str, passage: str, *, quoted_only: str
     if found:
         return found
     # No cue in the line: the director's mood, a small map, not a sentiment model.
-    for cue, face_words in _MOOD_FACES:
-        if cue.search(mood or ""):
-            return face_words
+    # The earliest mood word wins ("pensive, tense" is thought, "tense, pensive" is wariness): a list-order win made every scene
+    # with "tense" anywhere in its mood the same wary face.
+    hits = [(m.start(), face_words) for cue, face_words in _MOOD_FACES if (m := cue.search(mood or ""))]
+    if hits:
+        return min(hits)[1]
     return director_expression
 
 

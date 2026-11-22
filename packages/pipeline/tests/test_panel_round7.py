@@ -87,4 +87,14 @@ def test_the_overview_and_reverse_views_carry_no_full_figure_identity_for_the_le
         assert not any(s.label.startswith("character") for s in out.sections), focus
         assert "Blocking" not in out.positive
     over = fr.framing_sentence(fr.Framing("wide", "high-angle", "overview", "crowd"), "Fang Yuan")
-    assert "centre of the ring" in over and "no other figure" in over
+    # Round 8: rows, never a ring; he is still the one small lone figure.
+    assert "in front of the first row" in over and "one small lone figure" in over and "ring" not in over
+
+
+def test_a_two_person_scene_never_takes_the_high_or_top_down_view() -> None:
+    """P&P ch1 v4 (round 8): 5 of 32 panels (b11, b15, b23, b27, b37) took the top-down view; its sentence names only the lead, so
+    the other person was drawn standing directly behind the seated lead, head stacked above his, both facing the camera."""
+    state = fr.FramingState()
+    out = [fr.plan_framing("Mr. Bennet looked at his wife.", names=["Mr. Bennet"], others_present=True, state=state, opens_chapter=False)
+           for _ in range(16)]
+    assert not {"down", "topdown"} & {f.focus for f in out}
