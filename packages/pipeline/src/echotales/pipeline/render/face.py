@@ -44,7 +44,7 @@ _FAMILIES: list[tuple[str, re.Pattern[str], re.Pattern[str], str]] = [
      "a quiet bitter smile: one corner of the mouth lifted without joy, eyes lowered and tired, brows slightly drawn"),
     ("shock",
      re.compile(r"\b(?:shock\w*|stun\w*|startl\w*|astonish\w*|gasp\w*|gaped|dumbfound\w*|disbelief|incredul\w*|\?!|!\?)", re.I),
-     re.compile(r"\b(?:shock\w*|wide|stun\w*|startl\w*|astonish\w*|surpris\w*|gasp\w*|disbelief)\b", re.I),
+     re.compile(r"\b(?:shock\w*|stun\w*|startl\w*|astonish\w*|surpris\w*|gasp\w*|disbelief)\b", re.I),
      "shock: eyes wide open with small pupils, eyebrows raised high, mouth open"),
     ("fury",
      re.compile(r"\b(?:furious|fury|rage|enrag\w*|anger|angry|glar\w*|roar\w*|snarl\w*|hatred|seething)\b", re.I),

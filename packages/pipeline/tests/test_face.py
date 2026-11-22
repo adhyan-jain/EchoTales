@@ -81,3 +81,13 @@ def test_an_amused_face_is_a_faint_smile_not_a_laughing_mouth() -> None:
     # P&P: Mr. Bennet's dry amusement was drawn as "laughter: mouth open, eyes crinkled shut, head tipped back".
     assert face.drawn_face("amused").startswith("a faint smile")
     assert face.drawn_face("loud laughter").startswith("laughter")
+
+
+def test_eyes_wide_with_eagerness_is_not_shock() -> None:
+    # P&P ch1 rerun: the director's "eager, eyes wide" matched the bare word "wide" and was drawn as "shock: eyes wide open, mouth
+    # open" (and, in framing, as an emotional-peak close-up) on 6 of 32 panels of Mrs. Bennet's eagerness.
+    from echotales.pipeline.render.framing import _PEAK_EXPRESSION
+
+    assert not face.drawn_face("eager, eyes wide").startswith("shock")
+    assert not _PEAK_EXPRESSION.search("eager, eyes wide")
+    assert face.drawn_face("wide shocked eyes").startswith("shock") and _PEAK_EXPRESSION.search("wide shocked eyes")

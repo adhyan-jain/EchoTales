@@ -70,7 +70,7 @@ _PEAK = re.compile(
     r"anger|angry|glar\w*|sneer\w*|mock\w*|scorn\w*|contempt\w*|smirk\w*|laugh\w*|cried|cry|weep\w*|sob\w*|tears|trembl\w*|"
     r"gasp\w*|gaped|pain\w*|agon\w*|ache|ouch|fear\w*|afraid|frighten\w*|disbelief|incredul\w*)\b)", re.I)
 _PEAK_EXPRESSION = re.compile(
-    r"\b(shock\w*|stun\w*|wide|furious|fury|glare|glaring|sneer\w*|mock\w*|contempt\w*|smirk\w*|scorn\w*|laugh\w*|"
+    r"\b(shock\w*|stun\w*|furious|fury|glare|glaring|sneer\w*|mock\w*|contempt\w*|smirk\w*|scorn\w*|laugh\w*|"
     r"tears|cry\w*|terrif\w*|fear\w*|afraid|pain\w*|agony|rage|anger\w*|disbelief|horror|screaming|clenched)\b", re.I)
 
 _HIGH = re.compile(r"\b(knelt|kneel\w*|collaps\w*|fell|fallen|crouch\w*|cower\w*|begs|begged|begging|crawl\w*|sank|slump\w*|defeat\w*|helpless)\b", re.I)
