@@ -1089,17 +1089,18 @@ def _match_director_characters(store: object, self_ids: list[str], dir_chars: li
     line (it is not in CAST, see `direction._validate_direction`). Empty result means nothing matched, and the caller
     then draws the cast as given rather than a panel with no people."""
     from echotales.core.enums import TargetKind
+    from echotales.pipeline.render.direction import name_key
 
     names: dict[str, set[str]] = {}
     for sid in self_ids:
         entity = store.get_self(sid)  # type: ignore[attr-defined]
         labels = {entity.canonical_label} if entity is not None and entity.canonical_label else set()
         labels |= {a.alias for a in store.get_aliases_for(TargetKind.SELF, sid)}  # type: ignore[attr-defined]
-        names[sid] = {" ".join(x.casefold().split()) for x in labels if x}
+        names[sid] = {name_key(x) for x in labels if x}
     pairs: list[tuple[object, str]] = []
     used: set[str] = set()
     for cd in dir_chars:
-        want = " ".join((getattr(cd, "name", "") or "").casefold().split())
+        want = name_key(getattr(cd, "name", "") or "")
         free = [sid for sid in self_ids if sid not in used]
         hit = [sid for sid in free if want in names[sid]]
         if not hit and want:

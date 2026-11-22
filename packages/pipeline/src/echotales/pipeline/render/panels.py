@@ -93,7 +93,7 @@ from echotales.pipeline.render.scene_refs import (
 )
 from echotales.pipeline.render.scene_state import get_or_derive_scene_state
 from echotales.pipeline.render.scenes import carry_locales, group_scenes
-from echotales.pipeline.render.speech import spoken_lines
+from echotales.pipeline.render.speech import speaker_ids, spoken_lines
 from echotales.pipeline.spans.scene import detect_mobs
 from echotales.pipeline.world.context import story_context
 from echotales.pipeline.world.lexicon import build_lexicon
@@ -1757,7 +1757,7 @@ def render_panels(
     blocks_per_panel = DENSITY_BLOCKS_PER_PANEL[density]
     # The style tables are looked up by novel id alone; register this project's genre (stored, tuned or detected)
     # first, or an unlisted novel falls through to the neutral profile instead of its own (persona/genre.py).
-    from echotales.pipeline.persona.genre import use_store_genre
+    from echotales.pipeline.persona.genre import desk_objects, use_store_genre
 
     use_store_genre(store, novel_id)
     generated_by_digest: dict[str, Path] = {}
@@ -2272,6 +2272,20 @@ def render_panels(
                         chapter_number=chapter_number,
                     )
                 )
+                # **The person who speaks a line is in the frame, first.** The cast above is PRESENT mentions only, and a speaker is
+                # not a mention: P&P ch1 drew Mr. Bennet for "My dear Mr. Bennet" (said by his wife) and Mrs. Bennet in 6 of 32
+                # panels, because the husband was the one PRESENT mention and every later beat carried him forward. The graph holds
+                # the speaker of every line; the listener stays (a fresh PRESENT cast, else the scene's carried one).
+                _slot_speakers = speaker_ids(
+                    spans, _slot_blocks, lead=lead,
+                    label_of=lambda sp: (
+                        _speaker_name(sp, store) if (_e := store.get_self(sp.speaker_self_id or "")) is not None and _e.kind.is_person else ""
+                    ),
+                )
+                if _slot_speakers:
+                    _present_entities = _slot_speakers + [
+                        e for e in (_present_entities or list(_scene_last_present_bodies)) if e not in _slot_speakers
+                    ]
                 if not _present_entities and not _scene_last_present:
                     # The first scene of RI ch1 is the enemies' shouting (blocks 0-4); Fang Yuan is first PRESENT at block 5, in the
                     # scene after it, so a scene-bounded scan left the ultimatum panels without him. Look 12 blocks ahead.
@@ -2849,7 +2863,7 @@ def render_panels(
                     )
                     _direction = apply_framing(
                         _direction, _framing, _cast_labels[0] if _cast_labels else "",
-                        alone=_alone,
+                        alone=_alone, desk=desk_objects(novel_id),
                     )
                     _scene_panel_n += 1
                     _prev_panel_set = _set_now or _prev_panel_set

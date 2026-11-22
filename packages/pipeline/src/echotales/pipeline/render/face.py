@@ -14,6 +14,8 @@ from __future__ import annotations
 
 import re
 
+from echotales.pipeline.render.framing import SENTENCE_SPLIT
+
 #: A director face that says nothing: its own example phrase, or a plain calm.
 NEUTRAL = re.compile(r"^\W*(?:|calm|neutral|calm unreadable stare|unreadable|expressionless|blank|impassive|composed|serious)\W*$", re.I)
 #: The passage says the face stays still: no emotion is inferred over it.
@@ -147,7 +149,7 @@ def drop_calm_clause(paragraph: str) -> str:
     the later, longer text and the model follows it). Cuts the clause after the last comma when that is all it is, else the
     sentence."""
     out: list[str] = []
-    for sent in re.split(r"(?<=[.!?])\s+", paragraph.strip()):
+    for sent in SENTENCE_SPLIT.split(paragraph.strip()):
         if not _CALM_CLAUSE.search(sent):
             out.append(sent)
             continue

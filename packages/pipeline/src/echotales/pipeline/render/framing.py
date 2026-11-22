@@ -77,6 +77,10 @@ _LOW = re.compile(r"\b(towering|loom\w*|looked down|looking down|overlook\w*|dom
 _SAYS = re.compile(r"^- (?P<who>.+?) says(?: to (?P<to>[^:]+))?:", re.M)
 
 
+#: Sentence boundary that does not cut after an honorific's full stop. "Mr. Bennet stands by a window" was cut to the sentence "Mr."
+#: by a plain `(?<=[.!?])\s+` split, so a close-up kept "Mr." and lost the paragraph (P&P ch1: the prompt read "Mr. Set: ...").
+SENTENCE_SPLIT = re.compile(r"(?<=[.!?])(?<!\bMr\.)(?<!\bMrs\.)(?<!\bMs\.)(?<!\bDr\.)(?<!\bSt\.)\s+")
+
 _QUOTED = re.compile(r'"[^"]*"|\u201c[^\u201d]*\u201d')
 
 
@@ -87,7 +91,7 @@ def _unquoted(text: str) -> str:
 
 def _first_sentence(text: str) -> str:
     """The first sentence, plus the second when the first is a fragment of four words or fewer ("A gun? A revolver?")."""
-    parts = re.split(r"(?<=[.!?])\s+", text.strip())
+    parts = SENTENCE_SPLIT.split(text.strip())
     if not parts or not parts[0]:
         return ""
     return " ".join(parts[:2]) if len(parts[0].split()) <= 4 and len(parts) > 1 else parts[0]
@@ -127,6 +131,18 @@ def _other_speaker(spoken: str, lead: str) -> str:
             return "the speaker"
         if lead and who.lower() != lead.lower():
             return who
+    return ""
+
+
+def _addressee(spoken: str, lead: str, names: list[str]) -> str:
+    """Who the lead speaks to when the line says it and that person is in the cast, '' otherwise.
+
+    The speaker is the lead (`panels.py` casts the speaker of a line first); the one spoken to may stand back-turned in the
+    foreground of an over-the-shoulder shot while the speaker faces the viewer (P&P ch1: the speaker must be the one drawn)."""
+    for m in _SAYS.finditer(spoken or ""):
+        to = (m.group("to") or "").strip()
+        if lead and m.group("who").strip().lower() == lead.lower() and to and to.lower() != lead.lower():
+            return next((n for n in names if n.lower() == to.lower()), "")
     return ""
 
 
@@ -210,6 +226,8 @@ def plan_framing(
         chosen = Framing("close", focus="prop", subject=obj, reason=f"the text centres the {obj}")
     elif others_present and (other := _other_speaker(spoken, lead)) and not crowd and not crowd_in_scene and not (last and last.focus == "over-shoulder"):
         chosen = Framing("medium", focus="over-shoulder", subject=other, reason="someone else speaks to the lead")
+    elif others_present and (to := _addressee(spoken, lead, names)) and not crowd and not crowd_in_scene and not (last and last.focus == "over-shoulder"):
+        chosen = Framing("medium", focus="over-shoulder", subject=to, reason=f"the lead speaks to {to}")
     elif _PEAK.search(text) or _PEAK_EXPRESSION.search(expression):
         chosen = Framing("close", reason="emotional peak")
     elif not _PERSON_WORDS.search(text) and not any(n.lower() in text.lower() for n in names) and _PLACE.search(text):
@@ -266,9 +284,10 @@ _ANGLE_TEXT = {
 }
 
 
-def framing_sentence(f: Framing, lead: str, *, people: bool = True, alone: bool = False) -> str:
+def framing_sentence(f: Framing, lead: str, *, people: bool = True, alone: bool = False, desk: str = "") -> str:
     """One plain sentence naming the shot, written for a language-model text encoder (Z-Image has no CFG: what comes first and
-    plainly is what holds)."""
+    plainly is what holds). `desk` is what lies on a desk in this world (`genre.desk_objects`): "the desk and its objects" drew a
+    modern computer keyboard in 7 panels of a Regency chapter, so a period world names its own objects."""
     who = lead or "the character"
     angle = _ANGLE_TEXT.get(f.angle, "")
     if f.focus == "prop":
@@ -302,8 +321,9 @@ def framing_sentence(f: Framing, lead: str, *, people: bool = True, alone: bool 
                 "below, wind in his hair.")
     if f.focus == "down" and alone:
         # Round 7 A/B: drew the man in three-quarter back view bent over the desk, one person (3 of 3), unlike round 6's "from behind".
+        below = f"the desk below with {desk} on it" if desk else "the desk and its objects below"
         return (f"High over-the-shoulder view looking down: {who} sits alone, head bent over what lies on the desk in front of him, "
-                "only the back of his head and shoulders at the bottom of the frame and the desk and its objects below, the rest of "
+                f"only the back of his head and shoulders at the bottom of the frame and {below}, the rest of "
                 "the room empty and quiet.")
     if f.focus == "down":
         f = Framing(f.size, f.angle, "topdown", f.subject, f.reason)
@@ -364,12 +384,12 @@ def staging_set(staging: str) -> str:
     return " ".join(m.group(1).lower().split()) if m else ""
 
 
-def apply_framing(direction: object, f: Framing, lead: str, *, alone: bool = False) -> object:
+def apply_framing(direction: object, f: Framing, lead: str, *, alone: bool = False, desk: str = "") -> object:
     """The director's `PanelDirection` with this framing written into it (`shot`, `camera_angle`, `frame`, `frame_focus`).
     A copy: the cached direction stays what the model said, so a change of rule re-frames without re-asking."""
     return direction.model_copy(update={  # type: ignore[attr-defined]
         "shot": f.size, "camera_angle": f.angle if f.angle != "over-the-shoulder" else "eye-level",
-        "frame": framing_sentence(f, lead, people=f.focus != "prop", alone=alone), "frame_focus": f.focus,
+        "frame": framing_sentence(f, lead, people=f.focus != "prop", alone=alone, desk=desk), "frame_focus": f.focus,
         "frame_subject": f.subject if f.focus == "prop" else "",
     })
 
@@ -384,7 +404,7 @@ def crop_composition(text: str, focus: str) -> str:
     sentence. A close-up whose paragraph still said "stands amidst the carnage, the battlefield littered with corpses" drew a huge
     head on a small full body (a chibi, 3 of 3 RI close-ups in the first round-3 render); an eye crop keeps only eye and gaze
     sentences, or nothing."""
-    sentences = [s for s in re.split(r"(?<=[.!?])\s+", text.strip()) if s]
+    sentences = [s for s in SENTENCE_SPLIT.split(text.strip()) if s]
     if focus == "eyes":
         return " ".join(s for s in sentences if re.search(r"\b(eyes?|gaze|stares?|stared|glare\w*|brows?)\b", s, re.I))
     keep = [s for s in sentences if _FACE_SENTENCE.search(s)]

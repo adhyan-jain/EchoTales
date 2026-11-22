@@ -32,6 +32,7 @@ import re
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
+from echotales.pipeline.render.framing import SENTENCE_SPLIT
 from echotales.pipeline.spans.scene import _MOB_ROLE_NOUNS
 from pydantic import BaseModel, Field
 
@@ -39,6 +40,17 @@ if TYPE_CHECKING:
     from echotales.core.store import Store
 
 log = logging.getLogger(__name__)
+
+
+_BARE_TITLES = frozenset({"mr", "mrs", "ms", "miss", "mister", "madam", "madame", "dr", "sir", "lady", "lord"})
+
+
+def name_key(name: str) -> str:
+    """A name compared without its case, honorific full stops, spacing or possessive.
+
+    P&P e2e 2026-11-22: the director wrote "Mr Bennet" for the cast member "Mr. Bennet", and every cast check compared the raw
+    strings, so he was dropped as outside CAST, stripped as out-of-scene and written into the paragraph as "a figure"."""
+    return " ".join(re.sub(r"[’']s\b", "", name).replace(".", " ").casefold().split())
 
 #: **Written for 199 chapters, not for one.** Every rule below replaces a
 #: failure that was previously patched downstream in `panels.py`'s negative
@@ -681,7 +693,7 @@ def scene_setting_note(passages: list[str], *, max_chars: int = 420) -> str:
     scored: list[tuple[int, int, str]] = []
     order = 0
     for passage in passages:
-        for sentence in re.split(r"(?<=[.!?])\s+", passage.strip()):
+        for sentence in SENTENCE_SPLIT.split(passage.strip()):
             words = set(re.findall(r"[a-z]+", sentence.lower()))
             score = len(words & _PLACE_WORDS) + len(words & _TIME_WORDS)
             if score and len(sentence) > 12:
@@ -997,9 +1009,9 @@ def _validate_direction(
     # Director v2 lists: the same "cast-only names, never invent people" rules the prompt states for action/layout. A
     # name outside CAST would otherwise reach `brief_from_direction` as an extra, unresolvable figure.
     if d.characters:
-        cast_keys = {n.casefold() for n in cast}
-        kept = [c for c in d.characters if c.name.casefold() in cast_keys or any(
-            c.name.casefold() in k.split() for k in cast_keys)]
+        cast_keys = {name_key(n) for n in cast}
+        kept = [c for c in d.characters if name_key(c.name) in cast_keys or any(
+            name_key(c.name) in k.split() for k in cast_keys)]
         if len(kept) != len(d.characters):
             log.warning("director listed characters outside CAST: %r -- dropped",
                         [c.name for c in d.characters if c not in kept])
@@ -1096,7 +1108,7 @@ def _validate_composition(
             rejects.append("crowd erased")
             text = ""
         else:
-            cast_names = {n.lower() for n in cast}
+            cast_names = {name_key(n) for n in cast}
             cast_words = {w for n in cast_names for w in n.split()}
             known: dict[str, str | None] = {}
             if store is not None and novel_id:
@@ -1104,7 +1116,7 @@ def _validate_composition(
                     if entity.canonical_label:
                         known[entity.canonical_label.lower()] = entity.id
             for name in sorted(known, key=len, reverse=True):
-                if name in cast_names or not re.search(rf"\b{re.escape(name)}\b", text, re.IGNORECASE):
+                if name_key(name) in cast_names or not re.search(rf"\b{re.escape(name)}\b", text, re.IGNORECASE):
                     continue
                 rejects.append(f"out of cast:{name}")
                 text = re.sub(rf"\b{re.escape(name)}\b", "a figure", text, flags=re.IGNORECASE)
@@ -1112,7 +1124,7 @@ def _validate_composition(
 
             for span in sorted(HeuristicDetector().detect(text), key=lambda s: -s.start):
                 bare = re.sub(r"[’']s$", "", span.text)
-                low = bare.lower()
+                low = name_key(bare)
                 words = low.split()
                 if low in cast_names or all(w in cast_words or w in source for w in words):
                     continue
@@ -1205,7 +1217,7 @@ def drop_place_conflicts(text: str, bad: list[str]) -> str:
         return text
     cue = re.compile(r"\b(?:" + "|".join(re.escape(b) for b in bad) + r")s?\b", re.I)
     out = []
-    for sent in re.split(r"(?<=[.!?])\s+", text.strip()):
+    for sent in SENTENCE_SPLIT.split(text.strip()):
         if cue.search(sent):
             sent = _drop_segments(sent, cue)
         if sent:
@@ -1222,7 +1234,7 @@ def scrub_unstated(text: str, *, allowed: str, lead: str, sky: bool = True) -> t
     never touched, and with no lead named a figure is left alone (it may be the CAST-free scenery shot's own subject)."""
     rejects: list[str] = []
     low_allowed = allowed.lower()
-    sentences = re.split(r"(?<=[.!?])\s+", text.strip())
+    sentences = SENTENCE_SPLIT.split(text.strip())
     if lead and not re.search(r"\b(?:figure|silhouette|stranger|shape)\b", low_allowed):
         fixed: list[str] = []
         for sent in sentences:
@@ -1282,7 +1294,7 @@ def _validate_character_names(
     # `cast` maps a present character's *name* to their appearance clause
     # (see `build_prompt`) -- there is no entity id here, so the cast check
     # below is by name, not id.
-    cast_names = {name.lower() for name in cast}
+    cast_names = {name_key(name) for name in cast}
 
     gazetteer = Gazetteer()
     for entity in store.all_selves(novel_id):
@@ -1297,7 +1309,7 @@ def _validate_character_names(
 
     known_hits = gazetteer.find(text_to_scan)
     for hit in known_hits:
-        if hit.surface.lower() in cast_names:
+        if name_key(hit.surface) in cast_names:
             continue  # Named character is in the cast for this beat -- keep it.
 
         entity = store.get_self(hit.target_id) if hit.target_id else None
@@ -1323,7 +1335,9 @@ def _validate_character_names(
         # as part of the span; compare the bare name so a cast/known member
         # referenced possessively isn't misread as an unrecognised one.
         bare = re.sub(r"[’']s$", "", span.text)
-        if bare.lower() in cast_names or bare in known_surfaces:
+        # A lone title is the detector cutting "Mr. and Mrs. Bennet" in two, not a name the director made up; stripping it wrote
+        # "a figure. and a figures. Bennet" into the action (P&P e2e, rerun 2026-11-22).
+        if name_key(bare) in cast_names or bare in known_surfaces or name_key(bare) in _BARE_TITLES:
             continue
         log.warning("director fabricated character name: %r -- stripped", span.text)
         _strip(span.text)

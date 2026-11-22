@@ -67,6 +67,23 @@ def test_over_the_shoulder_needs_someone_else_in_the_scene() -> None:
     assert out[1].focus != "over-shoulder"
 
 
+def test_the_lead_speaking_to_someone_faces_the_viewer_and_the_listener_is_the_back_turned_foreground() -> None:
+    """P&P ch1: the speaker is the lead and is in the frame facing the camera; the one spoken to may be back-turned."""
+    spoken = "- Mrs. Bennet says to Mr. Bennet: have you heard that Netherfield Park is let at last"
+    names = ["Mrs. Bennet", "Mr. Bennet"]
+    out = _run([("x", {}), ('"Have you heard?"', {"spoken": spoken}), ('"Have you heard?"', {"spoken": spoken})], names=names)
+    assert out[1].focus == "over-shoulder" and out[1].subject == "Mr. Bennet"
+    sentence = fr.framing_sentence(out[1], "Mrs. Bennet")
+    assert "Mr. Bennet at the edge of the frame" in sentence and "Mrs. Bennet large in the middle" in sentence
+    assert out[2].focus != "over-shoulder", "never two over-the-shoulder shots in a row"
+
+
+def test_a_line_said_to_nobody_in_the_cast_is_not_an_over_the_shoulder_shot() -> None:
+    spoken = "- Mrs. Bennet says: have you heard"
+    out = _run([("x", {}), ('"Have you heard?"', {"spoken": spoken})], names=["Mrs. Bennet", "Mr. Bennet"])
+    assert out[1].focus != "over-shoulder"
+
+
 def test_a_weapon_insert_may_follow_another_insert_but_a_lamp_may_not() -> None:
     out = _run([("x", {}), ("The lamp had a classical Western style.", {}), ("A gun? A revolver?", {})])
     assert [o.focus for o in out[1:]] == ["prop", "prop"] and out[2].subject == "revolver"
@@ -116,3 +133,10 @@ def test_the_first_panel_of_a_mid_chapter_slice_is_not_a_chapter_opening() -> No
     f = fr.plan_framing("At the very same moment, a pair of clear eyes quietly looked at the lights.", names=NAMES,
                         opens_chapter=False, state=state)
     assert f.focus == "eyes"
+
+
+def test_a_close_up_crop_does_not_cut_the_paragraph_at_an_honorific_full_stop() -> None:
+    """P&P ch1: "Mr. Bennet stands by a window, his gaze fixed" was cut to the sentence "Mr." and the close-up prompt read "Mr. Set:"."""
+    text = "Mr. Bennet stands by a window, his gaze fixed on the street. The room is otherwise empty."
+    assert fr.crop_composition(text, "") == "Mr. Bennet stands by a window, his gaze fixed on the street."
+    assert fr.SENTENCE_SPLIT.split("Mrs. Bennet sat. Dr. Who left! Ms. Lee came?") == ["Mrs. Bennet sat.", "Dr. Who left!", "Ms. Lee came?"]

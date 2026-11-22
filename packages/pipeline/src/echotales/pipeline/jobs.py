@@ -728,24 +728,41 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
         if (bad := look_error(look)) is not None:
             raise ValueError(bad)
         version = _studio_version(Path(out_dir), wanted, engine_name, density, look)
+
+        def _direct_and_draw() -> Any:
+            # The CLI's own path (`commands.py::cmd_render`): the panel director reads each scene and the image engine draws from
+            # what it wrote. This job passed no director client at all, so every panel of a Studio-queued P&P render said "no
+            # director client" and was drawn from the bare persona sentence: 32 panels, 30 byte-identical (e2e 2026-11-22). The
+            # stub never touches a model, so it builds none; `no_director` is the CLI's `--no-director`.
+            from echotales.pipeline.commands import _build_client, render_panels_directed
+            from echotales.pipeline.config import get_settings
+            from echotales.pipeline.llm.tasks import Task
+
+            director = None
+            if engine_name != "stub" and not params.get("no_director"):
+                director = _build_client(store, tasks={Task.PANEL_DIRECTION})
+            tag = f"ch{chapters[0]:g}" if chapters else "all"
+            return render_panels_directed(
+                novel_id, store,
+                image_engine=get_engine(engine_name),
+                director_client=director,
+                two_phase=director is not None and (get_settings().render_direction_first or _policy().force_sequential),
+                out_dir=out_dir,
+                cache_path=Path(out_dir) / tag / version / "prompt_cache.json",
+                render_fn=render_panels, engine_factory=get_engine, image_engine_name=engine_name,
+                chapters=chapters,
+                seed=params.get("seed", 20260812),
+                max_panels=max_panels,
+                version=version,
+                density=density,
+                look=look,
+            )
+
         try:
             run_stage(
                 store, run_id=pipeline_run.run_id, stage_name="render",
                 input_digest=input_digest,
-                fn=lambda: _render_and_check(
-                    lambda: render_panels(
-                        novel_id, store,
-                        out_dir=out_dir,
-                        engine=get_engine(engine_name),
-                        chapters=chapters,
-                        seed=params.get("seed", 20260812),
-                        max_panels=max_panels,
-                        version=version,
-                        density=density,
-                        look=look,
-                    ),
-                    Path(out_dir), wanted, version,
-                ),
+                fn=lambda: _render_and_check(_direct_and_draw, Path(out_dir), wanted, version),
             )
         finally:
             # Also after a partial render: the version folder exists and the convention wants its VERSIONS.md line.
