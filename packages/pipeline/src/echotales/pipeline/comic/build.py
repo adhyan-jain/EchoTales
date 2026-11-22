@@ -93,7 +93,11 @@ def camera_window(box: tuple[int, int, int, int], aspect: float, zoom: float, pa
         cx += pan * spare_x
     else:
         cy += pan * spare_y
-    return cx - cw / 2, cy - ch / 2, cx + cw / 2, cy + ch / 2
+    # Clamp: `cx + pan * spare_x - cw / 2` is mathematically >= x0 but the float sum lands at about -1e-14 for a
+    # full-width panel at x0 = 0, and PIL's `resize(box=...)` refuses a negative offset ("box offset can't be
+    # negative"): the LotNB ch100 webtoon build died on exactly that at the first pan across a page-wide panel.
+    left, top = max(float(x0), cx - cw / 2), max(float(y0), cy - ch / 2)
+    return left, top, min(float(x1), cx + cw / 2), min(float(y1), cy + ch / 2)
 
 
 def _font(size: int):
@@ -231,11 +235,14 @@ def build_episode(
     srt = out_dir / video.with_suffix(".srt").name
     srt.write_text(srt_text(cues), encoding="utf-8")
 
+    # Encode to a temporary name and rename on success so a failed build never leaves a finished-looking, truncated
+    # episode.mp4 in the version folder.
+    partial = video.with_name(f"{video.stem}.partial{video.suffix}")
     cmd = ["ffmpeg", "-y", "-loglevel", "error", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{size[0]}x{size[1]}",
            "-r", str(fps), "-i", "-", "-i", str(wav), "-i", str(srt), "-map", "0:v", "-map", "1:a", "-map", "2:s",
            *h264_args(), "-c:a", "aac", "-b:a", "160k", "-c:s", "mov_text",
            "-metadata", f"title={title}", "-metadata", f"comment={credit}", "-metadata", f"copyright={credit}",
-           "-t", f"{total:.3f}", str(video)]
+           "-t", f"{total:.3f}", str(partial)]
     proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
     assert proc.stdin is not None
     try:
@@ -247,10 +254,16 @@ def build_episode(
                 proc.stdin.write(frame.tobytes())
         for _ in range(int(CREDIT_SECONDS * fps)):
             proc.stdin.write(end_card.tobytes())
-    finally:
+    except BaseException:
         proc.stdin.close()
-        rc = proc.wait()
+        proc.wait()
+        partial.unlink(missing_ok=True)
+        raise
+    proc.stdin.close()
+    rc = proc.wait()
     if rc != 0:
+        partial.unlink(missing_ok=True)
         raise RuntimeError(f"ffmpeg failed with exit code {rc}")
+    partial.replace(video)
     wav.unlink(missing_ok=True)
     return BuildResult(video, srt, total, len(shots), cues)
