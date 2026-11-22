@@ -112,6 +112,19 @@ def test_title_and_surname_suggests_the_family_members_who_share_the_surname() -
     assert not any({"t:mr", "t:mrs", "t:bing"} & set(p) and "t:miss" in p for p in pairs)
 
 
+def test_only_miss_stands_for_a_daughter_and_another_family_does_not_claim_her() -> None:
+    """Real-data regression: "Mr. Bennet" and "Lady Lucas" were offered five daughters each, and Jane a Lucas."""
+    store = _store(
+        {"t:mr": "Mr. Bennet", "t:mrs": "Mrs. Bennet", "t:miss": "Miss Bennet", "t:jane": "Jane",
+         "t:lady": "Lady Lucas", "t:maria": "Maria Lucas", "t:kay": "Kay"},
+        [("t:mr", 1, 0), ("t:mrs", 2, 1), ("t:jane", 1, 2), ("t:jane", 2, 3), ("t:miss", 3, 6),
+         ("t:lady", 3, 0), ("t:maria", 3, 1), ("t:kay", 3, 2)],
+    )
+    merge_suggest.sync(store, NOVEL)
+    assert {i.candidates[0]["from_id"] for i in _items(store)} == {"t:miss"}
+    assert _pairs(store) == {frozenset({"t:miss", "t:jane"})}
+
+
 def test_a_title_with_no_known_family_member_suggests_nothing() -> None:
     store = _store({"t:miss": "Miss Kay", "t:jane": "Jane"}, [("t:miss", 1, 0), ("t:jane", 1, 1)])
     merge_suggest.sync(store, NOVEL)

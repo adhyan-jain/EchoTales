@@ -12,8 +12,10 @@ Two cues, both cheap and both deliberately narrow:
   Elizabeth), with compatible surnames and genders, and the two never named in the same paragraph. A paragraph that
   names both is the author telling two people apart ("Elizabeth smiled at Lizzy" would be two people).
 - **title + surname**: "Miss Bennet" with no given name, where other entities carry the surname ("Mr. Bennet") and
-  some untitled family-member candidates share chapters with them (a name that only ever appears away from the
-  family is not a candidate: "Bingley" shared a chapter with "Miss Bennet" and no chapter with the Bennets). Several candidates are listed, ranked by shared
+  some untitled candidates share chapters with that family more than with any other family the book names (a name
+  that only ever appears away from the family is not a candidate: "Bingley" shared a chapter with "Miss Bennet" and
+  none with the Bennets; the Lucas family's chapter did not make "Jane" a Lucas). "Miss"/"Ms" only: a "Mrs." is a
+  wife and "Mr. Bennet" is the family itself, which an unfiltered first version offered a list of daughters for. Several candidates are listed, ranked by shared
   chapters; the reviewer picks, or dismisses.
 
 Precision over recall (non-negotiable 9): these are suggestions only. Nothing here writes a correction, rebinds a
@@ -145,15 +147,24 @@ def suggestions(store: Store, novel_id: str) -> list[ReviewItem]:
                 [(long_, label[long_], f"{label[short]!r} reads as a short form of {label[long_]!r}")],
             ))
 
-    # title + surname with no given name: "Miss Bennet"
+    # "Miss Bennet": the one title + surname shape that stands for a given-name entity (a "Mrs." is a wife, a "Mr." a
+    # man, and "Mr. Bennet" is the family itself)
+    surname_of = {y: parsed[y][2].casefold() for y in ids if parsed[y][2]}
     for x in ids:
         title, given, surname = parsed[x]
-        if title is None or given or not surname or _TITLES.get(title) is None:
+        if title not in ("miss", "ms") or given or not surname:
             continue
-        family = [y for y in ids if y != x and parsed[y][2] and parsed[y][2].casefold() == surname.casefold()]
+        family = [y for y in ids if y != x and surname_of.get(y) == surname.casefold()]
         if not family:
             continue
-        family_chapters = set().union(*(chapters.get(y, set()) for y in family))
+
+        def shared_with(y: str, members: list[str]) -> int:
+            return len(chapters.get(y, set()) & set().union(*(chapters.get(m, set()) for m in members)))
+
+        others: dict[str, list[str]] = {}
+        for y, name in surname_of.items():
+            if name != surname.casefold() and y != x:
+                others.setdefault(name, []).append(y)
         scored: list[tuple[int, str]] = []
         for y in ids:
             ty, gy, sy = parsed[y]
@@ -162,9 +173,10 @@ def suggestions(store: Store, novel_id: str) -> list[ReviewItem]:
             side = _gender_of(store, y, None)
             if side and side != _TITLES[title]:
                 continue
-            shared = chapters.get(y, set()) & family_chapters
-            if shared:
-                scored.append((len(shared), y))
+            n = shared_with(y, family)
+            # belongs to this family rather than another one the book also names
+            if n and all(n >= shared_with(y, members) for members in others.values()):
+                scored.append((n, y))
         scored.sort(key=lambda p: (-p[0], p[1]))
         if scored:
             out.append(_build(
