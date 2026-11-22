@@ -24,6 +24,7 @@ from echotales.core.enums import OBSERVER_READER, AssertedBy, SpanType, TargetKi
 from echotales.core.interval import FuzzyInterval
 from echotales.core.models import Attribute, DiscoursePosition, Span
 from echotales.core.store import Store
+from echotales.pipeline.persona.first_names import name_gender_prior
 from echotales.pipeline.persona.split import bodies_of, standing_values
 from echotales.pipeline.persona.traits import anchored_window
 from pydantic import BaseModel, Field
@@ -403,9 +404,26 @@ def gender_lean(store: Store, novel_id: str, target_ids: set[str]) -> dict[str, 
 
     Voice casting uses it to stay on the right side of a character the graph left `unknown`: P&P e2e 2026-11-22 cast
     Lydia a recorded-male voice, gender-blind, while the narration says "she". It is a steer, not a fact: nothing
-    is written to the graph, and a single disagreeing pronoun cancels it (precision over recall).
+    is written to the graph, and a single disagreeing pronoun cancels it (precision over recall). A character with
+    no pronoun evidence at all falls back to its first name (`gender_lean_basis`).
+    """
+    return {t: side for t, (side, _) in gender_lean_basis(store, novel_id, target_ids).items()}
+
+
+def gender_lean_basis(store: Store, novel_id: str, target_ids: set[str]) -> dict[str, tuple[str, str]]:
+    """`gender_lean` with the reason: `(side, "pronoun")` or `(side, "name prior")`.
+
+    The name prior (`first_names.py`, US public birth records) is used only for a character in `target_ids` (no
+    recorded gender) with no own-pronoun vote at all: P&P ch1-3 Kitty, Lydia and Maria Lucas have no pronoun after
+    their names, and Lydia was cast a male voice. Any pronoun vote, even a conflicting pair, keeps the prior out:
+    mixed evidence means the text is the better witness than a name.
     """
     if not target_ids:
         return {}
     votes = _gather(store, novel_id, set(target_ids))[4]
-    return {t: side for t, v in votes.items() if (side := lean_from_votes(v))}
+    out = {t: (side, "pronoun") for t, v in votes.items() if (side := lean_from_votes(v))}
+    labels = {e.id: e.canonical_label for e in store.all_selves(novel_id) if e.id in target_ids}
+    for t, label in labels.items():
+        if t not in out and not votes.get(t) and (side := name_gender_prior(label)):
+            out[t] = (side, "name prior")
+    return out

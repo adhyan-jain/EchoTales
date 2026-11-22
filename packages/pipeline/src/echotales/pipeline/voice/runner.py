@@ -27,6 +27,7 @@ import json
 import random
 import re
 import wave
+import zlib
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
@@ -42,7 +43,7 @@ from echotales.pipeline.spans.delivery import (
     dominant_polarity,
     extract_delivery_markers,
 )
-from echotales.pipeline.voice.bank import VoiceBank, pick_mob_voice
+from echotales.pipeline.voice.bank import VoiceBank
 from echotales.pipeline.voice.casting import DEFAULT_SEED, cast_voices
 from echotales.pipeline.voice.delivery import pace_text, settings_for
 from echotales.pipeline.voice.engine import SynthesisRequest, TTSEngine, get_engine
@@ -196,6 +197,29 @@ def _narrator_voice(bank: VoiceBank, preferred: str = "") -> str:
     return pool[0].speaker_id if pool else "narrator"
 
 
+#: Anonymous slots draw from this many voices per gender (the first by speaker id), so a book's unnamed speakers
+#: reuse a small, recognisable set instead of consuming the bank.
+_SLOT_POOL = 4
+
+
+def _slot_voice(bank: VoiceBank, slot_id: str, gender: str | None, narrator: str) -> str:
+    """The voice of an anonymous/epithet slot: deterministic in the slot id, independent of every other character.
+
+    Slot ids end in a per-scene number (`t:anon:1:s2:1`), so consecutive numbers in a scene step through the pool
+    (distinct voices, up to `_SLOT_POOL` per gender) and the rest of the id shifts a different scene's numbering
+    elsewhere. With no gender evidence the id picks the side (an even split, not the bank's female-heavy population).
+    Never the narrator: a slot sounding like narration was the original defect this guards.
+    """
+    head, _, tail = slot_id.rpartition(":")
+    n = zlib.crc32(head.encode()) + int(tail) if tail.isdigit() else zlib.crc32(slot_id.encode())
+    side = gender if gender in ("male", "female") else ("male", "female")[n % 2]
+    others = [v for v in bank.voices if v.speaker_id != narrator]
+    pool = [v for v in bank.nearest_bucket(side, "adult") if v.speaker_id != narrator]
+    pool = pool or [v for v in others if v.gender == side] or others
+    pool = sorted(pool, key=lambda v: v.speaker_id)[:_SLOT_POOL]
+    return pool[n % len(pool)].speaker_id if pool else narrator
+
+
 #: Below this attribution confidence a line is not voiced as the named
 #: character. The contextual-LLM tier (confidence 0.65) was spot-checked at
 #: 12 right / 16 wrong on RI ch1-3 (docs/EVOLUTION.md 4.87/4.88): voicing its
@@ -253,16 +277,18 @@ def render_novel(
     # Unknown-gender characters whose narration leans one way are cast from that side only (P&P 2026-11-22: Lydia
     # got a recorded-male voice), and a character keeps the voice an earlier run gave it unless its gender or age
     # moved it out of the pool or the bank lost the voice (Mr. Bennet changed voice after a bible re-lock).
-    from echotales.pipeline.persona.gender import gender_lean
+    from echotales.pipeline.persona.gender import gender_lean_basis
 
     unknown = {t for t, p in profiles.items() if p.gender not in ("male", "female")}
     previous = {
         row["self_id"]: row["speaker_id"]
         for row in store.conn.execute("SELECT self_id, speaker_id FROM voice_profile WHERE novel_id=?", (novel_id,))
     }
+    basis = gender_lean_basis(store, novel_id, unknown)
     assignments, casting = cast_voices(
         novel_id, profiles, bank, store=store, seed=seed, exclude=frozenset({narrator}),
-        previous=previous, lean=gender_lean(store, novel_id, unknown),
+        previous=previous, lean={t: side for t, (side, _) in basis.items()},
+        lean_basis={t: how for t, (_, how) in basis.items()},
     )
     _remember_casting(store, novel_id, assignments, profiles)
     _apply_voice_overrides(store, assignments, bank)
@@ -421,47 +447,11 @@ def render_novel(
                 span.attribution_method is AttributionMethod.HUMAN and ":anon:" in speaker_id
             ):
                 # The second clause is a reviewer's anonymous-slot pick, which `corrections.py` now marks HUMAN.
+                # A slot's voice is a pure function of its id, its pronoun-evidenced gender and the bank, never of
+                # who else is cast: it was drawn from the shared rng around `chapter_voices_used`, so Unknown
+                # Speaker 3 changed voice whenever another character's pool moved (P&P e2e 2026-11-22, defect 15).
                 if speaker_id not in anon_voices:
-                    # A genuinely unresolved gender is coin-flipped, not
-                    # left to the bank's raw population. VCTK is 63 female
-                    # / 47 male overall -- passing "unknown" straight to
-                    # `nearest_bucket` falls back to every adult voice
-                    # regardless of gender, and an `rng.choice` over that
-                    # mixed pool is implicitly weighted toward whichever
-                    # gender the corpus happens to have more of. That is
-                    # backwards: a speaker whose gender the text simply
-                    # never states should get even odds, not odds shaped by
-                    # a recording corpus's own imbalance. Real pronoun
-                    # evidence (`slot_gender` resolving to an actual value)
-                    # still wins outright -- this only fires when the text
-                    # gave no signal at all.
-                    gender = slot_gender(speaker_id) or rng.choice(("male", "female"))
-                    # Prefer a voice nobody else in this chapter is already
-                    # using -- narrator, a named character, or another
-                    # anonymous/epithet slot -- so "no voice repeated in a
-                    # chapter" (HANDOFF 4.37 item 3) holds generally, not
-                    # just for the one narrator collision caught by ear.
-                    # `male:adult` is only 6 speakers wide in VCTK and one RI
-                    # chapter can need all 6 at once (narrator, a named
-                    # principal, and 4+ anonymous/epithet slots) -- widen to
-                    # the same gender at *any* age before accepting a repeat;
-                    # a decade-off voice is a far smaller compromise than two
-                    # different people sounding identical.
-                    pool = bank.nearest_bucket(gender, "adult")
-                    candidates = [v for v in pool if v.speaker_id not in chapter_voices_used]
-                    if not candidates and gender in ("male", "female"):
-                        candidates = [
-                            v for v in bank.voices
-                            if v.gender == gender and v.speaker_id not in chapter_voices_used
-                        ]
-                    if not candidates:
-                        candidates = [v for v in pool if v.speaker_id != narrator]
-                    picked = (
-                        rng.choice(candidates)
-                        if candidates
-                        else pick_mob_voice(bank, gender, "adult", rng=rng)
-                    )
-                    anon_voices[speaker_id] = picked.speaker_id if picked else narrator
+                    anon_voices[speaker_id] = _slot_voice(bank, speaker_id, slot_gender(speaker_id), narrator)
                     chapter_voices_used.add(anon_voices[speaker_id])
                 voice = anon_voices[speaker_id]
                 if span.attribution_method is AttributionMethod.EPITHET_SLOT:
@@ -504,13 +494,8 @@ def render_novel(
                 inferred, _ = gender_from_pronouns(local)
                 key = f"unknown:{inferred or 'unknown'}"
                 if key not in anon_voices:
-                    gender = inferred or rng.choice(("male", "female"))
-                    pool = bank.nearest_bucket(gender, "adult")
-                    candidates = [v for v in pool if v.speaker_id not in chapter_voices_used]
-                    picked = (
-                        rng.choice(candidates) if candidates else pick_mob_voice(bank, gender, "adult", rng=rng)
-                    )
-                    anon_voices[key] = picked.speaker_id if picked else narrator
+                    # Same rule as a slot: a function of the key alone, never the narrator, never moved by the cast.
+                    anon_voices[key] = _slot_voice(bank, key, inferred, narrator)
                     chapter_voices_used.add(anon_voices[key])
                 voice = anon_voices[key]
                 label = "Unknown speaker"

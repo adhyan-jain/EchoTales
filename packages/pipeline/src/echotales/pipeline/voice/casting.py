@@ -62,6 +62,8 @@ class CastingReport:
     unknown_gender: list[str] = field(default_factory=list)
     #: label -> gender the text leans to, for characters whose gender is not recorded: cast from that side only.
     leaning: dict[str, str] = field(default_factory=dict)
+    #: Labels among `leaning` whose side came from the first name alone ("name prior"), not from pronouns in the text.
+    name_prior: list[str] = field(default_factory=list)
     #: Labels that kept the voice a previous run gave them (`previous` in `cast_voices`).
     kept: list[str] = field(default_factory=list)
 
@@ -86,7 +88,15 @@ class CastingReport:
             lines.append(
                 f"  {len(self.leaning)} characters have no recorded gender but the text leans one way, so only that"
                 f" side's voices were offered: "
-                + ", ".join(f"{label} ({side})" for label, side in list(self.leaning.items())[:8])
+                + ", ".join(
+                    f"{label} ({side}{', name prior' if label in self.name_prior else ''})"
+                    for label, side in list(self.leaning.items())[:8]
+                )
+            )
+        if self.name_prior:
+            lines.append(
+                f"  name prior: {', '.join(self.name_prior[:8])} -- first name only (public birth records), no pronoun"
+                f" in the text; a steer for casting, not a recorded gender"
             )
         if self.kept:
             lines.append(f"  {len(self.kept)} characters kept the voice an earlier run gave them")
@@ -129,6 +139,7 @@ def cast_voices(
     exclude: frozenset[str] = frozenset(),
     previous: dict[str, str] | None = None,
     lean: dict[str, str] | None = None,
+    lean_basis: dict[str, str] | None = None,
 ) -> tuple[dict[str, VoiceAssignment], CastingReport]:
     """Colour the cast within buckets and return one assignment per character.
 
@@ -142,6 +153,7 @@ def cast_voices(
 
     `lean` maps a character with no recorded gender to the side the text leans to; its candidates come from that
     side only, because a male voice for a character whose narration says "she" is worse than a neutral pool.
+    `lean_basis` maps the same ids to why ("pronoun" or "name prior") so the report can say which.
     """
     report = CastingReport(novel_id=novel_id)
     rng = random.Random(seed)
@@ -158,6 +170,12 @@ def cast_voices(
     used_in_bucket: dict[str, dict[str, str]] = {}
     previous = previous or {}
     lean = lean or {}
+    lean_basis = lean_basis or {}
+
+    def note_lean(profile: TraitProfile, side: str) -> None:
+        report.leaning[profile.label] = side
+        if lean_basis.get(profile.target_id) == "name prior":
+            report.name_prior.append(profile.label)
 
     def candidates_for(profile: TraitProfile) -> tuple[list[BankVoice], str]:
         side = profile.gender if profile.gender in ("male", "female") else lean.get(profile.target_id, profile.gender)
@@ -184,7 +202,7 @@ def cast_voices(
         pinned.append(profile.target_id)
         if profile.gender not in ("male", "female"):
             if side in ("male", "female"):
-                report.leaning[profile.label] = side
+                note_lean(profile, side)
             else:
                 report.unknown_gender.append(profile.label)
     for i, a in enumerate(pinned):
@@ -203,7 +221,7 @@ def cast_voices(
         taken = used_in_bucket.setdefault(bucket, {})
         if profile.gender not in ("male", "female"):
             if side in ("male", "female"):
-                report.leaning[profile.label] = side
+                note_lean(profile, side)
             else:
                 report.unknown_gender.append(profile.label)
 
