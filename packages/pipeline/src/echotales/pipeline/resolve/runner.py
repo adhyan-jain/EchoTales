@@ -129,6 +129,8 @@ class ResolveReport:
     #: (non-negotiable 7: the escalation rate is a reported metric).
     escalated: int = 0
     review_items_closed: int = 0
+    #: Open `merge_suggestion` review items after this run (likely-same-person pairs; nothing is merged for them).
+    merge_suggestions: int = 0
     entities: int = 0
     contradictions: int = 0
     splits: int = 0
@@ -805,6 +807,10 @@ class GlobalResolver:
         self.report.deliberately_deferred += self.report.deictic_only
         self.report.escalated = len(live)
         self.report.review_items_closed = review.close_stale(self.store, self.novel_id, live)
+        # Pairs the gate never saw (a nickname, a title with a surname) as suggestions; never applied (decision 9).
+        from echotales.pipeline.resolve import merge_suggest
+
+        self.report.merge_suggestions = merge_suggest.sync(self.store, self.novel_id)
 
     # ---- contradiction sweep -----------------------------------------------
 

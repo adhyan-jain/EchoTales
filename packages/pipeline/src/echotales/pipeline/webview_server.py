@@ -640,7 +640,7 @@ def _decision_state(item: ReviewItem, log: CorrectionLog) -> str:
     resolution = item.resolution or ""
     if resolution.startswith("auto:"):
         return "auto_closed"
-    if resolution.startswith(("human:link:", "human:new:")):
+    if resolution.startswith(("human:link:", "human:new:", "human:merge:")):
         ids = _item_group(item).get("correction_ids") or []
         by_id = {c.id: c for c in log}
         found = [by_id.get(str(i)) for i in ids]
@@ -719,6 +719,36 @@ def _decide_deferred(handle: NovelHandle, item: ReviewItem, body: dict) -> tuple
     handle.store.add_review_item(item)
     return 200, {"corrections": [c.id for c in corrections]}
 
+
+
+def _decide_merge_suggestion(handle: NovelHandle, item: ReviewItem, body: dict) -> tuple[int, dict]:  # type: ignore[type-arg]
+    """A reviewer's answer to a merge suggestion: `merge` (a pending merge_entities correction, applied with the
+    others on the Apply button) or `dismiss`. Nothing changes the graph until then (non-negotiable 9)."""
+    action = body.get("action")
+    group = _item_group(item)
+    corrections: list[Correction] = []
+    if action == "dismiss":
+        resolution = "human:dismiss"
+    elif action == "merge":
+        into_id = str(body.get("into_id") or "")
+        if into_id not in {str(c.get("target_id")) for c in item.candidates if c.get("role") == "candidate"}:
+            return 400, {"error": "into_id must be one of the suggested candidates"}
+        corrections = [
+            Correction(
+                novel_id=item.novel_id, type=CorrectionType.MERGE_ENTITIES,
+                payload={"from_id": str(group.get("from_id")), "into_id": into_id},
+            )
+        ]
+        resolution = f"human:merge:{into_id}"
+    else:
+        return 400, {"error": "action must be one of merge, dismiss"}
+    for c in corrections:
+        handle.corrections.add(c)
+    item.resolved, item.resolution = True, resolution
+    if group:
+        group["correction_ids"] = [c.id for c in corrections]
+    handle.store.add_review_item(item)
+    return 200, {"corrections": [c.id for c in corrections]}
 
 
 def _refusal_body(refusal: str) -> dict:  # type: ignore[type-arg]
@@ -2292,6 +2322,16 @@ def make_handler(
                     body = self._read_json()
                     if item.kind == _DEFERRED_KIND:
                         status, result = _decide_deferred(handle, item, body)
+                        if status != 200:
+                            return self._json(status, result)
+                        handle.invalidate()
+                        return self._json(200, {
+                            "item": _review_item_json(item, handle.corrections),
+                            "correction_ids": result["corrections"],
+                            "summary": handle.corrections.summary(),
+                        })
+                    if item.kind == "merge_suggestion":
+                        status, result = _decide_merge_suggestion(handle, item, body)
                         if status != 200:
                             return self._json(status, result)
                         handle.invalidate()
