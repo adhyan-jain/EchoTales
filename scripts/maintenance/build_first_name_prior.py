@@ -50,7 +50,10 @@ FEMALE = frozenset(_FEMALE.split())
 MALE = frozenset(_MALE.split())
 
 #: A label that opens with one of these has no first name to read ("Mr. Bennet", "Lady Lucas").
-_NOT_A_NAME = frozenset("mr mrs miss ms mister madam madame lady lord sir dame master elder senior the a an".split())
+_NOT_A_NAME = frozenset(
+    {{"mr", "mrs", "miss", "ms", "mister", "madam", "madame", "lady", "lord", "sir", "dame", "master", "elder",
+     "senior", "the", "a", "an"}}
+)
 
 
 def name_gender_prior(label: str) -> str | None:

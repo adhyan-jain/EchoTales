@@ -10,7 +10,14 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from echotales.core.enums import AliasType, AttributionMethod, BlockType, ReferenceMode, SpanType, TargetKind
+from echotales.core.enums import (
+    AliasType,
+    AttributionMethod,
+    BlockType,
+    ReferenceMode,
+    SpanType,
+    TargetKind,
+)
 from echotales.core.models import Block, Chapter, DiscoursePosition, Mention, Self, Span
 from echotales.core.store import Store
 from echotales.pipeline.persona import build_personas, load_trait_profiles
