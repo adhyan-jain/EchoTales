@@ -13,7 +13,15 @@ from echotales.core.lifecycle import JobStatus
 from echotales.core.models import Job
 from echotales.core.store import Store
 from echotales.pipeline import jobs
-from echotales.pipeline.voice.export import _concat_escape, book_tracks, engine_of
+from echotales.pipeline.voice.export import (
+    LOUDNESS_LUFS,
+    TRUE_PEAK_DB,
+    _concat_escape,
+    book_tracks,
+    engine_of,
+    loudnorm_filter,
+)
+from echotales.pipeline.voice.runner import chapter_track
 
 
 def _wav(path: Path) -> Path:
@@ -66,3 +74,34 @@ def test_the_export_job_refuses_silent_stub_audio_and_an_empty_directory(tmp_pat
     (audio / "run.json").write_text(json.dumps({"engine": "stub"}), encoding="utf-8")
     silent = run({"x": 1})
     assert silent.status is JobStatus.FAILED and "stub" in silent.error_summary
+
+
+def test_loudnorm_filter_single_and_two_pass() -> None:
+    single = loudnorm_filter()
+    assert single == f"loudnorm=I={LOUDNESS_LUFS}:TP={TRUE_PEAK_DB}:LRA=11"
+    assert LOUDNESS_LUFS == -16.0
+    assert TRUE_PEAK_DB == -1.5
+
+    measured = {
+        "input_i": "-22.5",
+        "input_tp": "-3.1",
+        "input_lra": "7.5",
+        "input_thresh": "-32.5",
+        "target_offset": "0.1",
+    }
+    two_pass = loudnorm_filter(measured)
+    assert "measured_I=-22.5" in two_pass
+    assert "measured_TP=-3.1" in two_pass
+    assert "linear=true" in two_pass
+
+
+def test_chapter_track_with_loudness_mastering(tmp_path: Path) -> None:
+    c1 = _wav(tmp_path / "c1.wav")
+    c2 = _wav(tmp_path / "c2.wav")
+    out = tmp_path / "ch_mastered.wav"
+    res = chapter_track([c1, c2], out, master_loudness=True)
+    assert res.exists()
+    assert res == out
+    with wave.open(str(res), "rb") as fh:
+        assert fh.getnframes() > 0
+

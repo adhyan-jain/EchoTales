@@ -43,13 +43,17 @@ from echotales.pipeline.spans.delivery import (
     dominant_polarity,
     extract_delivery_markers,
 )
+from echotales.pipeline.voice import levels
 from echotales.pipeline.voice.bank import BankVoice, VoiceBank
 from echotales.pipeline.voice.casting import DEFAULT_SEED, cast_voices
 from echotales.pipeline.voice.delivery import pace_text, settings_for
 from echotales.pipeline.voice.engine import SynthesisRequest, TTSEngine, get_engine
-from echotales.pipeline.voice import levels
-from echotales.pipeline.voice.export import gaps_for
-from echotales.pipeline.voice.pitch import ffmpeg_available, modulate_prosody, rubberband_available, shift_pitch
+from echotales.pipeline.voice.export import gaps_for, normalise_chapter_track
+from echotales.pipeline.voice.pitch import (
+    ffmpeg_available,
+    modulate_prosody,
+    rubberband_available,
+)
 
 #: Span types that reach audio. `NARRATION_EXPOSITION` is included (it is
 #: read aloud even though panels skip it -- `SpanType.is_renderable_visually`
@@ -651,7 +655,7 @@ def _apply_voice_overrides(store: Store, assignments: dict, bank: VoiceBank) -> 
     for target_id, assignment in list(assignments.items()):
         try:
             persona_id = persona_at(store, target_id)
-        except Exception:  # noqa: BLE001 - a character with no persona simply has no override
+        except Exception:
             continue
         chosen = next(
             (a.value for a in store.get_attributes(TargetKind.PERSONA, persona_id)
@@ -710,7 +714,12 @@ LINE_GAP_S = 0.35
 
 
 def chapter_track(
-    clips: list[Path], out_path: Path, *, gap_s: float = LINE_GAP_S, gaps: list[float] | None = None
+    clips: list[Path],
+    out_path: Path,
+    *,
+    gap_s: float = LINE_GAP_S,
+    gaps: list[float] | None = None,
+    master_loudness: bool = False,
 ) -> Path:
     """One WAV for a whole chapter: every line in reading order, with a short gap.
 
@@ -723,6 +732,7 @@ def chapter_track(
 
     `gaps` (one per line after the first, `voice/export.py::gaps_for`) replaces the single `gap_s`, so a reply, a new
     paragraph and a scene change are audibly different pauses.
+    `master_loudness`: when True, applies two-pass EBU R128 mastering to -16 LUFS.
     """
     out_path.parent.mkdir(parents=True, exist_ok=True)
     with wave.open(str(clips[0]), "rb") as first:
@@ -740,4 +750,7 @@ def chapter_track(
                     pause = gaps[i - 1] if gaps is not None and i - 1 < len(gaps) else gap_s
                     out.writeframes(b"\x00" * int(params.framerate * pause) * frame)
                 out.writeframes(fh.readframes(fh.getnframes()))
+    if master_loudness:
+        normalise_chapter_track(out_path)
     return out_path
+

@@ -27,8 +27,8 @@ SPEAKER_CHANGE_GAP_S = 0.45
 PARAGRAPH_GAP_S = 0.6
 #: A jump of more than one block with nothing voiced between (a scene-break line, a skipped heading).
 SCENE_GAP_S = 1.4
-LOUDNESS_LUFS = -18.0
-TRUE_PEAK_DB = -3.0
+LOUDNESS_LUFS = -16.0
+TRUE_PEAK_DB = -1.5
 
 
 class _Line(Protocol):
@@ -108,6 +108,85 @@ def engine_of(audio_dir: Path) -> str:
         return ""
 
 
+def measure_loudnorm(
+    input_source: Path | str,
+    *,
+    is_concat: bool = False,
+    target_lufs: float = LOUDNESS_LUFS,
+    true_peak: float = TRUE_PEAK_DB,
+) -> dict[str, str] | None:
+    """Run pass 1 of ffmpeg loudnorm to measure audio loudness metrics.
+
+    Returns measured metrics dict if successful, or None on failure.
+    """
+    if shutil.which("ffmpeg") is None:
+        return None
+    cmd = ["ffmpeg", "-hide_banner"]
+    if is_concat:
+        cmd += ["-f", "concat", "-safe", "0"]
+    cmd += [
+        "-i", str(input_source),
+        "-af", f"loudnorm=I={target_lufs}:TP={true_peak}:LRA=11:print_format=json",
+        "-f", "null", "-",
+    ]
+    res = subprocess.run(cmd, capture_output=True, text=True)
+    if res.returncode != 0:
+        return None
+    idx = res.stderr.rfind("{")
+    end = res.stderr.rfind("}") + 1
+    if idx == -1 or end <= idx:
+        return None
+    try:
+        data = json.loads(res.stderr[idx:end])
+        return {k: str(v) for k, v in data.items()}
+    except Exception:
+        return None
+
+
+def loudnorm_filter(
+    measured: dict[str, str] | None = None,
+    *,
+    target_lufs: float = LOUDNESS_LUFS,
+    true_peak: float = TRUE_PEAK_DB,
+) -> str:
+    """Build the ffmpeg loudnorm filter string.
+
+    If measured metrics are provided, constructs a linear two-pass filter;
+    otherwise falls back to single-pass dynamic normalization.
+    """
+    base = f"loudnorm=I={target_lufs}:TP={true_peak}:LRA=11"
+    if measured and all(k in measured for k in ("input_i", "input_tp", "input_lra", "input_thresh", "target_offset")):
+        return (
+            f"{base}:measured_I={measured['input_i']}:measured_TP={measured['input_tp']}:"
+            f"measured_LRA={measured['input_lra']}:measured_thresh={measured['input_thresh']}:"
+            f"offset={measured['target_offset']}:linear=true"
+        )
+    return base
+
+
+def normalise_chapter_track(
+    wav_path: Path,
+    out_path: Path | None = None,
+    *,
+    target_lufs: float = LOUDNESS_LUFS,
+    true_peak: float = TRUE_PEAK_DB,
+) -> Path:
+    """Master a single chapter WAV to target LUFS using two-pass EBU R128."""
+    if shutil.which("ffmpeg") is None:
+        return wav_path
+    target_out = out_path or wav_path
+    measured = measure_loudnorm(wav_path, target_lufs=target_lufs, true_peak=true_peak)
+    expr = loudnorm_filter(measured, target_lufs=target_lufs, true_peak=true_peak)
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_out = Path(tmp) / "mastered.wav"
+        cmd = ["ffmpeg", "-y", "-loglevel", "error", "-i", str(wav_path), "-af", expr, str(tmp_out)]
+        res = subprocess.run(cmd)
+        if res.returncode == 0 and tmp_out.exists():
+            target_out.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(tmp_out, target_out)
+    return target_out
+
+
 def export_m4b(
     tracks: Sequence[Path],
     out_path: Path,
@@ -117,6 +196,7 @@ def export_m4b(
     author: str = "",
     cover: Path | None = None,
     bitrate: str = "64k",
+    two_pass: bool = True,
 ) -> Path:
     """Concatenate chapter WAVs into one loudness-normalised AAC M4B with a chapter marker per track."""
     if shutil.which("ffmpeg") is None:
@@ -134,6 +214,12 @@ def export_m4b(
             chapter_metadata(titles, [wav_seconds(Path(t)) for t in tracks], title=title, author=author),
             encoding="utf-8",
         )
+        measured = (
+            measure_loudnorm(listing, is_concat=True, target_lufs=LOUDNESS_LUFS, true_peak=TRUE_PEAK_DB)
+            if two_pass
+            else None
+        )
+        filter_expr = loudnorm_filter(measured, target_lufs=LOUDNESS_LUFS, true_peak=TRUE_PEAK_DB)
         cmd = ["ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", str(listing), "-i", str(meta)]
         if cover is not None:
             cmd += ["-i", str(cover)]
@@ -141,8 +227,9 @@ def export_m4b(
         if cover is not None:
             cmd += ["-map", "2:v", "-c:v", "copy", "-disposition:v", "attached_pic"]
         cmd += [
-            "-af", f"loudnorm=I={LOUDNESS_LUFS}:TP={TRUE_PEAK_DB}:LRA=11",
+            "-af", filter_expr,
             "-c:a", "aac", "-b:a", bitrate, "-ar", "44100", "-movflags", "+faststart", str(out_path),
         ]
         subprocess.run(cmd, check=True)
     return out_path
+

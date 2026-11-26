@@ -55,22 +55,37 @@ def _run_filter(path: Path, tmp: Path, expr: str) -> bool:
     return result.returncode == 0 and tmp.exists()
 
 
-def modulate_prosody(path: Path, semitones: float = 0.0, tempo: float = 1.0) -> None:
-    """Shift pitch and adjust tempo in place (tempo changes the file's duration, so durations must be read after).
+def modulate_prosody(
+    path: Path,
+    semitones: float = 0.0,
+    tempo: float = 1.0,
+    *,
+    allow_timestretch: bool = False,
+) -> None:
+    """Shift pitch and optionally adjust tempo in place.
 
-    A no-op when both are ~neutral or ffmpeg is missing. With rubberband both are applied. Without it, only the
-    tempo is applied (`atempo`, which keeps pitch); a pitch-only request is left
-    unshifted, the same "degraded, not fatal" posture as a failed direction call.
+    By default, `allow_timestretch` is False to prevent phase smearing, metallic ringing,
+    and warble artifacts; synthesis pacing is handled natively by the TTS engine
+    (exaggeration/cfg_weight). When `allow_timestretch` is False, tempo stretching
+    is bypassed (effective tempo is 1.0).
+
+    A no-op when both are ~neutral or ffmpeg is missing. With rubberband both are applied
+    (if timestretch allowed). Without rubberband, only tempo is applied (`atempo`, which keeps pitch)
+    if timestretch is allowed; a pitch-only request is left unshifted.
     """
-    wants_tempo = abs(tempo - 1.0) >= 0.01
-    if (abs(semitones) < 0.01 and not wants_tempo) or not ffmpeg_available():
+    effective_tempo = tempo if allow_timestretch else 1.0
+    wants_tempo = abs(effective_tempo - 1.0) >= 0.01
+    wants_pitch = abs(semitones) >= 0.01
+
+    if (not wants_pitch and not wants_tempo) or not ffmpeg_available():
         return
     tmp = path.with_suffix(".prosody_tmp.wav")
     try:
         if rubberband_available():
-            ok = _run_filter(path, tmp, f"rubberband=pitch={2 ** (semitones / 12.0)}:tempo={tempo}")
+            expr = f"rubberband=pitch={2 ** (semitones / 12.0)}:tempo={effective_tempo}"
+            ok = _run_filter(path, tmp, expr)
         else:
-            ok = wants_tempo and _run_filter(path, tmp, f"atempo={tempo}")
+            ok = wants_tempo and _run_filter(path, tmp, f"atempo={effective_tempo}")
         if ok:
             tmp.replace(path)
     finally:
@@ -79,5 +94,5 @@ def modulate_prosody(path: Path, semitones: float = 0.0, tempo: float = 1.0) -> 
 
 def shift_pitch(path: Path, semitones: float) -> None:
     """Shift `path`'s pitch by `semitones` in place, duration preserved."""
-    modulate_prosody(path, semitones=semitones, tempo=1.0)
+    modulate_prosody(path, semitones=semitones, tempo=1.0, allow_timestretch=False)
 

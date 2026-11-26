@@ -7,7 +7,6 @@ from pathlib import Path
 
 import numpy as np
 import pytest
-
 from echotales.core.enums import SpanType
 from echotales.pipeline.persona.traits import TraitProfile
 from echotales.pipeline.spans.delivery import DeliveryPolarity
@@ -67,10 +66,19 @@ needs_ffmpeg = pytest.mark.skipif(not ffmpeg_available(), reason="ffmpeg missing
 
 
 @needs_ffmpeg
-def test_tempo_changes_real_duration(tmp_path: Path) -> None:
+def test_timestretch_bypassed_by_default(tmp_path: Path) -> None:
     p = tmp_path / "a.wav"
     _sine(p)
-    modulate_prosody(p, 0.0, 1.25)
+    before_len = _seconds(p)
+    modulate_prosody(p, 0.0, 1.25)  # default allow_timestretch=False
+    assert _seconds(p) == pytest.approx(before_len, abs=0.01)
+
+
+@needs_ffmpeg
+def test_tempo_changes_real_duration_when_opted_in(tmp_path: Path) -> None:
+    p = tmp_path / "a.wav"
+    _sine(p)
+    modulate_prosody(p, 0.0, 1.25, allow_timestretch=True)
     assert _seconds(p) == pytest.approx(0.8, abs=0.08)
 
 
@@ -79,7 +87,7 @@ def test_missing_rubberband_falls_back_to_atempo_for_tempo(tmp_path: Path, monke
     monkeypatch.setattr(pitch, "rubberband_available", lambda: False)
     p = tmp_path / "a.wav"
     _sine(p)
-    modulate_prosody(p, 2.0, 1.25)  # pitch cannot be honoured, tempo still is
+    modulate_prosody(p, 2.0, 1.25, allow_timestretch=True)  # pitch cannot be honoured, tempo still is
     assert _seconds(p) == pytest.approx(0.8, abs=0.08)
 
 
