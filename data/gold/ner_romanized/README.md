@@ -23,12 +23,30 @@ sentence start), `shared_title` (one title held by different people in the same 
 - Annotate proper names and *named* titles/epithets that refer to a specific entity ("the Venerable", "Heavenly
   Demon"). A title used alone for one specific person ("the clan head", "the Jarl") is `title_epithet`.
 - Do not annotate pronouns, generic descriptors ("the old man", "a disciple", "the envoy"), or common nouns.
-- Attached honorifics and titles are inside the span ("Dokja-ssi", "Gojo-sensei", "Mr. Darcy", "Lady Hartley").
+- Attached honorifics and titles are inside the span ("Dokja-ssi", "Gojo-sensei", "Mr. Darcy", "Lady Hartley"); see
+  the boundary policy below.
 - Strip possessive 's from the span. Each occurrence is its own span; spans never overlap.
 - Named animals count as `person` (the set has a terrier called Hunter). Named artefacts, techniques, and
   creatures-as-objects are `item`. A building or ship named like a place is `location`.
 - Deliberate negatives are left unannotated so precision is measurable: capitalised sentence starts ("Hope you
   slept", "Rain pattered"), generic "Heaven", bare "Sect", wing or school words, chapter references.
+
+## Boundary policy
+
+Applied to every span in the set (changes are logged in `CHANGELOG.md` by rule letter):
+
+- **(a)** A capitalised title, rank or honorific word immediately preceding a name is part of the span ("Captain
+  Yoo", "Sentry Dovrin", "Elder Moon", "Mr. Darcy", "Lady Murasaki"). A lower-case descriptor ("old Srutasravas")
+  and a class noun ("the Brahmana Kalaghata") are not titles in this sense and stay outside.
+- **(b)** An attached hyphenated honorific is part of the span ("Dokja-ssi"). A spaced suffix ("Tae-sik sunbae") is
+  not covered; the span stays the bare name.
+- **(c)** A following "the X" epithet joined to the name without a comma is part of the span ("Sigrid the Younger").
+  An epithet set off by a comma is a separate appositive.
+- **(d)** "of <Place>" after a title is not part of the person span unless it is a fixed title: "King Wên of
+  Chʻu" is "King Wên" plus "Chʻu" as a separate location.
+- **(e)** Every named place, organisation, item and person occurrence is annotated, real-world places included
+  ("Kerala", "Manchuria").
+- **(f)** The `generic_role` rule is unchanged (see Scoring conventions).
 
 ## Scoring conventions
 

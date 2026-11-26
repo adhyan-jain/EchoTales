@@ -197,3 +197,13 @@ def test_nested_predictions_suppressed():
                     NerSpan(text="Bai", start=0, end=3, label="character")]}
     m = ns.score_predictions([doc], preds)["metrics"]["exact"]["span_only"]["overall"]
     assert (m["tp"], m["fp"]) == (1, 0)
+
+
+def test_pipeline_filters_drop_what_production_drops():
+    from echotales.pipeline.eval.ner_spans import apply_pipeline_filters
+    from echotales.pipeline.mentions.ner import NerSpan
+
+    spans = [NerSpan(text="Fang Yuan", start=0, end=9, label="person", score=1.0),
+             NerSpan(text="Well, he left", start=10, end=23, label="person", score=1.0),
+             NerSpan(text="Hehehe", start=25, end=31, label="person", score=1.0)]
+    assert [s.text for s in apply_pipeline_filters(spans)] == ["Fang Yuan"]

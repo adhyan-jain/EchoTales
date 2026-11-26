@@ -228,6 +228,27 @@ def normalize_predictions(spans: Iterable[NerSpan], label_map: LabelMap | None =
     )
 
 
+def apply_pipeline_filters(spans: Iterable[NerSpan]) -> list[NerSpan]:
+    """Drop what the production mention path drops before a detector span can become a mention.
+
+    Reuses the two real predicates, no list of its own: `chapter_ner.plausible_name` (the post-filter on detector
+    output: copied sentences, punctuation fragments, all-lowercase non-titles) and `normalize.non_name_reason`
+    (`mentions/runner.py::rejected`, which for a person-like span refuses pronouns and interjections). Called after
+    label normalisation, so person/title_epithet stand for the runner's "character".
+    """
+    from echotales.pipeline.ingest.normalize import non_name_reason
+    from echotales.pipeline.mentions.chapter_ner import plausible_name
+
+    kept = []
+    for s in spans:
+        if not plausible_name(s.text):
+            continue
+        if s.label in _PERSONISH and non_name_reason(s.text) in ("pronoun", "interjection"):
+            continue
+        kept.append(s)
+    return kept
+
+
 def score_predictions(
     docs: Sequence[dict[str, Any]],
     preds: dict[str, list[NerSpan]],
@@ -235,6 +256,7 @@ def score_predictions(
     label_map: LabelMap | None = None,
     min_score: float | None = None,
     include_generic: bool = False,
+    pipeline_filters: bool = False,
 ) -> dict[str, Any]:
     """Score already-detected spans against gold. Pure: no detector, no timing.
 
@@ -248,6 +270,8 @@ def score_predictions(
         spans = normalize_predictions(preds.get(d["doc_id"], []), label_map)
         if min_score is not None:
             spans = [s for s in spans if s.score >= min_score]
+        if pipeline_filters:
+            spans = apply_pipeline_filters(spans)
         norm[d["doc_id"]] = spans
 
     result: dict[str, Any] = {}
@@ -321,11 +345,13 @@ def _metrics_by_source(
     label_map: LabelMap | None = None,
     min_score: float | None = None,
     include_generic: bool = False,
+    pipeline_filters: bool = False,
 ) -> dict[str, Any]:
     """The same metrics structure as `score_predictions`, filtered per record source (no re-detection)."""
     return {
         src: score_predictions([d for d in docs if d.get("source") == src], preds,
-                               label_map=label_map, min_score=min_score, include_generic=include_generic)["metrics"]
+                               label_map=label_map, min_score=min_score, include_generic=include_generic,
+                               pipeline_filters=pipeline_filters)["metrics"]
         for src in SOURCES
     }
 
@@ -350,6 +376,7 @@ def rescore_payload(
     sweep: bool = False,
     label_map: LabelMap | None = None,
     include_generic: bool = False,
+    pipeline_filters: bool = False,
 ) -> dict[str, Any]:
     """Score a saved result's stored predictions against `docs` (the same split/source). No detector runs.
 
@@ -364,7 +391,8 @@ def rescore_payload(
         raise ValueError(f"{len(missing)} gold docs missing from stored predictions, e.g. {missing[:3]}")
     preds = _predictions_from_json(raw)
     result = evaluate(None, docs, label_map=label_map, threshold=threshold,
-                      detected=(preds, payload.get("runtime") or {}), include_generic=include_generic)
+                      detected=(preds, payload.get("runtime") or {}), include_generic=include_generic,
+                      pipeline_filters=pipeline_filters)
     if sweep:
         result["sweep"] = sweep_thresholds(docs, preds, label_map=label_map)
     return result
@@ -424,6 +452,7 @@ def evaluate(
     threshold: float | None = None,
     detected: tuple[dict[str, list[NerSpan]], dict[str, Any]] | None = None,
     include_generic: bool = False,
+    pipeline_filters: bool = False,
 ) -> dict[str, Any]:
     """Run a detector and score it. `threshold` filters on `NerSpan.score` after detection.
 
@@ -431,15 +460,17 @@ def evaluate(
     the expensive part and must not run twice.
     """
     preds, runtime = detected if detected is not None else detect_all(detector, docs)
-    scored = score_predictions(docs, preds, label_map=label_map, min_score=threshold, include_generic=include_generic)
+    scored = score_predictions(docs, preds, label_map=label_map, min_score=threshold, include_generic=include_generic,
+                              pipeline_filters=pipeline_filters)
     return {
         "n_docs": len(docs),
         "n_gold_spans": sum(len(d["spans"]) for d in docs),
         "n_pred_spans": sum(len(normalize_predictions(v, label_map)) for v in preds.values()),
+        "pipeline_filters": pipeline_filters,
         "threshold": threshold,
         "runtime": runtime,
         "metrics_by_source": _metrics_by_source(docs, preds, label_map=label_map, min_score=threshold,
-                                                include_generic=include_generic),
+                                                include_generic=include_generic, pipeline_filters=pipeline_filters),
         "include_generic": include_generic,
         "predictions": _raw_predictions(preds),
         **scored,

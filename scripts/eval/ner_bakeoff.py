@@ -104,10 +104,13 @@ def _rescore(ap: argparse.ArgumentParser, args, ns) -> Path:
     if payload.get("source"):
         docs = [d for d in docs if d["source"] == payload["source"]]
     result = ns.rescore_payload(payload, docs, threshold=args.threshold, sweep=args.sweep,
-                              include_generic=args.include_generic)
+                              include_generic=args.include_generic,
+                                pipeline_filters=args.pipeline_filters)
     result.update({"split": args.split, "gold": gold, "source": payload.get("source")})
     meta = {**payload.get("system", {}), "threshold": args.threshold, "rescored_from": str(src)}
     suffix = f"-t{args.threshold}" if args.threshold is not None else "-rescored"
+    if args.pipeline_filters:
+        suffix += "-filtered"
     out_dir = Path(args.out) if args.out else src.parent
     out_dir = out_dir if out_dir.is_absolute() else ROOT / out_dir
     out_path = ns.write_result(out_dir / f"{src.stem}{suffix}.json", result, meta)
@@ -129,6 +132,9 @@ def main() -> None:
                     help="score only records of this source (synthetic text is too clean to be the only yardstick)")
     ap.add_argument("--include-generic", action="store_true",
                     help="score generic_role gold spans (bare role nouns) as ordinary names; default excludes them")
+    ap.add_argument("--pipeline-filters", action="store_true",
+                    help="drop predictions the production mention path drops (chapter_ner.plausible_name, "
+                         "normalize.non_name_reason) before scoring; report filtered next to unfiltered")
     ap.add_argument("--out", default=None,
                     help="output directory (default data/eval/ner/; with --rescore, the input file's directory)")
     args = ap.parse_args()
@@ -154,7 +160,7 @@ def main() -> None:
         # Sampled right after detection: the model is still loaded and its VRAM is reported by /api/ps.
         meta.update(ns.ollama_model_meta(args.system.partition(":")[2]))
     result = ns.evaluate(detector, docs, threshold=args.threshold, detected=detected,
-                         include_generic=args.include_generic)
+                         include_generic=args.include_generic, pipeline_filters=args.pipeline_filters)
     result.update({"split": args.split, "gold": args.gold, "source": args.source})
     if args.sweep:
         result["sweep"] = ns.sweep_thresholds(docs, detected[0])
