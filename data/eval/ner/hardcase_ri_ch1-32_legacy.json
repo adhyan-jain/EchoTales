@@ -1,0 +1,91 @@
+{
+  "banner": "SILVER -- LLM-derived reference set (Claude), not human gold; no IAA",
+  "db": "data/scratch/ner_realdata/ri32/reverend-insanity-ch1-32-legacy.db",
+  "gold": "data/gold/reverend-insanity-hardcases.jsonl",
+  "outcomes": {
+    "exact": {
+      "ALL": {
+        "not-detected": 11,
+        "unresolved": 0,
+        "correct": 6,
+        "wrong": 0,
+        "gold-unmapped": 0,
+        "n": 17
+      },
+      "body_change": {
+        "not-detected": 2,
+        "unresolved": 0,
+        "correct": 3,
+        "wrong": 0,
+        "gold-unmapped": 0,
+        "n": 5
+      },
+      "disguise": {
+        "not-detected": 2,
+        "unresolved": 0,
+        "correct": 0,
+        "wrong": 0,
+        "gold-unmapped": 0,
+        "n": 2
+      },
+      "relational_deictic": {
+        "not-detected": 5,
+        "unresolved": 0,
+        "correct": 0,
+        "wrong": 0,
+        "gold-unmapped": 0,
+        "n": 5
+      },
+      "reveal": {
+        "not-detected": 2,
+        "unresolved": 0,
+        "correct": 3,
+        "wrong": 0,
+        "gold-unmapped": 0,
+        "n": 5
+      }
+    },
+    "overlap": {
+      "ALL": {
+        "not-detected": 8,
+        "unresolved": 0,
+        "correct": 7,
+        "wrong": 0,
+        "gold-unmapped": 2,
+        "n": 17
+      },
+      "body_change": {
+        "not-detected": 2,
+        "unresolved": 0,
+        "correct": 3,
+        "wrong": 0,
+        "gold-unmapped": 0,
+        "n": 5
+      },
+      "disguise": {
+        "not-detected": 1,
+        "unresolved": 0,
+        "correct": 0,
+        "wrong": 0,
+        "gold-unmapped": 1,
+        "n": 2
+      },
+      "relational_deictic": {
+        "not-detected": 4,
+        "unresolved": 0,
+        "correct": 0,
+        "wrong": 0,
+        "gold-unmapped": 1,
+        "n": 5
+      },
+      "reveal": {
+        "not-detected": 1,
+        "unresolved": 0,
+        "correct": 4,
+        "wrong": 0,
+        "gold-unmapped": 0,
+        "n": 5
+      }
+    }
+  }
+}

@@ -23,7 +23,7 @@ from pathlib import Path
 from typing import Any
 
 from echotales.core.store import Store
-from echotales.pipeline.anaphora import resolve_novel as anaphora_resolve
+from echotales.pipeline.anaphora import resolve_anaphora_for_novel as anaphora_resolve
 from echotales.pipeline.commands import _build_client
 from echotales.pipeline.corrections import CorrectionLog
 from echotales.pipeline.eval.litbank import (
@@ -46,18 +46,37 @@ def main() -> int:
     ap.add_argument("--limit", type=int, default=0, help="seeded subset size (0 = all 100)")
     ap.add_argument("--seed", type=int, default=20260925)
     ap.add_argument("--out", default="data/eval/litbank_results.json")
+    ap.add_argument("--detector", choices=["llm", "hybrid"], default=None,
+                    help="mentions.detector override; hybrid needs the ml extra and a stopped ollama before GLiNER loads")
+    ap.add_argument("--gliner-model", default="", help="HF id or local directory for GLiNER (hybrid only)")
+    ap.add_argument("--classifier-model", default="", help="ollama model for the hybrid classifier")
+    ap.add_argument("--runs", default=str(RUNS), help="scratch dir for the DB and caches (name caches go in <runs>/lexicons)")
     args = ap.parse_args()
 
     docs = sorted(p.name[: -len("_brat.txt")] for p in (BASE / "brat").glob("*_brat.txt"))
     if args.limit:
         docs = sorted(random.Random(args.seed).sample(docs, args.limit))
-    RUNS.mkdir(parents=True, exist_ok=True)
-    db = RUNS / "litbank.db"
+    runs = Path(args.runs)
+    runs.mkdir(parents=True, exist_ok=True)
+    db = runs / "litbank.db"
     if db.exists():
         db.unlink()
     store = Store(str(db))
     client = _build_client(store)
     lexicon = load_or_seed(None)
+    cfg = None
+    if args.detector:
+        # A scratch lexicon dir keeps the two detectors' name caches apart, so neither run reads the other's answers.
+        from echotales.pipeline.config import get_settings
+
+        upd: dict[str, Any] = {"mentions_detector": args.detector, "lexicon_path": runs / "lexicons"}
+        if args.gliner_model:
+            upd["mentions_gliner_model"] = args.gliner_model
+        if args.classifier_model:
+            upd["mentions_classifier_model"] = args.classifier_model
+        (runs / "lexicons").mkdir(exist_ok=True)
+        cfg = get_settings().model_copy(update=upd)
+        client.settings = cfg
 
     results: dict[str, tuple[Any, Any]] = {}
     sanity: dict[str, tuple[Any, Any]] = {}
@@ -70,10 +89,10 @@ def main() -> int:
         novel = f"litbank-{doc}"
         ingest_document(store, novel, text)
         segment_novel(novel, store)
-        detect_mentions(novel, store, lexicon=lexicon, client=client)
+        detect_mentions(novel, store, lexicon=lexicon, client=client, settings=cfg)
         anaphora_resolve(novel, store)
         global_resolve(novel, store, lexicon=lexicon,
-                       corrections_log=CorrectionLog(RUNS / "corrections.jsonl"))
+                       corrections_log=CorrectionLog(runs / "corrections.jsonl"))
         store.conn.commit()
         sys_m = system_mentions(store, novel)
         results[doc] = (key, sys_m)
@@ -89,7 +108,8 @@ def main() -> int:
     report = {
         "dataset": "LitBank coreference (Bamman, Lewke & Mansoor, LREC 2020), CC BY 4.0",
         "docs": len(docs), "subset_seed": args.seed if args.limit else None,
-        "model": "qwen2.5:7b via local ollama (NER only)",
+        "model": "qwen2.5:7b via local ollama (NER only)" if args.detector in (None, "llm") else f"hybrid: GLiNER + spaCy + {args.classifier_model or 'qwen3:8b'}",
+        "detector": args.detector or "llm",
         "runtime_s": round(time.perf_counter() - t0, 1),
         "sanity_gold_vs_gold_standard_P1": score(sanity, prop_only=False, key_restricted=False),
         "protocols": {

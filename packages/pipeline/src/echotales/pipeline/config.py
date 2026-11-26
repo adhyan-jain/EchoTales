@@ -65,7 +65,7 @@ def _load_config_json() -> dict[str, object]:
     if "narrator" in voice:
         out["voice_narrator"] = voice["narrator"]
     mentions = raw.get("mentions", {})
-    for key in ("detector", "gliner_model", "tau_high", "tau_low"):
+    for key in ("detector", "gliner_model", "classifier_model", "tau_high", "tau_low"):
         if key in mentions:
             out[f"mentions_{key}"] = mentions[key]
     return out
@@ -205,7 +205,11 @@ class Settings(BaseSettings):
     #: gazetteer votes with the LLM only as tie-breaker (`mentions/hybrid.py`). "heuristic": the capitalisation regex,
     #: even when a model is available. Hybrid needs the `ml` extra and is ignored in stub mode.
     mentions_detector: str = "llm"
+    #: A HF repo id or a local directory (GLiNER.from_pretrained takes either), so an offline box can pin a revision.
     mentions_gliner_model: str = "urchade/gliner_medium-v2.1"
+    #: Ollama model for the hybrid context classifier (`Task.NER_CLASSIFY`); qwen3:8b won the D69 bake-off. It only
+    #: replaces the task profile's model on the ollama backend.
+    mentions_classifier_model: str = "qwen3:8b"
     #: Provisional until the D69 bake-off: a GLiNER score at or above `tau_high` is accepted alone; a single source
     #: below `tau_low` is rejected; everything between goes to the classifier.
     mentions_tau_high: float = 0.7

@@ -1,0 +1,981 @@
+{
+ "recorded": "2026-11-27",
+ "setup": {
+  "hybrid": "GLiNER-medium v2.1 (local, rev 40ec419) + spaCy en_core_web_sm + qwen3:8b classifier, tau_high 0.7, tau_low 0.3",
+  "legacy": "qwen2.5:7b vocabulary pass",
+  "backend": "ollama, RTX 4060 8 GB, cold name caches in scratch dirs",
+  "note": "resolve run without LLM adjudication (default use_llm=False); speaker attribution skipped; DB copies in data/scratch/ner_realdata (not committed)"
+ },
+ "novels": [
+  {
+   "novel": "lord-of-the-mysteries",
+   "chapters": "1-3",
+   "legacy": {
+    "mentions": 138,
+    "distinct_surfaces": 19,
+    "mention_wall_s": 71.3,
+    "resolve_wall_s": 0.4,
+    "ollama_models_seen": [
+     "qwen2.5:7b"
+    ],
+    "gpu_peak_mib": 4893,
+    "detector_name": "QwenNerDetector",
+    "groups": 29,
+    "linked": 11,
+    "created": 17,
+    "deferred": 0,
+    "escalated": 0,
+    "unresolved": 0,
+    "entities": 17,
+    "by_method": {
+     "SCORED": 17,
+     "DECLARATION": 2,
+     "GAZETTEER_EXACT": 9
+    }
+   },
+   "hybrid": {
+    "mentions": 160,
+    "distinct_surfaces": 26,
+    "mention_wall_s": 141.0,
+    "resolve_wall_s": 0.4,
+    "ollama_models_seen": [
+     "qwen3:8b"
+    ],
+    "gpu_peak_mib": 5810,
+    "detector_name": "hybrid(gliner:/home/adhyan/.cache/huggingface/local/gliner_medium-v2.1+spacy:en_core_web_sm)",
+    "groups": 40,
+    "linked": 14,
+    "created": 25,
+    "deferred": 0,
+    "escalated": 0,
+    "unresolved": 1,
+    "entities": 25,
+    "by_method": {
+     "SCORED": 25,
+     "DECLARATION": 4,
+     "GAZETTEER_EXACT": 10
+    }
+   },
+   "only_hybrid_top30": [
+    [
+     "Lord Ye",
+     4
+    ],
+    [
+     "Hermes",
+     3
+    ],
+    [
+     "Machinery",
+     3
+    ],
+    [
+     "Feysac",
+     2
+    ],
+    [
+     "Arcane Arts",
+     2
+    ],
+    [
+     "Tingen University",
+     2
+    ],
+    [
+     "Technical School",
+     1
+    ],
+    [
+     "Earth Mother",
+     1
+    ]
+   ],
+   "only_hybrid_total": 8,
+   "only_legacy_top30": [
+    [
+     "Sunday",
+     6
+    ]
+   ],
+   "only_legacy_total": 1,
+   "entities_only_legacy": 1,
+   "entities_only_hybrid": 8,
+   "entities_only_legacy_examples": [
+    [
+     "sunday"
+    ]
+   ],
+   "entities_only_hybrid_examples": [
+    [
+     "feysac"
+    ],
+    [
+     "hermes"
+    ],
+    [
+     "lord ye"
+    ],
+    [
+     "arcane arts"
+    ],
+    [
+     "tingen university"
+    ],
+    [
+     "machinery"
+    ],
+    [
+     "technical school"
+    ],
+    [
+     "earth mother"
+    ]
+   ]
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "chapters": "1-3",
+   "legacy": {
+    "mentions": 65,
+    "distinct_surfaces": 12,
+    "mention_wall_s": 39.6,
+    "resolve_wall_s": 0.2,
+    "ollama_models_seen": [
+     "qwen2.5:7b"
+    ],
+    "gpu_peak_mib": 4889,
+    "detector_name": "QwenNerDetector",
+    "groups": 15,
+    "linked": 6,
+    "created": 8,
+    "deferred": 0,
+    "escalated": 0,
+    "unresolved": 1,
+    "entities": 8,
+    "by_method": {
+     "SCORED": 8,
+     "GAZETTEER_EXACT": 4,
+     "NAME_CONTAINMENT": 1,
+     "RELATIONAL_COPRESENCE": 1
+    }
+   },
+   "hybrid": {
+    "mentions": 74,
+    "distinct_surfaces": 22,
+    "mention_wall_s": 133.3,
+    "resolve_wall_s": 0.2,
+    "ollama_models_seen": [
+     "qwen3:8b"
+    ],
+    "gpu_peak_mib": 5808,
+    "detector_name": "hybrid(gliner:/home/adhyan/.cache/huggingface/local/gliner_medium-v2.1+spacy:en_core_web_sm)",
+    "groups": 25,
+    "linked": 8,
+    "created": 16,
+    "deferred": 0,
+    "escalated": 0,
+    "unresolved": 1,
+    "entities": 16,
+    "by_method": {
+     "SCORED": 16,
+     "GAZETTEER_EXACT": 4,
+     "NAME_CONTAINMENT": 3,
+     "RELATIONAL_COPRESENCE": 1
+    }
+   },
+   "only_hybrid_top30": [
+    [
+     "The Ways of Survival",
+     1
+    ],
+    [
+     "Kim Dok",
+     1
+    ],
+    [
+     "Reader-nim³",
+     1
+    ],
+    [
+     "Yoo Sangah-ssi²",
+     1
+    ],
+    [
+     "Sangah",
+     1
+    ],
+    [
+     "Reader",
+     1
+    ],
+    [
+     "Murakami Haruki",
+     1
+    ],
+    [
+     "Kang",
+     1
+    ],
+    [
+     "Raymond Carver",
+     1
+    ],
+    [
+     "Han",
+     1
+    ],
+    [
+     "Han Kang",
+     1
+    ],
+    [
+     "HR",
+     1
+    ]
+   ],
+   "only_hybrid_total": 12,
+   "only_legacy_top30": [
+    [
+     "Personnel Manager Kang",
+     1
+    ],
+    [
+     "Finance Manager Han",
+     1
+    ]
+   ],
+   "only_legacy_total": 2,
+   "entities_only_legacy": 2,
+   "entities_only_hybrid": 10,
+   "entities_only_legacy_examples": [
+    [
+     "personnel manager kang"
+    ],
+    [
+     "finance manager han"
+    ]
+   ],
+   "entities_only_hybrid_examples": [
+    [
+     "the ways of survival"
+    ],
+    [
+     "yoo sangah-ssi²"
+    ],
+    [
+     "han kang",
+     "kang"
+    ],
+    [
+     "han"
+    ],
+    [
+     "murakami haruki"
+    ],
+    [
+     "raymond carver"
+    ],
+    [
+     "kim dok"
+    ],
+    [
+     "reader"
+    ],
+    [
+     "hr"
+    ],
+    [
+     "reader-nim³"
+    ]
+   ]
+  },
+  {
+   "novel": "reverend-insanity",
+   "chapters": "1-5",
+   "legacy": {
+    "mentions": 205,
+    "distinct_surfaces": 31,
+    "mention_wall_s": 67.1,
+    "resolve_wall_s": 0.5,
+    "ollama_models_seen": [
+     "qwen2.5:7b"
+    ],
+    "gpu_peak_mib": 4893,
+    "detector_name": "QwenNerDetector",
+    "groups": 50,
+    "linked": 11,
+    "created": 22,
+    "deferred": 4,
+    "escalated": 2,
+    "unresolved": 5,
+    "entities": 22,
+    "by_method": {
+     "SCORED": 22,
+     "NAME_CONTAINMENT": 1,
+     "GAZETTEER_EXACT": 10
+    }
+   },
+   "hybrid": {
+    "mentions": 241,
+    "distinct_surfaces": 47,
+    "mention_wall_s": 198.2,
+    "resolve_wall_s": 0.5,
+    "ollama_models_seen": [
+     "qwen3:8b"
+    ],
+    "gpu_peak_mib": 5810,
+    "detector_name": "hybrid(gliner:/home/adhyan/.cache/huggingface/local/gliner_medium-v2.1+spacy:en_core_web_sm)",
+    "groups": 65,
+    "linked": 16,
+    "created": 33,
+    "deferred": 4,
+    "escalated": 2,
+    "unresolved": 7,
+    "entities": 33,
+    "by_method": {
+     "SCORED": 33,
+     "NAME_CONTAINMENT": 3,
+     "GAZETTEER_EXACT": 13
+    }
+   },
+   "only_hybrid_top30": [
+    [
+     "Predicaments",
+     12
+    ],
+    [
+     "Chen Bo",
+     7
+    ],
+    [
+     "Gu Yue",
+     4
+    ],
+    [
+     "clan head",
+     4
+    ],
+    [
+     "Human",
+     3
+    ],
+    [
+     "Fang Zhi’s",
+     2
+    ],
+    [
+     "Ancestors",
+     1
+    ],
+    [
+     "Gu Master",
+     1
+    ],
+    [
+     "Primeval Sea",
+     1
+    ],
+    [
+     "Fang",
+     1
+    ],
+    [
+     "Fang Zhen",
+     1
+    ],
+    [
+     "Gu Clan",
+     1
+    ],
+    [
+     "Primeval sea",
+     1
+    ],
+    [
+     "Chi Chen",
+     1
+    ],
+    [
+     "The first generation clan leader",
+     1
+    ],
+    [
+     "South Border",
+     1
+    ],
+    [
+     "primeval sea",
+     1
+    ],
+    [
+     "Chi Lian",
+     1
+    ],
+    [
+     "The Awakening Ceremony",
+     1
+    ],
+    [
+     "Guamong",
+     1
+    ]
+   ],
+   "only_hybrid_total": 20,
+   "only_legacy_top30": [
+    [
+     "Gu Yue clan head",
+     3
+    ],
+    [
+     "Fang Zhi",
+     2
+    ],
+    [
+     "Gu Yue Chen Bo",
+     2
+    ],
+    [
+     "Gu Yue Zao Xie",
+     1
+    ]
+   ],
+   "only_legacy_total": 4,
+   "entities_only_legacy": 3,
+   "entities_only_hybrid": 14,
+   "entities_only_legacy_examples": [
+    [
+     "fang zhi"
+    ],
+    [
+     "gu yue chen bo"
+    ],
+    [
+     "gu yue zao xie"
+    ]
+   ],
+   "entities_only_hybrid_examples": [
+    [
+     "ancestors"
+    ],
+    [
+     "gu master"
+    ],
+    [
+     "fang zhi’s"
+    ],
+    [
+     "primeval sea"
+    ],
+    [
+     "fang zhen"
+    ],
+    [
+     "fang"
+    ],
+    [
+     "gu yue"
+    ],
+    [
+     "south border"
+    ],
+    [
+     "chen bo"
+    ],
+    [
+     "gu clan"
+    ],
+    [
+     "the first generation clan leader"
+    ],
+    [
+     "guamong"
+    ],
+    [
+     "human"
+    ],
+    [
+     "the awakening ceremony"
+    ]
+   ]
+  },
+  {
+   "novel": "reverend-insanity",
+   "chapters": "1-32",
+   "legacy": {
+    "mentions": 1301,
+    "distinct_surfaces": 78,
+    "mention_wall_s": 574.9,
+    "resolve_wall_s": 3.0,
+    "ollama_models_seen": [
+     "qwen2.5:7b"
+    ],
+    "gpu_peak_mib": 4893,
+    "detector_name": "QwenNerDetector",
+    "groups": 259,
+    "linked": 137,
+    "created": 53,
+    "deferred": 2,
+    "escalated": 2,
+    "unresolved": 7,
+    "entities": 53,
+    "by_method": {
+     "SCORED": 53,
+     "NAME_CONTAINMENT": 5,
+     "GAZETTEER_EXACT": 131,
+     "DECLARATION": 1
+    }
+   },
+   "hybrid": {
+    "mentions": 1412,
+    "distinct_surfaces": 121,
+    "mention_wall_s": 1305.0,
+    "resolve_wall_s": 4.1,
+    "ollama_models_seen": [
+     "qwen3:8b"
+    ],
+    "gpu_peak_mib": 5810,
+    "detector_name": "hybrid(gliner:/home/adhyan/.cache/huggingface/local/gliner_medium-v2.1+spacy:en_core_web_sm)",
+    "groups": 340,
+    "linked": 198,
+    "created": 84,
+    "deferred": 2,
+    "escalated": 2,
+    "unresolved": 8,
+    "entities": 84,
+    "by_method": {
+     "SCORED": 84,
+     "NAME_CONTAINMENT": 8,
+     "GAZETTEER_EXACT": 185,
+     "DECLARATION": 1,
+     "RELATIONAL_COPRESENCE": 4
+    }
+   },
+   "only_hybrid_top30": [
+    [
+     "the Spring Autumn Cicada",
+     20
+    ],
+    [
+     "Predicaments",
+     12
+    ],
+    [
+     "Chen Bo",
+     7
+    ],
+    [
+     "clan head",
+     7
+    ],
+    [
+     "Fang",
+     6
+    ],
+    [
+     "Sir Flower Wine",
+     6
+    ],
+    [
+     "Rank",
+     5
+    ],
+    [
+     "The Spring Autumn Cicada",
+     5
+    ],
+    [
+     "Moonshadow Gu",
+     4
+    ],
+    [
+     "the Liquor worm",
+     3
+    ],
+    [
+     "Demonic Faction",
+     3
+    ],
+    [
+     "Dragonpill",
+     3
+    ],
+    [
+     "Rice Pouch",
+     3
+    ],
+    [
+     "Grass Gu",
+     3
+    ],
+    [
+     "Fang Zhi’s",
+     2
+    ],
+    [
+     "Chi Chen",
+     2
+    ],
+    [
+     "Chi Lian",
+     2
+    ],
+    [
+     "Gu Yue Dong Tu",
+     2
+    ],
+    [
+     "Enslavement Gu",
+     2
+    ],
+    [
+     "Photo",
+     2
+    ],
+    [
+     "Demonic faction",
+     2
+    ],
+    [
+     "Milky Way",
+     2
+    ],
+    [
+     "House",
+     2
+    ],
+    [
+     "The River of Time",
+     2
+    ],
+    [
+     "the River of Time",
+     2
+    ],
+    [
+     "Chibigen",
+     2
+    ],
+    [
+     "Primeval Sea",
+     1
+    ],
+    [
+     "Gu Clan",
+     1
+    ],
+    [
+     "The first generation clan leader",
+     1
+    ],
+    [
+     "South Border",
+     1
+    ]
+   ],
+   "only_hybrid_total": 55,
+   "only_legacy_top30": [
+    [
+     "Hope Gu",
+     7
+    ],
+    [
+     "Gu Yue clan head",
+     6
+    ],
+    [
+     "Gu Master",
+     4
+    ],
+    [
+     "Fang Zhi",
+     2
+    ],
+    [
+     "Gu Yue Chen Bo",
+     2
+    ],
+    [
+     "Feng",
+     2
+    ],
+    [
+     "Gu Yue Zao Xie",
+     1
+    ],
+    [
+     "Primeval Sea Aperture",
+     1
+    ],
+    [
+     "Uncle Gu Yue Dong Tu",
+     1
+    ],
+    [
+     "New Year",
+     1
+    ],
+    [
+     "Awakening Ceremony",
+     1
+    ],
+    [
+     "uncle Gu Yue Dong Tu",
+     1
+    ]
+   ],
+   "only_legacy_total": 12,
+   "entities_only_legacy": 10,
+   "entities_only_hybrid": 41,
+   "entities_only_legacy_examples": [
+    [
+     "fang zhi"
+    ],
+    [
+     "gu yue chen bo"
+    ],
+    [
+     "gu yue zao xie"
+    ],
+    [
+     "hope gu"
+    ],
+    [
+     "primeval sea aperture"
+    ],
+    [
+     "uncle",
+     "uncle gu yue dong tu"
+    ],
+    [
+     "gu master",
+     "gumaster"
+    ],
+    [
+     "feng"
+    ],
+    [
+     "new year"
+    ],
+    [
+     "awakening ceremony"
+    ]
+   ],
+   "entities_only_hybrid_examples": [
+    [
+     "fang zhi’s"
+    ],
+    [
+     "primeval sea"
+    ],
+    [
+     "fang"
+    ],
+    [
+     "south border"
+    ],
+    [
+     "chen bo"
+    ],
+    [
+     "gu clan"
+    ],
+    [
+     "the first generation clan leader"
+    ],
+    [
+     "guamong"
+    ],
+    [
+     "the awakening ceremony"
+    ],
+    [
+     "flower wink monk"
+    ],
+    [
+     "rank"
+    ],
+    [
+     "gu yue dong tu",
+     "uncle"
+    ],
+    [
+     "gu masters",
+     "gumaster",
+     "gumasters"
+    ],
+    [
+     "demonic faction"
+    ],
+    [
+     "brother feng"
+    ]
+   ]
+  }
+ ],
+ "hardcases_ri": {
+  "ch1-5_legacy": {
+   "exact": {
+    "not-detected": 3,
+    "unresolved": 0,
+    "correct": 3,
+    "wrong": 0,
+    "gold-unmapped": 0,
+    "n": 6
+   },
+   "overlap": {
+    "not-detected": 2,
+    "unresolved": 0,
+    "correct": 3,
+    "wrong": 0,
+    "gold-unmapped": 1,
+    "n": 6
+   }
+  },
+  "ch1-5_hybrid": {
+   "exact": {
+    "not-detected": 3,
+    "unresolved": 0,
+    "correct": 3,
+    "wrong": 0,
+    "gold-unmapped": 0,
+    "n": 6
+   },
+   "overlap": {
+    "not-detected": 2,
+    "unresolved": 0,
+    "correct": 3,
+    "wrong": 0,
+    "gold-unmapped": 1,
+    "n": 6
+   }
+  },
+  "ch1-32_legacy": {
+   "exact": {
+    "not-detected": 11,
+    "unresolved": 0,
+    "correct": 6,
+    "wrong": 0,
+    "gold-unmapped": 0,
+    "n": 17
+   },
+   "overlap": {
+    "not-detected": 8,
+    "unresolved": 0,
+    "correct": 7,
+    "wrong": 0,
+    "gold-unmapped": 2,
+    "n": 17
+   }
+  },
+  "ch1-32_hybrid": {
+   "exact": {
+    "not-detected": 11,
+    "unresolved": 0,
+    "correct": 6,
+    "wrong": 0,
+    "gold-unmapped": 0,
+    "n": 17
+   },
+   "overlap": {
+    "not-detected": 8,
+    "unresolved": 0,
+    "correct": 7,
+    "wrong": 0,
+    "gold-unmapped": 2,
+    "n": 17
+   }
+  }
+ },
+ "litbank_20doc_subset_seed_20260925": {
+  "legacy": {
+   "detector": "llm",
+   "model": "qwen2.5:7b via local ollama (NER only)",
+   "docs": 20,
+   "subset_seed": 20260925,
+   "runtime_s": 356.0,
+   "protocols": {
+    "P1_full_person_key": {
+     "key_restricted": {
+      "MUC_F1": 12.4,
+      "B3_F1": 37.07,
+      "CEAFe_F1": 4.96,
+      "CoNLL_F1": 18.15,
+      "system_mentions": 363,
+      "gold_mentions": 4712
+     },
+     "standard": {
+      "MUC_F1": 12.24,
+      "B3_F1": 38.71,
+      "CEAFe_F1": 4.64,
+      "CoNLL_F1": 18.53,
+      "system_mentions": 446,
+      "gold_mentions": 4712
+     }
+    },
+    "P2_proper_name_mentions_only": {
+     "key_restricted": {
+      "MUC_F1": 73.35,
+      "B3_F1": 76.03,
+      "CEAFe_F1": 44.63,
+      "CoNLL_F1": 64.67,
+      "system_mentions": 347,
+      "gold_mentions": 566
+     },
+     "standard": {
+      "MUC_F1": 68.15,
+      "B3_F1": 76.31,
+      "CEAFe_F1": 35.4,
+      "CoNLL_F1": 59.95,
+      "system_mentions": 446,
+      "gold_mentions": 566
+     }
+    }
+   }
+  },
+  "hybrid": {
+   "detector": "hybrid",
+   "model": "hybrid: GLiNER + spaCy + qwen3:8b",
+   "docs": 20,
+   "subset_seed": 20260925,
+   "runtime_s": 1218.3,
+   "protocols": {
+    "P1_full_person_key": {
+     "key_restricted": {
+      "MUC_F1": 13.47,
+      "B3_F1": 37.19,
+      "CEAFe_F1": 9.24,
+      "CoNLL_F1": 19.97,
+      "system_mentions": 470,
+      "gold_mentions": 4712
+     },
+     "standard": {
+      "MUC_F1": 13.3,
+      "B3_F1": 39.17,
+      "CEAFe_F1": 8.64,
+      "CoNLL_F1": 20.37,
+      "system_mentions": 570,
+      "gold_mentions": 4712
+     }
+    },
+    "P2_proper_name_mentions_only": {
+     "key_restricted": {
+      "MUC_F1": 77.12,
+      "B3_F1": 78.02,
+      "CEAFe_F1": 60.0,
+      "CoNLL_F1": 71.72,
+      "system_mentions": 420,
+      "gold_mentions": 566
+     },
+     "standard": {
+      "MUC_F1": 71.66,
+      "B3_F1": 79.37,
+      "CEAFe_F1": 43.06,
+      "CoNLL_F1": 64.7,
+      "system_mentions": 570,
+      "gold_mentions": 566
+     }
+    }
+   }
+  }
+ }
+}

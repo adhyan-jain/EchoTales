@@ -175,7 +175,7 @@ class ModelClient:
         if self.backend is ModelBackend.OLLAMA:
             # `local-low` caps the director's context (and may swap its model): `compute.py` has the measurements.
             director = task is Task.PANEL_DIRECTION
-            model = self.policy.director_model(profile.ollama_model) if director else profile.ollama_model
+            model = self._ollama_model(task, profile)
             num_ctx = self.policy.director_num_ctx(self.settings.llm_local_num_ctx) if director else self.settings.llm_local_num_ctx
             check_llm_model(model, provider="ollama")
             key = f"{model}@{num_ctx}"
@@ -227,15 +227,23 @@ class ModelClient:
             self._providers[model] = existing
         return existing
 
+    def _ollama_model(self, task: Task | None, profile: TaskProfile) -> str:
+        """The ollama model for a task: the director's policy-chosen model, the hybrid detector's configured context
+        classifier (`mentions.classifier_model`; qwen3:8b beat the Qwen2.5 default 0.900 vs 0.857-0.785 boundary F1 in the
+        D69 bake-off), else the task profile's."""
+        if task is Task.PANEL_DIRECTION:
+            return self.policy.director_model(profile.ollama_model)
+        if task is Task.NER_CLASSIFY:
+            return str(getattr(self.settings, "mentions_classifier_model", "") or profile.ollama_model)
+        return profile.ollama_model
+
     def model_for(self, task: Task) -> str:
         """Which model this task resolves to under the current backend."""
         profile = profile_for(task)
         if self.backend is ModelBackend.STUB:
             return "stub"
         if self.backend is ModelBackend.OLLAMA:
-            if task is Task.PANEL_DIRECTION:
-                return self.policy.director_model(profile.ollama_model)
-            return profile.ollama_model
+            return self._ollama_model(task, profile)
         if self.backend is ModelBackend.GATEWAY:
             return self.settings.llm_gateway_model
         if self.backend in (ModelBackend.RUNPOD, ModelBackend.OPENAI, ModelBackend.GEMINI):

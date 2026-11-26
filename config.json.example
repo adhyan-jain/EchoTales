@@ -16,6 +16,7 @@
   "mentions": {
     "detector": "llm",
     "gliner_model": "urchade/gliner_medium-v2.1",
+    "classifier_model": "qwen3:8b",
     "tau_high": 0.7,
     "tau_low": 0.3
   }

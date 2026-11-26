@@ -1,0 +1,59 @@
+{
+  "banner": "SILVER -- LLM-derived reference set (Claude), not human gold; no IAA",
+  "db": "data/scratch/ner_realdata/reverend-insanity-ch1-5-legacy.db",
+  "gold": "data/gold/reverend-insanity-hardcases.jsonl",
+  "outcomes": {
+    "exact": {
+      "ALL": {
+        "not-detected": 3,
+        "unresolved": 0,
+        "correct": 3,
+        "wrong": 0,
+        "gold-unmapped": 0,
+        "n": 6
+      },
+      "body_change": {
+        "not-detected": 2,
+        "unresolved": 0,
+        "correct": 3,
+        "wrong": 0,
+        "gold-unmapped": 0,
+        "n": 5
+      },
+      "disguise": {
+        "not-detected": 1,
+        "unresolved": 0,
+        "correct": 0,
+        "wrong": 0,
+        "gold-unmapped": 0,
+        "n": 1
+      }
+    },
+    "overlap": {
+      "ALL": {
+        "not-detected": 2,
+        "unresolved": 0,
+        "correct": 3,
+        "wrong": 0,
+        "gold-unmapped": 1,
+        "n": 6
+      },
+      "body_change": {
+        "not-detected": 2,
+        "unresolved": 0,
+        "correct": 3,
+        "wrong": 0,
+        "gold-unmapped": 0,
+        "n": 5
+      },
+      "disguise": {
+        "not-detected": 0,
+        "unresolved": 0,
+        "correct": 0,
+        "wrong": 0,
+        "gold-unmapped": 1,
+        "n": 1
+      }
+    }
+  }
+}

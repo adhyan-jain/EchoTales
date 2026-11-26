@@ -357,13 +357,34 @@ class TestRunnerWiring:
         defaults = Settings()
         assert (defaults.mentions_detector, defaults.mentions_tau_high, defaults.mentions_tau_low) == ("llm", 0.7, 0.3)
         assert defaults.mentions_gliner_model == "urchade/gliner_medium-v2.1"
+        assert defaults.mentions_classifier_model == "qwen3:8b"
         cfg = tmp_path / "config.json"
-        cfg.write_text(json.dumps({"mentions": {"detector": "hybrid", "gliner_model": "m", "tau_high": 0.8}}))
+        cfg.write_text(json.dumps({"mentions": {"detector": "hybrid", "gliner_model": "/p/gliner", "classifier_model": "c:1b", "tau_high": 0.8}}))
         monkeypatch.setattr(config_mod, "_CONFIG_JSON", cfg)
         loaded = config_mod._load_config_json()
-        assert loaded == {"mentions_detector": "hybrid", "mentions_gliner_model": "m", "mentions_tau_high": 0.8}
+        assert loaded == {"mentions_detector": "hybrid", "mentions_gliner_model": "/p/gliner", "mentions_classifier_model": "c:1b",
+                          "mentions_tau_high": 0.8}
         cfg.write_text("{}")
         assert config_mod._load_config_json() == {}
+
+
+class TestClassifierModelRouting:
+    """`mentions.classifier_model` moves only Task.NER_CLASSIFY on the ollama backend (D69: qwen3:8b beat qwen2.5:7b)."""
+
+    def test_classify_follows_the_setting_and_ner_keeps_its_profile(self) -> None:
+        from echotales.pipeline.config import ModelBackend
+        from echotales.pipeline.llm.client import ModelClient
+
+        client = ModelClient(settings=Settings(model_backend=ModelBackend.OLLAMA, mentions_classifier_model="qwen3:8b"))
+        assert client.model_for(Task.NER_CLASSIFY) == "qwen3:8b"
+        assert client.model_for(Task.NER) == profile_for(Task.NER).ollama_model
+        blank = ModelClient(settings=Settings(model_backend=ModelBackend.OLLAMA, mentions_classifier_model=""))
+        assert blank.model_for(Task.NER_CLASSIFY) == profile_for(Task.NER_CLASSIFY).ollama_model
+
+    def test_qwen3_8b_passes_the_size_policy_by_its_tag(self) -> None:
+        from echotales.pipeline.engines.registry import check_llm_model
+
+        check_llm_model("qwen3:8b", provider="ollama")
 
 
 class TestPerOccurrenceAcceptance:

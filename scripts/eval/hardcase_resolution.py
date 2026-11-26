@@ -61,6 +61,9 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--db", default="data/db/reverend-insanity.db")
     ap.add_argument("--out", default="data/eval/hardcase_resolution.json")
+    ap.add_argument("--max-chapter", type=float, default=None,
+                    help="count only gold mentions in chapters <= this (a DB holding a chapter prefix would otherwise "
+                         "report every later hard case as not-detected)")
     args = ap.parse_args()
 
     store = Store(args.db)
@@ -69,7 +72,7 @@ def main() -> int:
     alignments = {"exact": align_system_mentions(store, NOVEL, gold), "overlap": _overlap(store, gold)}
     store.close()
 
-    tables = {mode: _tabulate(gold, aligned, mapping) for mode, aligned in alignments.items()}
+    tables = {mode: _tabulate(gold, aligned, mapping, args.max_chapter) for mode, aligned in alignments.items()}
     print(SILVER_BANNER)
     for mode, table in tables.items():
         print(f"\nalignment = {mode}")
@@ -108,11 +111,11 @@ def _overlap(store: Store, gold: GoldSet) -> dict[MentionKey, Mention | None]:
 
 
 def _tabulate(
-    gold: GoldSet, aligned: dict[MentionKey, Mention | None], mapping: dict[str, str]
+    gold: GoldSet, aligned: dict[MentionKey, Mention | None], mapping: dict[str, str], max_chapter: float | None = None
 ) -> dict[str, dict[str, int]]:
     counts: dict[str, Counter[str]] = defaultdict(Counter)
     for m in gold.mentions:
-        if not m.identity:
+        if not m.identity or (max_chapter is not None and m.chapter > max_chapter):
             continue
         sm = aligned.get(m.key)
         detected = sm is not None
