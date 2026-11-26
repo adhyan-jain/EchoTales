@@ -276,7 +276,11 @@ def test_brief_from_direction_passes_beat_text_and_director_v2_fields(tmp_path) 
     from echotales.core.enums import TargetKind
     from echotales.core.models import DiscoursePosition, Self
     from echotales.core.store import Store
-    from echotales.pipeline.render.direction import CharacterDirection, OthersDirection, PanelDirection
+    from echotales.pipeline.render.direction import (
+        CharacterDirection,
+        OthersDirection,
+        PanelDirection,
+    )
 
     dir_obj = PanelDirection(
         shot="close",
@@ -351,3 +355,97 @@ def test_an_over_the_shoulder_listener_the_director_left_out_joins_from_the_cast
     d = PanelDirection(characters=[CharacterDirection(name="Fang Yuan")], frame_focus="over-shoulder", frame_subject="Bai Ning Bing")
     brief = brief_from_direction(_two_person_store(tmp_path), "n", ["s1", "s2"], 1.0, d)
     assert [(c.name, c.back_turned, c.lead) for c in brief.characters] == [("Fang Yuan", False, True), ("Bai Ning Bing", True, False)]
+
+
+def test_storyboard_sfx_title_and_insert_detail_briefs(tmp_path) -> None:
+    from echotales.pipeline.render.compiler import brief_from_storyboard
+    from echotales.pipeline.render.storyboard_schema import (
+        NarrativeFunction,
+        ShotType,
+        StoryboardPanel,
+    )
+
+    store = _two_person_store(tmp_path)
+
+    # 1. SFX Title spread
+    sfx_panel = StoryboardPanel(
+        panel_id="p_sfx", scene_id="s1", beat_id="b1",
+        narrative_function=NarrativeFunction.SFX_TITLE,
+        shot_type=ShotType.WIDE,
+        action_visual="Massive thunderclap splits the heavens",
+        sfx_text="BOOM",
+        segment_palette="battle_dusk",
+    )
+    sfx_brief = brief_from_storyboard(store, "reverend-insanity", ["s1"], 1.0, sfx_panel)
+    assert sfx_brief.narrative_function == "sfx_title"
+    assert sfx_brief.panel_geometry == "diagonal_right"
+    assert sfx_brief.frame_focus == "prop"
+    assert "battle dusk" in sfx_brief.lighting
+    out_sfx = compile_prompt(sfx_brief, model_profile("z-image-turbo"))
+    assert "Dynamic impact splash" in out_sfx.positive
+
+    # 2. Insert Detail macro shot
+    insert_panel = StoryboardPanel(
+        panel_id="p_ins", scene_id="s1", beat_id="b1",
+        narrative_function=NarrativeFunction.INSERT_DETAIL,
+        shot_type=ShotType.EXTREME_CLOSE_UP,
+        props_visible=["Spring Autumn Cicada"],
+        action_visual="Green jade wings trembling",
+    )
+    ins_brief = brief_from_storyboard(store, "reverend-insanity", ["s1"], 1.0, insert_panel)
+    assert ins_brief.frame_focus == "prop"
+    assert ins_brief.frame_subject == "Spring Autumn Cicada"
+    assert ins_brief.shot == "close"
+    assert len(ins_brief.characters) == 0
+
+
+def test_storyboard_symbolic_memory_and_reaction_briefs(tmp_path) -> None:
+    from echotales.pipeline.render.compiler import brief_from_storyboard
+    from echotales.pipeline.render.storyboard_schema import (
+        NarrativeFunction,
+        ShotType,
+        StoryboardPanel,
+    )
+
+    store = _two_person_store(tmp_path)
+
+    # Symbolic cut
+    sym_panel = StoryboardPanel(
+        panel_id="p_sym", scene_id="s1", beat_id="b1",
+        narrative_function=NarrativeFunction.SYMBOLIC,
+        shot_type=ShotType.MEDIUM_PORTRAIT,
+        subjects=["Fang Yuan"],
+        action_visual="Chains shattering into golden motes of light",
+    )
+    sym_brief = brief_from_storyboard(store, "reverend-insanity", ["s1"], 1.0, sym_panel)
+    assert sym_brief.narrative_function == "symbolic"
+    out_sym = compile_prompt(sym_brief, model_profile("z-image-turbo"))
+    assert "Symbolic" in out_sym.positive
+
+    # Memory montage
+    mem_panel = StoryboardPanel(
+        panel_id="p_mem", scene_id="s1", beat_id="b1",
+        narrative_function=NarrativeFunction.MEMORY_MONTAGE,
+        shot_type=ShotType.MEDIUM_PORTRAIT,
+        subjects=["Fang Yuan"],
+        action_visual="Younger brother standing in moonlight five hundred years ago",
+    )
+    mem_brief = brief_from_storyboard(store, "reverend-insanity", ["s1"], 1.0, mem_panel)
+    assert mem_brief.narrative_function == "memory_montage"
+    out_mem = compile_prompt(mem_brief, model_profile("z-image-turbo"))
+    assert "Flashback" in out_mem.positive
+
+    # Reaction shot prioritizing listening character
+    react_panel = StoryboardPanel(
+        panel_id="p_react", scene_id="s1", beat_id="b1",
+        narrative_function=NarrativeFunction.REACTION,
+        shot_type=ShotType.CLOSE_UP,
+        subjects=["Fang Yuan", "Bai Ning Bing"],
+        speaking_character="Fang Yuan",
+        listening_character="Bai Ning Bing",
+        expression_visual="stunned shock and dawning realization",
+    )
+    react_brief = brief_from_storyboard(store, "reverend-insanity", ["s1", "s2"], 1.0, react_panel)
+    assert react_brief.characters[0].name == "Bai Ning Bing"
+    assert react_brief.characters[0].lead is True
+

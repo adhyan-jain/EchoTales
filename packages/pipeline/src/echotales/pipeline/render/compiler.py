@@ -265,6 +265,13 @@ class PanelBrief:
     #: "text" when the panel's own text shows something; "inferred" when the director chose a visual from the text's
     #: referents because nothing visible was stated. Carried so `audit` can count them.
     visual_source: str = ""
+    #: Narrative function from Cohn VNG / Storyboard Director (e.g. "sfx_title", "insert_detail", "symbolic", "memory_montage").
+    narrative_function: str = ""
+    #: Panel cut geometry for webtoon layouts ("rectangle", "diagonal_left", "diagonal_right", "full_bleed", "inset").
+    panel_geometry: str = "rectangle"
+    #: Active volume color/light segment palette (e.g. "battle_dusk", "calm_dawn").
+    segment_palette: str = ""
+
 
 
 def genre_direction(novel_id: str) -> tuple[str, str, bool]:
@@ -502,6 +509,8 @@ _NATURAL_SHOT = {"wide": "A wide establishing shot", "medium": "A medium shot", 
 _NOUN = {"male": "man", "female": "woman"}
 #: Adults are drawn as adults: a face with a defined jaw and mature proportions, never the big-eyed round face of a child.
 _ADULT_FACE = ", an adult face with a defined jaw and mature proportions"
+#: Middle-aged adults are drawn with distinguished maturity and subtle laugh lines, preventing the 25-30 young adult bias.
+_MIDDLE_AGED_FACE = ", a middle-aged face with subtle laugh lines, mature weathered features and distinguished composure"
 _CHILD_NOUN = {"male": "boy", "female": "girl", "unknown": "child"}
 _TEEN_NOUN = {"male": "teenage boy", "female": "teenage girl", "unknown": "teenager"}
 _CREATURE_WORDS = re.compile(r"\b(beast|centipede|demon|spirit|dragon|monster|imp|wolf|chimera|creature|fiend)\b", re.IGNORECASE)
@@ -543,6 +552,9 @@ def _identity_head(c: CharacterBrief) -> tuple[str, bool]:
     elif young:
         noun = _TEEN_NOUN.get(c.gender, "teenager")
         head = f"{c.name} is a {noun}"
+    elif age_band in ("middle_aged", "middle-aged", "middle aged"):
+        noun = _NOUN.get(c.gender, "person")
+        head = f"{c.name} is a middle-aged {noun}"
     else:
         noun = _NOUN.get(c.gender, "person")
         age = c.age_band if c.age_band and c.age_band not in ("adult", "unknown", "youth") else ""
@@ -602,6 +614,8 @@ def identity_sentence(c: CharacterBrief, appearance: AppearanceInText = Appearan
         text += " with " + (", ".join(feats[:-1]) + " and " + feats[-1] if len(feats) > 1 else feats[0])
     if young:
         text += ", a smooth youthful face and a " + ("slight build" if c.gender == "female" else "slim boyish build")
+    elif c.age_band in ("middle_aged", "middle-aged", "middle aged"):
+        text += _MIDDLE_AGED_FACE
     elif c.age_band != "elder":
         text += _ADULT_FACE
     if c.attire:
@@ -738,6 +752,16 @@ def _compile_natural(b: PanelBrief, profile: ModelProfile, appearance: Appearanc
     if where or tail or is_indoor:
         sentence = (f"The setting is {indoor_prefix}{where}" if where else f"The setting is {indoor_prefix.rstrip('; ')}") + (f"; {tail}" if tail and where else f" {tail}" if tail else "")
         s.append(PromptSection("setting", sentence + "." + objs))
+    if b.narrative_function:
+        nf = b.narrative_function.lower()
+        if nf == "sfx_title":
+            s.append(PromptSection("narrative", "Dynamic impact splash title spread, intense visual energy, bold stylized kinetic impact."))
+        elif nf == "symbolic":
+            s.append(PromptSection("narrative", "Symbolic metaphorical visualization, surreal dreamlike atmosphere reflecting psychological subtext."))
+        elif nf == "memory_montage":
+            s.append(PromptSection("narrative", "Flashback memory sequence, soft nostalgic edges, illuminated memory glow, dreamlike vignette framing."))
+    if b.segment_palette:
+        s.append(PromptSection("palette", f"Color palette keyed to {_plain(b.segment_palette)}."))
     s.append(PromptSection("style", _style_sentence(b)))
     s = [x for x in s if x.text]
     return CompiledPrompt(
@@ -751,7 +775,7 @@ def _compile_natural(b: PanelBrief, profile: ModelProfile, appearance: Appearanc
 def _back_identity(c: CharacterBrief, appearance: AppearanceInText) -> str:
     """The identity sentence of the back-turned listener: his own hair and clothes (so the foreground figure matches the man the
     reader knows, P&P ch1 v3 drew an unrelated dark-coated stranger), with the face sentence swapped for the fact that it is hidden."""
-    text = identity_sentence(c, appearance).replace(_ADULT_FACE, "").rstrip(" .")
+    text = identity_sentence(c, appearance).replace(_ADULT_FACE, "").replace(_MIDDLE_AGED_FACE, "").rstrip(" .")
     text = text.replace(", a smooth youthful face", "")
     return f"{text}. He is the figure in the foreground seen from behind, his face turned away and hidden." if c.gender != "female" else (
         f"{text}. She is the figure in the foreground seen from behind, her face turned away and hidden.")
@@ -843,6 +867,16 @@ def _compile_composed(b: PanelBrief, profile: ModelProfile, appearance: Appearan
         clauses.append(f"the light is {light}")
     if clauses:
         s.append(PromptSection("setting", f"Setting: {'; '.join(clauses)}."))
+    if b.narrative_function:
+        nf = b.narrative_function.lower()
+        if nf == "sfx_title":
+            s.append(PromptSection("sfx_spread", "Dynamic impact splash title spread with stylized atmospheric visual effects."))
+        elif nf == "symbolic":
+            s.append(PromptSection("symbolic", "Symbolic visual metaphor, surreal atmospheric composition reflecting inner state."))
+        elif nf == "memory_montage":
+            s.append(PromptSection("flashback", "Monochromatic flashback wash, soft vignette halo, distant memory aesthetic."))
+    if b.segment_palette:
+        s.append(PromptSection("palette", f"Color palette keyed to {_plain(b.segment_palette)}."))
     return CompiledPrompt(
         positive=" ".join(x.text for x in s), negative="", sections=s, negative_sections=[], family=profile.family,
         mode=b.mode, appearance_written=written, demeanour_fields=fields,
@@ -1045,6 +1079,17 @@ def _compile_sdxl(b: PanelBrief, profile: ModelProfile, appearance: AppearanceIn
         s.append(PromptSection("objects", ", ".join(_tags(b.key_objects, profile))))
     if b.mood:
         s.append(PromptSection("mood", ", ".join(_tags([b.mood], profile))))
+    if b.narrative_function:
+        nftags = {
+            "sfx_title": ["sound effect", "impact", "dynamic angle", "dramatic splash"],
+            "insert_detail": ["macro shot", "detail", "close-up"],
+            "symbolic": ["surreal", "symbolic", "metaphorical", "atmospheric"],
+            "memory_montage": ["flashback", "memory", "vignette", "sepia", "soft focus"],
+        }.get(b.narrative_function.lower(), [])
+        if nftags:
+            s.append(PromptSection("narrative", ", ".join(_tags(nftags, profile))))
+    if b.segment_palette:
+        s.append(PromptSection("palette", ", ".join(_tags([b.segment_palette.replace("_", " ")], profile))))
     style = _mode_tags(b) + ([b.art_direction] if b.art_direction else []) + ([b.era_wardrobe] if b.era_wardrobe else [])
     s.append(PromptSection("style", ", ".join(_tags(style, profile))))
     s = [x for x in s if x.text]
@@ -1360,7 +1405,210 @@ _HOLDS = re.compile(
     r"hands?|fists?|fingers?|palms?|sleeves?|pocket\w*)\b", re.I)
 
 
+def brief_from_storyboard(
+    store: object,
+    novel_id: str,
+    self_ids: list[str],
+    position: float,
+    panel: object,
+    *,
+    location: str = "",
+    mode: OutputMode = OutputMode.MANGA,
+    gender_hint: str = "",
+    scene: object | None = None,
+) -> PanelBrief:
+    """A `PanelBrief` produced from a `StoryboardPanel` (P2 storyboard director).
+
+    Maps narrative functions (SFX title, insert detail, symbolic cut, memory montage, reaction)
+    and camera planning (shot variety, 180-degree axis line, diagonal webtoon cuts) into the
+    prompt compiler's structured representation.
+    """
+    from types import SimpleNamespace
+
+    from echotales.pipeline.render.direction import name_key
+    from echotales.pipeline.render.lightgrade import light_grade
+
+    art, wardrobe, manhua = genre_direction(novel_id)
+
+    narrative_func = str(getattr(panel, "narrative_function", "") or "").lower()
+    shot_type = str(getattr(panel, "shot_type", "medium_portrait") or "").lower()
+    camera_angle = str(getattr(panel, "camera_angle", "eye_level") or "").lower()
+    screen_dir = str(getattr(panel, "screen_direction", "front") or "").lower()
+    subjects = list(getattr(panel, "subjects", []) or [])
+    speaking = getattr(panel, "speaking_character", None) or ""
+    listening = getattr(panel, "listening_character", None) or ""
+    is_crowd = bool(getattr(panel, "is_crowd_shot", False))
+    action = getattr(panel, "action_visual", "") or ""
+    expression = getattr(panel, "expression_visual", "") or ""
+    environment = getattr(panel, "environment_visual", "") or ""
+    props = list(getattr(panel, "props_visible", []) or [])
+    segment_palette = getattr(panel, "segment_palette", "") or ""
+    sfx_text = getattr(panel, "sfx_text", None) or ""
+
+    _SHOT_MAP = {
+        "extreme_wide": "wide",
+        "wide": "wide",
+        "medium_two_shot": "medium",
+        "medium_portrait": "medium",
+        "over_the_shoulder": "medium",
+        "close_up": "close",
+        "extreme_close_up": "close",
+    }
+    shot = _SHOT_MAP.get(shot_type, "medium")
+
+    _CAMERA_MAP = {
+        "eye_level": "eye-level",
+        "low_angle": "low angle, looking up",
+        "high_angle": "high angle, looking down",
+        "dutch_tilt": "dutch tilt dynamic slanted angle",
+        "overhead": "overhead bird's-eye view",
+    }
+    camera = _CAMERA_MAP.get(camera_angle, camera_angle.replace("_", " "))
+
+    frame_focus = ""
+    frame_subject = ""
+    framing = ""
+
+    if narrative_func in ("insert_detail", "insert"):
+        frame_focus = "prop"
+        frame_subject = props[0] if props else "detail"
+        shot = "close"
+        framing = f"Insert detail macro shot of {frame_subject}."
+    elif narrative_func == "sfx_title":
+        framing = "Dynamic visual impact title spread."
+        if not subjects:
+            frame_focus = "prop"
+            frame_subject = "title splash"
+    elif narrative_func == "symbolic":
+        framing = "Surreal symbolic visualization framing."
+    elif narrative_func == "memory_montage":
+        framing = "Flashback memory montage framing."
+    elif shot_type == "over_the_shoulder":
+        frame_focus = "over-shoulder"
+        frame_subject = listening
+        framing = "Over-the-shoulder shot framing."
+    elif shot_type == "extreme_close_up":
+        frame_focus = "prop" if not subjects and props else "eyes"
+        frame_subject = props[0] if props else ""
+        framing = f"Extreme close-up macro framing on {frame_subject}." if frame_subject else "Extreme close-up macro framing."
+    elif shot_type == "close_up":
+        framing = "Close-up shot framing."
+    elif shot_type == "medium_two_shot":
+        framing = "Two-shot medium framing."
+    elif shot_type == "extreme_wide":
+        frame_focus = "overview"
+        framing = "Extreme wide panoramic establishing shot."
+    else:
+        framing = f"{shot_type.replace('_', ' ').capitalize()} framing."
+
+    if narrative_func in ("peak", "sfx_title") or sfx_text or camera_angle == "dutch_tilt":
+        panel_geometry = "diagonal_right"
+    else:
+        panel_geometry = getattr(panel, "panel_geometry", "rectangle")
+
+    ordered_subjects: list[str] = []
+    if narrative_func == "reaction" and listening and listening in subjects:
+        ordered_subjects.append(listening)
+    elif speaking and speaking in subjects:
+        ordered_subjects.append(speaking)
+
+    for s in subjects:
+        if s not in ordered_subjects:
+            ordered_subjects.append(s)
+
+    dir_chars = [
+        SimpleNamespace(
+            name=s,
+            position="left" if screen_dir == "facing_right" and i == 0 else "right" if screen_dir == "facing_left" and i == 0 else "center",
+            pose="standing",
+            expression=expression if i == 0 else "",
+        )
+        for i, s in enumerate(ordered_subjects)
+    ]
+    matched = _match_director_characters(store, self_ids, dir_chars) if dir_chars else []
+    chars: list[CharacterBrief] = []
+    if matched:
+        for i, (cd, sid) in enumerate(matched):
+            expr = getattr(cd, "expression", "") or (expression if i == 0 else "")
+            cb = character_brief(
+                store, novel_id, sid, position, gender_hint=gender_hint, lead=i == 0,
+                stated_expression=expr, beat_text="", scene=scene,
+            )
+            cb.position = getattr(cd, "position", "center") or "center"
+            cb.pose = getattr(cd, "pose", "standing") or "standing"
+            chars.append(cb)
+    else:
+        for i, sid in enumerate(self_ids):
+            cb = character_brief(
+                store, novel_id, sid, position, gender_hint=gender_hint, lead=i == 0,
+                stated_expression=expression if i == 0 else "",
+                beat_text="", scene=scene,
+            )
+            chars.append(cb)
+
+    if frame_focus == "over-shoulder" and frame_subject and chars:
+        want = set(name_key(frame_subject).split())
+        for c in chars:
+            have = set(name_key(c.name).split())
+            c.back_turned = bool(want) and (want <= have or have <= want)
+        if not any(c.back_turned for c in chars):
+            for _cd, sid in _match_director_characters(store, self_ids, [SimpleNamespace(name=frame_subject)])[:1]:
+                cb = character_brief(store, novel_id, sid, position, gender_hint=gender_hint, lead=False, stated_expression="",
+                                     beat_text="", scene=scene)
+                if name_key(cb.name) not in {name_key(c.name) for c in chars}:
+                    cb.back_turned = True
+                    chars.append(cb)
+        if any(c.back_turned for c in chars) and not all(c.back_turned for c in chars):
+            chars.sort(key=lambda c: c.back_turned)
+            for i, c in enumerate(chars):
+                c.lead = i == 0
+
+    if frame_focus == "prop":
+        chars, crowd = [], None
+    elif is_crowd:
+        crowd = CrowdBrief(description="crowd", size="many", gender="mixed", stance="surround the scene")
+    else:
+        crowd = None
+
+    is_indoor = bool(_INDOOR_KEYWORDS.search(f"{location} {environment}"))
+    lighting = segment_palette.replace("_", " ") if segment_palette else "cinematic atmospheric lighting"
+    lead_face = _drawn(expression) if chars and not (frame_focus == "prop") else ""
+
+    return PanelBrief(
+        novel_id=novel_id,
+        characters=chars,
+        crowd=crowd,
+        location=location,
+        location_description="",
+        setting=environment,
+        lighting=lighting,
+        shot=shot,
+        camera=camera,
+        action=action,
+        key_objects=props,
+        mood="tense" if narrative_func in ("peak", "climax") else "dramatic",
+        tension=0.8 if narrative_func in ("peak", "climax") else 0.0,
+        mode=mode,
+        art_direction=art,
+        era_wardrobe=wardrobe,
+        manhua=manhua,
+        is_indoor=is_indoor,
+        composition="",
+        staging="",
+        visual_source="storyboard",
+        framing=framing,
+        frame_focus=frame_focus,
+        frame_subject=frame_subject,
+        face=lead_face,
+        grade=light_grade("", lighting, "", f"{location} {environment}", "", mood="dramatic", mono=mode is OutputMode.MANGA),
+        narrative_function=narrative_func,
+        panel_geometry=panel_geometry,
+        segment_palette=segment_palette,
+    )
+
+
 def _drawn(expression: str) -> str:
     from echotales.pipeline.render.face import drawn_face
 
     return drawn_face(expression) if expression else ""
+
