@@ -60,7 +60,18 @@ LEGIBLE_PANEL_MIN_W = 480
 #: that measures the strip and the real run that draws in it fit text identically.
 GUTTER_MAX_H = 300
 #: Elliptical and jagged shapes need more room than their text block to keep text inside the outline.
-INFLATE = {"speech": 1.0, "narration": 1.0, "thought": 1.3, "shout": 1.3}
+INFLATE = {
+    "speech": 1.0,
+    "narration": 1.0,
+    "thought": 1.3,
+    "shout": 1.3,
+    "memory": 1.1,
+    "flashback": 1.0,
+    "time_skip": 1.0,
+    "poetry": 1.2,
+    "system_interface": 1.0,
+    "crowd_collective": 1.3,
+}
 
 
 class LetterKind(StrEnum):
@@ -68,6 +79,13 @@ class LetterKind(StrEnum):
     NARRATION = "NARRATION"
     THOUGHT = "THOUGHT"
     SFX = "SFX"
+    SHOUT = "SHOUT"
+    MEMORY = "MEMORY"
+    FLASHBACK = "FLASHBACK"
+    TIME_SKIP = "TIME_SKIP"
+    POETRY = "POETRY"
+    SYSTEM_INTERFACE = "SYSTEM_INTERFACE"
+    CROWD_COLLECTIVE = "CROWD_COLLECTIVE"
 
 
 @dataclass(frozen=True, slots=True)
@@ -275,6 +293,24 @@ def _draw_body(draw: ImageDraw.ImageDraw, style: str, box: tuple[int, int, int, 
             px, py = cx + rx * math.cos(a), cy + ry * math.sin(a)
             draw.ellipse((px - r, py - r, px + r, py + r), fill=PAPER, outline=INK, width=2)
         draw.ellipse((ex0, ey0, ex1, ey1), fill=PAPER)
+    elif style == "memory":
+        draw.rounded_rectangle(box, radius=min((y1 - y0) // 2, size * 1.4), fill=(253, 250, 240), outline=(217, 160, 40), width=3)
+    elif style == "flashback":
+        draw.rectangle(box, fill=(24, 24, 27), outline=(113, 113, 122), width=2)
+    elif style == "time_skip":
+        draw.rounded_rectangle(box, radius=4, fill=(244, 244, 245), outline=(82, 82, 91), width=1)
+    elif style == "poetry":
+        draw.rounded_rectangle(box, radius=min((y1 - y0) // 2, size * 1.8), fill=(248, 245, 238), outline=(180, 165, 145), width=2)
+    elif style == "system_interface":
+        draw.rectangle(box, fill=(15, 23, 42), outline=(56, 189, 248), width=2)
+    elif style == "crowd_collective":
+        cx, cy, rx, ry = (x0 + x1) / 2, (y0 + y1) / 2, (x1 - x0) / 2, (y1 - y0) / 2
+        pts = []
+        for k in range(20):
+            f = 1.0 if k % 2 == 0 else 0.88
+            a = k * math.tau / 20
+            pts.append((cx + rx * f * math.cos(a), cy + ry * f * math.sin(a)))
+        draw.polygon(pts, fill=PAPER, outline=INK, width=2)
     else:  # shout: alternating radii give the jagged outline a deterministic spike count
         cx, cy, rx, ry = (x0 + x1) / 2, (y0 + y1) / 2, (x1 - x0) / 2, (y1 - y0) / 2
         pts = []
@@ -298,7 +334,19 @@ def _draw_tail(draw: ImageDraw.ImageDraw, style: str, base: tuple[float, float],
 def _style_of(item: LetterItem) -> str:
     if item.kind is LetterKind.SPEECH:
         return "shout" if item.shouted else "speech"
-    return {LetterKind.NARRATION: "narration", LetterKind.THOUGHT: "thought", LetterKind.SFX: "sfx"}[item.kind]
+    mapping = {
+        LetterKind.NARRATION: "narration",
+        LetterKind.THOUGHT: "thought",
+        LetterKind.SFX: "sfx",
+        LetterKind.SHOUT: "shout",
+        LetterKind.MEMORY: "memory",
+        LetterKind.FLASHBACK: "flashback",
+        LetterKind.TIME_SKIP: "time_skip",
+        LetterKind.POETRY: "poetry",
+        LetterKind.SYSTEM_INTERFACE: "system_interface",
+        LetterKind.CROWD_COLLECTIVE: "crowd_collective",
+    }
+    return mapping.get(item.kind, "speech")
 
 
 def _sfx(img: Image.Image, rect: tuple[int, int, int, int], item: LetterItem) -> PlacedLetter:
@@ -419,7 +467,14 @@ def letter_panel(
             font = _font(style == "shout", f.size)
             lh = f.size * 1.2
             ty = (box[1] + box[3]) / 2 - len(f.lines) * lh / 2
-            ink = CAPTION_INK if style == "narration" else INK
+            if style in ("flashback", "system_interface"):
+                ink = (248, 250, 252)
+            elif style == "narration":
+                ink = CAPTION_INK
+            elif style == "poetry":
+                ink = (60, 50, 40)
+            else:
+                ink = INK
             for k, line in enumerate(f.lines):
                 lw = font.getlength(line)
                 draw.text(((box[0] + box[2]) / 2 - lw / 2, ty + k * lh), line, fill=ink, font=font)

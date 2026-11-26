@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from PIL import Image
 from echotales.pipeline.pages.lettering import LetterItem, LetterKind, letter_panel
+from PIL import Image
 
 RECT = (0, 0, 600, 500)
 
@@ -97,3 +97,23 @@ def test_sfx_layer_reuses_the_manga_overlay() -> None:
     res = letter_panel(img, RECT, [LetterItem("x", LetterKind.SFX, "BOOM")], rtl=False)
     assert img.tobytes() != before.tobytes()
     assert res.placed and res.placed[0].style == "sfx"
+
+
+def test_expanded_letter_kinds_render_distinct_styles() -> None:
+    styles = [
+        (LetterKind.MEMORY, "memory"),
+        (LetterKind.FLASHBACK, "flashback"),
+        (LetterKind.TIME_SKIP, "time_skip"),
+        (LetterKind.POETRY, "poetry"),
+        (LetterKind.SYSTEM_INTERFACE, "system_interface"),
+        (LetterKind.CROWD_COLLECTIVE, "crowd_collective"),
+    ]
+    for kind, expected_style in styles:
+        img = _canvas()
+        before = img.copy()
+        item = LetterItem("k1", kind, "Test text content for style verification", "left")
+        res = letter_panel(img, RECT, [item], rtl=False)
+        assert len(res.placed) == 1
+        assert res.placed[0].style == expected_style
+        assert img.tobytes() != before.tobytes()
+
