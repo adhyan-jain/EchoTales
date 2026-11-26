@@ -1,0 +1,107 @@
+{
+  "recorded": "2026-11-26",
+  "hardware": {
+    "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU, 8188 MiB total (7874 MiB free at check)",
+    "cpu": "13th Gen Intel(R) Core(TM) i7-13620H (10 cores / 16 threads)",
+    "ram": "15 GiB total (4.6 GiB available at check); swap 22 GiB, 13 GiB used"
+  },
+  "python_packages": {
+    "python": "3.12.13",
+    "gliner": "0.2.30",
+    "spacy": "3.8.18",
+    "en_core_web_sm": "3.8.0",
+    "en_core_web_trf": null,
+    "torch": "2.6.0",
+    "transformers": "5.15.0",
+    "onnxruntime": "1.32.0",
+    "huggingface_hub": "1.27.0"
+  },
+  "gliner_models": [
+    {
+      "repo": "urchade/gliner_medium-v2.1",
+      "revision": "40ec419335d09393f298636f471328b722c6da9e",
+      "size_mb": 780.7,
+      "load_ok": false,
+      "error": "not attempted: model download stalled at 36 KB; measured HF throughput ~26 KB/s"
+    },
+    {
+      "repo": "urchade/gliner_large-v2.1",
+      "revision": "abd49a1f1ebc12af1be84d06f6848221cf96dcad",
+      "size_mb": 1782.0,
+      "load_ok": false,
+      "error": "not attempted: model download stalled at 36 KB; measured HF throughput ~26 KB/s"
+    },
+    {
+      "repo": "urchade/gliner_multi-v2.1",
+      "revision": "443d26d654e0324125a96bebd8e796c14ff2efe6",
+      "size_mb": 1155.8,
+      "load_ok": false,
+      "error": "not attempted: model download stalled at 36 KB; measured HF throughput ~26 KB/s"
+    },
+    {
+      "repo": "numind/NuNER_Zero",
+      "revision": "c90187673f464518dca09f41689184ed6976242c",
+      "size_mb": 1795.5,
+      "load_ok": false,
+      "error": "not attempted: model download stalled at 36 KB; measured HF throughput ~26 KB/s"
+    }
+  ],
+  "spacy_models": [
+    {
+      "name": "en_core_web_sm",
+      "version": "3.8.0",
+      "installed": true,
+      "load_ok": false,
+      "note": "installed via uv pip from GitHub wheel; load not tested"
+    },
+    {
+      "name": "en_core_web_trf",
+      "version": "3.8.0",
+      "installed": false,
+      "error": "uv dry-run timed out (550 s) resolving the wheel at the same low throughput; not installed"
+    }
+  ],
+  "nametag3": {
+    "pip_installable": false,
+    "evidence": "PyPI JSON for nametag3 returns 404; README installs by git clone plus its own requirements files pinning prebuilt torch",
+    "license": "MPL-2.0 for code; linguistic models CC BY-NC-SA 4.0 (non-commercial), commercial licence for selected models",
+    "english_checkpoint": "README lists an English model; not downloaded, so offline use not verified",
+    "installed": false
+  },
+  "ollama_models": [
+    {
+      "tag": "qwen2.5:7b",
+      "digest": "845dbda0ea48",
+      "params": "7.6B",
+      "quantization": "Q4_K_M",
+      "context_length": 32768,
+      "family": "qwen2"
+    },
+    {
+      "tag": "gemma2:9b",
+      "digest": "ff02c3702f32",
+      "params": "9.2B",
+      "quantization": "Q4_0",
+      "context_length": 8192,
+      "family": "gemma2"
+    },
+    {
+      "tag": "qwen3:8b",
+      "digest": "500a1f067a9f",
+      "params": "8.2B",
+      "quantization": "Q4_K_M",
+      "context_length": 40960,
+      "family": "qwen3"
+    },
+    {
+      "tag": "llama3.1:8b",
+      "present": false,
+      "error": "not in ollama list"
+    },
+    {
+      "tag": "qwen2.5:7b-instruct",
+      "present": false,
+      "error": "not in ollama list"
+    }
+  ]
+}
