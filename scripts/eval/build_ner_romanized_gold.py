@@ -58,6 +58,10 @@ def parse(doc_id: str, marked: str) -> tuple[str, list[dict]]:
         # span stays byte-identical.
         if label == "title_epithet" and re.sub(r"^(the|a|an) ", "", surface, flags=re.I).islower():
             span["generic_role"] = True
+        # Optional 4th field "gen" forces the flag for relational address terms that are capitalised but still
+        # role references ("[[Maa|t|ali|gen]]", kinship terms used alone), which the lower-case rule cannot see.
+        if len(fields) > 3 and fields[3] == "gen":
+            span["generic_role"] = True
         spans.append(span)
         text_parts.append(surface)
         out_len += len(surface)

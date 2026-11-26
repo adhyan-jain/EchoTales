@@ -23,6 +23,7 @@ sentence start), `shared_title` (one title held by different people in the same 
 - Annotate proper names and *named* titles/epithets that refer to a specific entity ("the Venerable", "Heavenly
   Demon"). A title used alone for one specific person ("the clan head", "the Jarl") is `title_epithet`.
 - Do not annotate pronouns, generic descriptors ("the old man", "a disciple", "the envoy"), or common nouns.
+- Kinship and relational address terms used alone (Maa, Amma, Beti, Thambi, Uncle) are relational references, not names: annotated as `title_epithet` with `generic_role` forced, so they are excluded from name metrics like other generic roles.
 - Attached honorifics and titles are inside the span ("Dokja-ssi", "Gojo-sensei", "Mr. Darcy", "Lady Hartley"); see
   the boundary policy below.
 - Strip possessive 's from the span. Each occurrence is its own span; spans never overlap.
