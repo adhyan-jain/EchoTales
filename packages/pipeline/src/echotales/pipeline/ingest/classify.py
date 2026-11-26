@@ -43,8 +43,11 @@ _NON_DIEGETIC_PATTERNS = [
         # A leading bracket or paren is the Gutenberg illustration-credit form ("[Copyright 1894 by George Allen.]"),
         # which the bare `^copyright` missed (P&P e2e: voiced as an inner-monologue line).
         r"^[\s\[(_*]*(?:copyright\b|\u00a9)|\ball rights reserved\b",
-        # A short publisher imprint line, not prose that happens to open with "Published by".
-        r"^[\s\[(_*]*(?:published|printed)\s+by\s+(?-i:[A-Z])[^.!?]{0,80}(?:,|\.)[\s\])_*]*$",
+        # A short publisher/printer imprint line, not prose that happens to open with "Published by".
+        r"^[\s\[(_*]*(?:published|printed|printed\s+and\s+bound)\s+(?:by|at)\s+(?-i:[A-Z])[^\n]{0,120}?(?:,|\.)?[\s\])_*]*$",
+        # Colophon and printer boilerplate (e.g. "CHISWICK PRESS: CHARLES WHITTINGHAM AND CO...", "PRINTED BY...")
+        r"^[\s\[(_*]*(?:chiswick\s+press|ballantyne\s+press|riverside\s+press|colophon\b)[\s:;\-—]",
+        r"^[\s\[(_*]*(?:chiswick\s+press|ballantyne\s+press|riverside\s+press|colophon)\s*$",
         r"^\s*isbn\b",
     )
 ]

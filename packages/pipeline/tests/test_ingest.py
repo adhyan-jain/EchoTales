@@ -137,6 +137,9 @@ class TestClassifyBlock:
             "(Copyright 1894 by George Allen.)",
             "\u00a9 1894 George Allen.",
             "Published by George Allen, Charing Cross Road, London.",
+            "CHISWICK PRESS: CHARLES WHITTINGHAM AND CO. TOOKS COURT, CHANCERY LANE, LONDON.",
+            "Printed by Charles Whittingham and Co., Tooks Court.",
+            "COLOPHON",
         ],
     )
     def test_navigation_and_promo_are_non_diegetic(self, text: str) -> None:
