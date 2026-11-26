@@ -511,6 +511,20 @@ export const api = {
       method: 'POST',
     }),
 
+  approveEpoch: (novelId, selfId, personaId, note = '') =>
+    request(`/api/novels/${enc(novelId)}/characters/${enc(selfId)}/sheets/${enc(personaId)}/approve`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ note }),
+    }),
+
+  rejectEpoch: (novelId, selfId, personaId, note = '') =>
+    request(`/api/novels/${enc(novelId)}/characters/${enc(selfId)}/sheets/${enc(personaId)}/reject`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ note }),
+    }),
+
   approveTurnaround: (novelId, selfId, candidateId, note = '') =>
     request(`/api/novels/${enc(novelId)}/characters/${enc(selfId)}/turnarounds/${enc(candidateId)}/approve`, {
       method: 'POST',

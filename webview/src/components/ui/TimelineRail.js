@@ -2,16 +2,9 @@ import React from 'react';
 import StateNode from './StateNode';
 import { EmptyState } from './EmptyState';
 
-/* Horizontal story-time state rail (plan Section 6) -- one of EchoTales'
-   distinctive concepts, given real visual weight here. `epochs` is
-   expected to be `BodyEpoch`-shaped data (persona label, narrative
-   range, transition note) once the webview payload exposes it.
-   `build_character_dashboard` (packages/pipeline/.../webview.py) does
-   not return that today -- confirmed by reading its payload shape -- so
-   this renders the honest "not yet available" state whenever `epochs` is
-   empty/undefined, rather than fabricating a single-persona timeline
-   from the current snapshot. Never invent an epoch. */
-export default function TimelineRail({ epochs }) {
+/* Horizontal story-time state rail -- one of EchoTales' distinctive concepts,
+   visualizing character body epochs across story intervals with per-epoch review. */
+export default function TimelineRail({ epochs, selectedId, onSelect, onApprove }) {
   if (!epochs || epochs.length === 0) {
     return (
       <EmptyState
@@ -21,7 +14,7 @@ export default function TimelineRail({ epochs }) {
     );
   }
   return (
-    <div className="relative flex items-start gap-6 overflow-x-auto border-t border-border pt-6">
+    <div className="relative flex items-start gap-6 overflow-x-auto border-t border-border pt-6 pb-2">
       <div className="pointer-events-none absolute left-0 right-0 top-[1.3rem] h-px bg-border" />
       {epochs.map((epoch, i) => (
         <StateNode
@@ -29,9 +22,13 @@ export default function TimelineRail({ epochs }) {
           label={epoch.persona_label}
           range={epoch.range}
           detail={epoch.transition}
-          active={i === epochs.length - 1}
+          active={selectedId ? selectedId === epoch.id : i === epochs.length - 1}
+          approved={epoch.approved}
+          onSelect={() => onSelect && onSelect(epoch.id)}
+          onApprove={onApprove ? () => onApprove(epoch.persona_id || epoch.id) : null}
         />
       ))}
     </div>
   );
 }
+

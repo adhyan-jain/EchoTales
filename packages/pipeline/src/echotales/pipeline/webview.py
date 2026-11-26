@@ -541,7 +541,30 @@ def build_character_dashboard(store: Store, novel_id: str) -> dict:
             }
 
         candidates = store.list_ref_image_candidates(novel_id, entity.id)
-        # The same reading voice casting and the automatic gender pass use, so the control shows what they will act on.
+        epochs = []
+        from echotales.pipeline.persona.split import bodies_of
+
+        bodies = bodies_of(store, entity.id)
+        if bodies:
+            for b_idx, (p_id, p_interval) in enumerate(bodies):
+                p_attrs = {a.key: a.value for a in store.get_attributes(TargetKind.PERSONA, p_id) if a.is_standing}
+                age = p_attrs.get("age_band", "adult")
+                st = f"Ch {p_interval.from_lb:g}" if p_interval else "Ch 1"
+                end = f"Ch {p_interval.to_ub:g}" if (p_interval and p_interval.to_ub is not None) else "Present"
+                label = f"{entity.canonical_label} ({age})" if age != "adult" else f"{entity.canonical_label} (Epoch {b_idx + 1})"
+                approved = any(a.evidence.startswith("human:") for a in store.get_attributes(TargetKind.PERSONA, p_id))
+                epochs.append(
+                    {
+                        "id": p_id,
+                        "persona_id": p_id,
+                        "persona_label": label,
+                        "range": f"{st} - {end}",
+                        "transition": p_attrs.get("attire", "") or f"Body epoch {b_idx + 1}",
+                        "age_band": age,
+                        "approved": approved,
+                    }
+                )
+
         gender, gender_by_reviewer = _current_gender(store, entity.id)
         rows.append(
             {
@@ -563,6 +586,7 @@ def build_character_dashboard(store: Store, novel_id: str) -> dict:
                 "prominence": entity.prominence.value,
                 "voice": voice,
                 "traits": traits,
+                "epochs": epochs,
                 "reference_images": [
                     {
                         "id": c.id,

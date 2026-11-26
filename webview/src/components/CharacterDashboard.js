@@ -152,6 +152,21 @@ export default function CharacterDashboard({ novelId, readOnly = false, selected
     );
   };
 
+  const handleApproveEpoch = (selfId, personaId) => {
+    return withPending(selfId, () =>
+      api
+        .approveEpoch(novelId, selfId, personaId, 'approved via dashboard timeline')
+        .then(() => {
+          push('Epoch approved.', 'success');
+          load();
+        })
+        .catch((err) => {
+          push(describeError(err, 'Could not approve epoch.'), 'danger');
+          throw err;
+        })
+    );
+  };
+
   const q = search.toLowerCase();
   // A character a reviewer merged into another is no longer a separate person; its dossier stays reachable by link.
   const filtered = characters.filter((c) => !c.merged_into && (c.label || '').toLowerCase().includes(q));
@@ -194,6 +209,7 @@ export default function CharacterDashboard({ novelId, readOnly = false, selected
         onSetGender={readOnly ? undefined : (gender) => handleSetGender(selected.self_id, gender)}
         onSelectReference={readOnly ? undefined : (candidateId) => handleSelectReference(selected.self_id, candidateId)}
         onSearchReferences={readOnly ? undefined : () => handleSearchReferences(selected.self_id)}
+        onApproveEpoch={readOnly ? undefined : (personaId) => handleApproveEpoch(selected.self_id, personaId)}
       />
     );
   }
@@ -294,11 +310,12 @@ export default function CharacterDashboard({ novelId, readOnly = false, selected
   );
 }
 
-function CharacterDetail({ novelId, character, busy, readOnly, onBack, onSetVoice, onSetGender, onSelectReference, onSearchReferences }) {
+function CharacterDetail({ novelId, character, busy, readOnly, onBack, onSetVoice, onSetGender, onSelectReference, onSearchReferences, onApproveEpoch }) {
   const { label, prominence, voice, traits = [], reference_images: refs = [] } = character;
   const [voiceFormOpen, setVoiceFormOpen] = useState(false);
   const [voiceDraft, setVoiceDraft] = useState('');
   const [auditionOpen, setAuditionOpen] = useState(false);
+  const [selectedEpochId, setSelectedEpochId] = useState(null);
 
   const submitVoice = () => {
     onSetVoice(voiceDraft).then(() => {
@@ -501,11 +518,12 @@ function CharacterDetail({ novelId, character, busy, readOnly, onBack, onSetVoic
       )}
 
       <Divider label="State history" className="mb-6 mt-10" />
-      {/* No `epochs` field exists on this payload (`build_character_dashboard`,
-          webview.py, confirmed by reading it) -- TimelineRail renders its own
-          honest "not yet available" state rather than this component
-          fabricating a single-persona timeline from the current snapshot. */}
-      <TimelineRail epochs={character.epochs} />
+      <TimelineRail
+        epochs={character.epochs}
+        selectedId={selectedEpochId}
+        onSelect={setSelectedEpochId}
+        onApprove={readOnly ? null : onApproveEpoch}
+      />
     </div>
   );
 }
