@@ -55,9 +55,7 @@ class ProbeResult:
 #: descriptive "names" ("The Woman At Whose House She Was Dining"); without
 #: this, their tokens turned a predicted pronoun "She" into that character.
 _NOT_NAME_TOKENS = frozenset(
-    "the a an she he her his him it they them i you we at of in on to and or but "
-    "was were is be by for with from that this who whose whom which mr mrs miss "
-    "sir lady lord dr st".split()
+    ["the", "a", "an", "she", "he", "her", "his", "him", "it", "they", "them", "i", "you", "we", "at", "of", "in", "on", "to", "and", "or", "but", "was", "were", "is", "be", "by", "for", "with", "from", "that", "this", "who", "whose", "whom", "which", "mr", "mrs", "miss", "sir", "lady", "lord", "dr", "st"]
 )
 
 #: PDNC marks quotes whose speaker cannot be determined; they have no gold.

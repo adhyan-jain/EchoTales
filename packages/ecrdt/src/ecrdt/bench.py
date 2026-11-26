@@ -21,7 +21,6 @@ from __future__ import annotations
 import random
 import time
 from dataclasses import dataclass, field
-from typing import Dict, List, Set, Tuple
 
 from .audit import audit_non_interference, total_violation_count
 from .baselines import ACLReplica, NaiveUnionReplica
@@ -39,7 +38,7 @@ class Metrics:
     update_time_s: float = 0.0
     convergence_rounds: int = -1
     unauthorized_knowledge: int = 0
-    unauthorized_detail: Dict[str, Set[str]] = field(default_factory=dict)
+    unauthorized_detail: dict[str, set[str]] = field(default_factory=dict)
 
     @property
     def avg_merge_latency_us(self) -> float:
@@ -50,7 +49,7 @@ class Metrics:
         return (self.update_time_s / self.update_calls * 1e6) if self.update_calls else 0.0
 
 
-def _gossip_pairs(replica_ids: List[str], rng: random.Random, groups: List[List[str]]) -> List[Tuple[str, str]]:
+def _gossip_pairs(replica_ids: list[str], rng: random.Random, groups: list[list[str]]) -> list[tuple[str, str]]:
     pairs = []
     for group in groups:
         if len(group) < 2:
@@ -69,7 +68,7 @@ def run_scenario(
     partition_rounds: int = 4,
     seed: int = 7,
     retroactive_widen: bool = False,
-) -> Dict[str, Metrics]:
+) -> dict[str, Metrics]:
     rng = random.Random(seed)
     ids = [f"agent_{i}" for i in range(n_replicas)]
 
@@ -77,10 +76,10 @@ def run_scenario(
     naive = {r: NaiveUnionReplica(replica_id=r) for r in ids}
     acl = {r: ACLReplica(replica_id=r) for r in ids}
 
-    ground_truth: Dict[str, Set[str]] = {r: set() for r in ids}
+    ground_truth: dict[str, set[str]] = {r: set() for r in ids}
     fact_pool = [f"fact_{i}" for i in range(n_facts)]
     metrics = {"ecrdt": Metrics(), "naive": Metrics(), "acl": Metrics()}
-    world_history: List[Set[str]] = []
+    world_history: list[set[str]] = []
 
     # split into two partitions for the first `partition_rounds` rounds
     half = n_replicas // 2
@@ -207,7 +206,7 @@ def run_scenario(
     return metrics
 
 
-def run_compaction_demo(n_replicas: int = 6, n_facts: int = 40, rounds: int = 10, seed: int = 3) -> Dict[str, int]:
+def run_compaction_demo(n_replicas: int = 6, n_facts: int = 40, rounds: int = 10, seed: int = 3) -> dict[str, int]:
     """Run a chain-heavy scenario, then compact stable events for one
     target replica, reporting event-log bytes before/after."""
     rng = random.Random(seed)
@@ -285,7 +284,7 @@ def measure_convergence(n_replicas: int = 8, n_facts: int = 40, seed: int = 11, 
     return -1
 
 
-def print_report(metrics: Dict[str, Metrics], title: str) -> None:
+def print_report(metrics: dict[str, Metrics], title: str) -> None:
     print(f"\n=== {title} ===")
     header = f"{'system':<8}{'bandwidth_B':>14}{'metadata_B':>12}{'merge_us':>12}{'update_us':>12}{'converge_rd':>13}{'unauth_leak':>13}"
     print(header)

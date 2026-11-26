@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-
 from echotales.pipeline.bible.schema import CharacterBibleEntry, StoryBibleSnapshot
 from echotales.pipeline.voice.attribution import (
     DialogueLine,

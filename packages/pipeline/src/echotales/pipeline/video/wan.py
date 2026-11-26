@@ -9,12 +9,17 @@ Enables:
 from __future__ import annotations
 
 import base64
+from collections.abc import Callable
 from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
-from echotales.pipeline.workers_contract import VideoWorkerRequest, VideoWorkerResponse, run_video_worker
+from echotales.pipeline.workers_contract import (
+    VideoWorkerRequest,
+    VideoWorkerResponse,
+    run_video_worker,
+)
 
 
 class WanMode(StrEnum):

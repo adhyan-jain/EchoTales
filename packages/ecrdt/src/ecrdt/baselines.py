@@ -37,7 +37,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict, FrozenSet, Set, Tuple
 
 from .orset import Dot, ORSet
 from .replica import _topo_order
@@ -59,13 +58,13 @@ class NaiveUnionReplica:
     def retract_world(self, fact: str) -> None:
         self.W.remove(fact, self.W.live_dots(fact))
 
-    def merge(self, other: "NaiveUnionReplica") -> None:
+    def merge(self, other: NaiveUnionReplica) -> None:
         self.W = self.W.join(other.W)
 
     def knows(self, fact: str) -> bool:
         return self.W.contains(fact)
 
-    def materialized_facts(self) -> Set[str]:
+    def materialized_facts(self) -> set[str]:
         return self.W.facts()
 
 
@@ -74,24 +73,24 @@ class ACLReplica:
     replica_id: str
     _counter: int = 0
     W: ORSet = field(default_factory=ORSet)
-    scope: Dict[str, FrozenSet[str]] = field(default_factory=dict)  # fact -> visible_to (empty == shared)
+    scope: dict[str, frozenset[str]] = field(default_factory=dict)  # fact -> visible_to (empty == shared)
 
     def _new_dot(self) -> Dot:
         self._counter += 1
         return (self.replica_id, self._counter)
 
-    def assert_world(self, fact: str, visible_to: FrozenSet[str] = frozenset()) -> None:
+    def assert_world(self, fact: str, visible_to: frozenset[str] = frozenset()) -> None:
         self.W.add(fact, self._new_dot())
         self.scope[fact] = visible_to
 
-    def widen_scope(self, fact: str, new_visible_to: FrozenSet[str]) -> None:
+    def widen_scope(self, fact: str, new_visible_to: frozenset[str]) -> None:
         """Attribute mutation in place -- no causal event, no delivery."""
         self.scope[fact] = self.scope.get(fact, frozenset()) | new_visible_to
 
     def retract_world(self, fact: str) -> None:
         self.W.remove(fact, self.W.live_dots(fact))
 
-    def merge(self, other: "ACLReplica") -> None:
+    def merge(self, other: ACLReplica) -> None:
         self.W = self.W.join(other.W)
         for f, vis in other.scope.items():
             self.scope[f] = self.scope.get(f, frozenset()) | vis
@@ -102,7 +101,7 @@ class ACLReplica:
         vis = self.scope.get(fact, frozenset())
         return (not vis) or (self.replica_id in vis)
 
-    def materialized_facts(self) -> Set[str]:
+    def materialized_facts(self) -> set[str]:
         return {f for f in self.W.facts() if self.knows(f)}
 
 
@@ -116,7 +115,7 @@ class GrantEvent:
     fact: str
     granter: str
     target: str
-    deps: FrozenSet[Dot] = field(default_factory=frozenset)
+    deps: frozenset[Dot] = field(default_factory=frozenset)
 
 
 @dataclass
@@ -137,7 +136,7 @@ class DynamicCausalACLReplica:
     replica_id: str
     _counter: int = 0
     W: ORSet = field(default_factory=ORSet)
-    G: Dict[Dot, GrantEvent] = field(default_factory=dict)
+    G: dict[Dot, GrantEvent] = field(default_factory=dict)
 
     def _new_dot(self) -> Dot:
         self._counter += 1
@@ -173,18 +172,18 @@ class DynamicCausalACLReplica:
         self.G[dot] = g
         return g
 
-    def merge(self, other: "DynamicCausalACLReplica") -> None:
+    def merge(self, other: DynamicCausalACLReplica) -> None:
         self.W = self.W.join(other.W)
         for dot, g in other.G.items():
             self.G.setdefault(dot, g)
 
-    def _materialize_grants(self) -> Tuple[Set[str], Dict[str, FrozenSet[Dot]]]:
+    def _materialize_grants(self) -> tuple[set[str], dict[str, frozenset[Dot]]]:
         """Pure projection over the causally-replicated grant log G, gated
         by target identity -- structurally identical in shape to
         replica.Replica.materialize()'s observe/communicate handling, with
         no infer-equivalent branch to admit."""
         me = self.replica_id
-        held: Dict[str, Set[Dot]] = {}
+        held: dict[str, set[Dot]] = {}
         for g in _topo_order(self.G):  # type: ignore[arg-type]
             if g.target == me:
                 held.setdefault(g.fact, set()).add(g.dot)
@@ -195,7 +194,7 @@ class DynamicCausalACLReplica:
         held, _ = self._materialize_grants()
         return fact in held
 
-    def materialized_facts(self) -> Set[str]:
+    def materialized_facts(self) -> set[str]:
         held, _ = self._materialize_grants()
         return held
 
@@ -232,7 +231,7 @@ class StandardDerivedDataAuthReplica(ACLReplica):
             if not self.knows(p):
                 raise ValueError(f"cannot INFER {derived_fact!r}: {self.replica_id} does not know {p!r}")
         restrictive = [self.scope.get(p, frozenset()) for p in premises if self.scope.get(p, frozenset())]
-        derived_scope: FrozenSet[str] = frozenset.intersection(*restrictive) if restrictive else frozenset()
+        derived_scope: frozenset[str] = frozenset.intersection(*restrictive) if restrictive else frozenset()
         self.assert_world(derived_fact, visible_to=derived_scope)
         # assert_world already adds `self` to W with a fresh dot for
         # replication purposes (W must still converge across replicas so
@@ -300,23 +299,23 @@ class AutoDerivingACLReplica(DynamicCausalACLReplica):
        event, exactly the clause this round is proving.
     """
 
-    rules: Dict[str, Set[FrozenSet[str]]] = field(default_factory=dict)
+    rules: dict[str, set[frozenset[str]]] = field(default_factory=dict)
 
-    def declare_rule(self, derived_fact: str, premises: FrozenSet[str]) -> None:
+    def declare_rule(self, derived_fact: str, premises: frozenset[str]) -> None:
         self.rules.setdefault(derived_fact, set()).add(frozenset(premises))
 
-    def merge(self, other: "AutoDerivingACLReplica") -> None:
+    def merge(self, other: AutoDerivingACLReplica) -> None:
         super().merge(other)
         for fact, rule_set in other.rules.items():
             self.rules.setdefault(fact, set()).update(rule_set)
 
-    def materialized_facts(self) -> Set[str]:
+    def materialized_facts(self) -> set[str]:
         """G-held facts, closed under standing rules evaluated against
         *currently* held facts -- a pure, deterministic fixpoint over the
         merged (G, rules) state, recomputed fresh every call (no cached
         per-derivation verdict, no dot identity for the result)."""
         held, _ = self._materialize_grants()
-        derived: Set[str] = set(held)
+        derived: set[str] = set(held)
         changed = True
         while changed:
             changed = False

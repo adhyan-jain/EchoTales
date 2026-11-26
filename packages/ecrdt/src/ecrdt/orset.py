@@ -9,9 +9,8 @@ to give W strong eventual consistency. The novel material is in replica.py
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict, FrozenSet, Set, Tuple
 
-Dot = Tuple[str, int]  # (replica_id, local_counter)
+Dot = tuple[str, int]  # (replica_id, local_counter)
 
 
 @dataclass
@@ -23,8 +22,8 @@ class ORSet:
               ORSet has causally observed (a version vector)
     """
 
-    elements: Dict[str, Set[Dot]] = field(default_factory=dict)
-    context: Dict[str, int] = field(default_factory=dict)
+    elements: dict[str, set[Dot]] = field(default_factory=dict)
+    context: dict[str, int] = field(default_factory=dict)
 
     def _covers(self, dot: Dot) -> bool:
         replica, counter = dot
@@ -35,7 +34,7 @@ class ORSet:
         replica, counter = dot
         self.context[replica] = max(self.context.get(replica, 0), counter)
 
-    def remove(self, fact_id: str, observed_dots: FrozenSet[Dot]) -> None:
+    def remove(self, fact_id: str, observed_dots: frozenset[Dot]) -> None:
         """Add-wins remove: drop exactly the dots this op observed as live."""
         live = self.elements.get(fact_id)
         if not live:
@@ -47,13 +46,13 @@ class ORSet:
     def contains(self, fact_id: str) -> bool:
         return bool(self.elements.get(fact_id))
 
-    def live_dots(self, fact_id: str) -> FrozenSet[Dot]:
+    def live_dots(self, fact_id: str) -> frozenset[Dot]:
         return frozenset(self.elements.get(fact_id, set()))
 
-    def facts(self) -> Set[str]:
+    def facts(self) -> set[str]:
         return {f for f, dots in self.elements.items() if dots}
 
-    def join(self, other: "ORSet") -> "ORSet":
+    def join(self, other: ORSet) -> ORSet:
         """Commutative, associative, idempotent join -> join-semilattice.
 
         merged[f] = (A[f] & B[f])

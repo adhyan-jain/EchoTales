@@ -13,7 +13,11 @@ from echotales.core.enums import AttributionMethod, BlockType, SpanType
 from echotales.core.store import Store
 from echotales.pipeline.comic.bubbles import Bubble
 from echotales.pipeline.comic.to_graph import comic_to_store, story_bubbles
-from echotales.pipeline.comic.understand import ComicUnderstanding, PageUnderstanding, PanelUnderstanding
+from echotales.pipeline.comic.understand import (
+    ComicUnderstanding,
+    PageUnderstanding,
+    PanelUnderstanding,
+)
 from echotales.pipeline.voice.bank import VoiceBank, parse_speaker_info
 from echotales.pipeline.voice.engine import get_engine
 from echotales.pipeline.voice.runner import render_novel

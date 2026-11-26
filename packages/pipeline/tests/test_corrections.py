@@ -6,8 +6,8 @@ from __future__ import annotations
 from echotales.core.enums import AttributionMethod, BlockType, ReferenceMode, SpanType
 from echotales.core.models import Block, Chapter, DiscoursePosition, Self, Span
 from echotales.core.store import Store
-from echotales.pipeline.persona.gender import infer_missing_genders
 from echotales.pipeline.corrections import Correction, CorrectionLog, CorrectionType, apply_pending
+from echotales.pipeline.persona.gender import infer_missing_genders
 
 
 def _store_with_span(text: str = '"Old bastard Fang, stop resisting."') -> Store:

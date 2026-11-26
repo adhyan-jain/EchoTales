@@ -5,7 +5,6 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-
 from echotales.core.store import Store
 from echotales.pipeline.assets.approval import (
     approve_asset_candidate,
@@ -81,8 +80,9 @@ def test_cosine_similarity() -> None:
 
 def test_qa_individual_checks(tmp_path: Path, sample_shot: ScreenplayShot) -> None:
     img_file = tmp_path / "frame.png"
-    from echotales.pipeline.workers_contract import _generate_solid_png_b64
     import base64
+
+    from echotales.pipeline.workers_contract import _generate_solid_png_b64
     img_file.write_bytes(base64.b64decode(_generate_solid_png_b64(1080, 1920, (100, 120, 140))))
 
     gate = KeyframeQAGate(face_threshold=0.85, background_threshold=0.70)
@@ -123,8 +123,9 @@ def test_generate_candidates_and_qa_lifecycle(
     tmp_path: Path,
 ) -> None:
     # Setup approved dummy assets
-    from echotales.pipeline.workers_contract import _generate_solid_png_b64
     import base64
+
+    from echotales.pipeline.workers_contract import _generate_solid_png_b64
 
     loc_img = tmp_path / "loc_study.png"
     loc_img.write_bytes(base64.b64decode(_generate_solid_png_b64(1080, 1920, (50, 50, 70))))
@@ -189,8 +190,9 @@ def test_qa_failure_escalation_to_review_queue(
     tmp_path: Path,
 ) -> None:
     # Setup approved dummy assets
-    from echotales.pipeline.workers_contract import _generate_solid_png_b64
     import base64
+
+    from echotales.pipeline.workers_contract import _generate_solid_png_b64
 
     loc_img = tmp_path / "loc.png"
     loc_img.write_bytes(base64.b64decode(_generate_solid_png_b64(1080, 1920, (20, 20, 20))))

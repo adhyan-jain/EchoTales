@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
-from _requires import requires_torch
-
 import random
 
+from _requires import requires_torch
 from echotales.core.enums import Prominence, SpanType
 from echotales.pipeline.persona.traits import TraitProfile
 from echotales.pipeline.spans.delivery import DeliveryPolarity
@@ -17,7 +16,12 @@ from echotales.pipeline.voice.bank import (
     pick_mob_voice,
 )
 from echotales.pipeline.voice.casting import cast_voices
-from echotales.pipeline.voice.delivery import pace_text, settings_for, split_for_tts, strip_enclosing_quotes
+from echotales.pipeline.voice.delivery import (
+    pace_text,
+    settings_for,
+    split_for_tts,
+    strip_enclosing_quotes,
+)
 from echotales.pipeline.voice.engine import SynthesisRequest, get_engine
 
 SPEAKER_INFO = """ID  AGE  GENDER  ACCENTS  REGION

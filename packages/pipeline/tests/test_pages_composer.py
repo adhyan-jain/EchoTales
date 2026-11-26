@@ -70,7 +70,7 @@ def test_every_panel_appears_once_in_order_and_rects_do_not_overlap() -> None:
         assert ids == [p.panel_id for p in panels]
         for page in pages:
             for a in page.panels:
-                assert 0 <= a.x and a.x + a.w <= page.width and 0 <= a.y and a.y + a.h <= page.height
+                assert a.x >= 0 and a.x + a.w <= page.width and a.y >= 0 and a.y + a.h <= page.height
                 for b in page.panels:
                     if a is not b:
                         assert a.x + a.w <= b.x or b.x + b.w <= a.x or a.y + a.h <= b.y or b.y + b.h <= a.y

@@ -13,13 +13,12 @@ with scenery is the same bug wearing a smaller number.
 from __future__ import annotations
 
 from _requires import requires_clip
-
 from echotales.pipeline.persona.attire import style_anchor
 from echotales.pipeline.persona.prompt import (
+    _USABLE_TOKENS,
     STYLE_CLOSEUP,
     STYLE_ESTABLISHING,
     STYLE_SCENE,
-    _USABLE_TOKENS,
     build_image_prompt,
     cast_tags,
     condense_clause,

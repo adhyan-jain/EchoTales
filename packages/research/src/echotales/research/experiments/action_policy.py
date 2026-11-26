@@ -21,7 +21,6 @@ import json
 import random
 
 import numpy as np
-
 from echotales.research.config import ExperimentConfig
 from echotales.research.experiments.gate_xdis import ROOT, inclusion
 from echotales.research.schema import RunResult

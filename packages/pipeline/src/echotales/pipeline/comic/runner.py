@@ -12,8 +12,6 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 
-from PIL import Image
-
 from echotales.core.store import Store
 from echotales.pipeline import paths
 from echotales.pipeline.comic.build import BuildResult, build_episode
@@ -22,6 +20,7 @@ from echotales.pipeline.comic.inpaint import get_inpainter
 from echotales.pipeline.comic.ocr import get_ocr
 from echotales.pipeline.comic.to_graph import ComicGraphReport, comic_to_store
 from echotales.pipeline.comic.understand import ComicUnderstanding, understand_pages
+from PIL import Image
 
 DEFAULT_CREDIT = "Made with EchoTales"
 

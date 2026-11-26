@@ -66,7 +66,7 @@ def test_names_are_masked_consistently_in_the_entailment_prompt(l1) -> None:
 def test_prereg_quoted_thresholds_match_the_code(l1) -> None:
     assert l1.binom_tail_ge(4, 15, 1 / 11) == pytest.approx(0.0412, abs=1e-3)
     assert l1.binom_tail_ge(3, 15, 1 / 11) > 0.05
-    assert 1 - 0.05 ** (1 / 4) == pytest.approx(0.527, abs=1e-3)
+    assert pytest.approx(0.527, abs=1e-3) == 1 - 0.05 ** (1 / 4)
     lo, hi = l1.wilson(0, 4)
     assert lo == 0.0 and hi == pytest.approx(0.490, abs=2e-2)
 

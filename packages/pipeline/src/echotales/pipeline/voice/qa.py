@@ -21,7 +21,6 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
-
 from echotales.pipeline.voice.export import gaps_for
 from echotales.pipeline.voice.timing import LineTiming, build_timing
 
@@ -175,7 +174,7 @@ def reference_f0s(bank: Any, cache: Path | None = None) -> dict[str, float | Non
             try:
                 x, sr = read_mono(Path(clip))
                 store[key] = median_f0(x, sr)
-            except Exception:  # noqa: BLE001 - an unreadable clip is simply not judged
+            except Exception:
                 store[key] = None
         out[v.speaker_id] = store[key]
     if cache is not None:

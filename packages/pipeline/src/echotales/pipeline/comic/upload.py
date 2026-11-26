@@ -17,9 +17,8 @@ import stat
 import zipfile
 from pathlib import Path
 
-from PIL import Image
-
 from echotales.pipeline.comic.ingest import IMAGE_SUFFIXES, natural_key
+from PIL import Image
 
 MAX_FILES = 500
 MAX_UNPACKED_BYTES = 400 * 1024 * 1024

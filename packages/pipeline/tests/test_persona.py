@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import pytest
-
 from echotales.core.enums import AliasType, BlockType, ReferenceMode, SpanType, TargetKind
 from echotales.core.models import (
     MAIN_TIMELINE,

@@ -231,7 +231,6 @@ def _iol_predictions(stimuli, probes, segs_by_passage, geom) -> dict:
     """The H-IOL listener's predicted probe accuracy per condition, from the
     exact scripts listeners will hear (default listener parameters)."""
     import numpy as np
-
     from echotales.research.models.listener import Line, ListenerParams, simulate
 
     def dist(u, v):

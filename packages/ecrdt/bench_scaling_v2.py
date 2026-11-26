@@ -16,9 +16,9 @@ import random
 import resource
 import time
 
+from ecrdt.compaction import causally_stable, compact_for_target
 from ecrdt.incremental import IncrementalReplica
 from ecrdt.replica import Replica
-from ecrdt.compaction import causally_stable, compact_for_target
 
 OUT_DIR = os.path.join(os.path.dirname(__file__), "scaling_results")
 os.makedirs(OUT_DIR, exist_ok=True)

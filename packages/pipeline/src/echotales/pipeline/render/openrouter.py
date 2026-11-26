@@ -166,7 +166,7 @@ class OpenRouterImageEngine:
         url = images[0]["image_url"]["url"]
         return base64.b64decode(url.split(",", 1)[1]), "stop"
 
-    def generate(self, request: "PanelImageRequest") -> Path:
+    def generate(self, request: PanelImageRequest) -> Path:
         prompt = request.prompt
         out_path: Path = request.out_path
 

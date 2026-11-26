@@ -14,7 +14,8 @@ from pathlib import Path
 from typing import Any
 
 from echotales.core.models import CharacterBibleEntry
-from echotales.pipeline.persona.genre import ArtStyle, GenreProfile, art_style as resolve_art_style
+from echotales.pipeline.persona.genre import ArtStyle, GenreProfile
+from echotales.pipeline.persona.genre import art_style as resolve_art_style
 from echotales.pipeline.persona.prompt import fit_to_budget
 from echotales.pipeline.workers_contract import ImageWorkerRequest, run_image_worker
 

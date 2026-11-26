@@ -16,7 +16,6 @@ Pre-registered kill: top-k Jaccard with any existing non-random scorer
 from __future__ import annotations
 
 import numpy as np
-
 from echotales.research import stats
 from echotales.research.baselines import moment_scorers as ms
 from echotales.research.config import ExperimentConfig, derive_seed

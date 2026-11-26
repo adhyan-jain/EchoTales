@@ -35,8 +35,6 @@ import random
 from itertools import combinations
 
 import numpy as np
-from scipy import optimize
-
 from echotales.research.config import ExperimentConfig, derive_seed
 from echotales.research.controllers.casting import cast
 from echotales.research.datasets import pdnc
@@ -47,6 +45,7 @@ from echotales.research.evaluators.voice_geometry import (
 )
 from echotales.research.schema import RunResult, Trial
 from echotales.research.transforms.attribution_probe import probe
+from scipy import optimize
 
 HYPOTHESIS_ID = "H-CCAST"
 DEFAULT_PARAMS = {"min_lines": 10, "near": 3, "lams": [0.0, 0.25, 0.5, 1, 2, 4, 8, 16, 32],

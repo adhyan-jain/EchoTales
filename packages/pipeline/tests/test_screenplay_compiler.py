@@ -2,9 +2,7 @@
 
 from __future__ import annotations
 
-
 import pytest
-
 from echotales.core.models import CharacterBibleEntry, LocationBibleEntry, StoryBibleSnapshot
 from echotales.pipeline.screenplay.compiler import (
     compile_screenplay,

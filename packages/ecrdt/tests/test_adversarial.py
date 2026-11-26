@@ -12,10 +12,9 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from ecrdt.replica import Replica
-from ecrdt.model import Event
 from ecrdt.audit import audit_non_interference, total_violation_count
-
+from ecrdt.model import Event
+from ecrdt.replica import Replica
 
 # ---------------------------------------------------------------------------
 # 1. Concurrent OBSERVE/COMMUNICATE

@@ -15,13 +15,12 @@ from __future__ import annotations
 import logging
 import subprocess
 import tempfile
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 import numpy as np
-from PIL import Image
-
 from echotales.pipeline.compositor.engine import (
     CompositionShotSpec,
     compose_shot_2_5d,
@@ -35,6 +34,7 @@ from echotales.pipeline.video.wan import (
     generate_wan_s2v_dialogue,
     generate_wan_video,
 )
+from PIL import Image
 
 logger = logging.getLogger(__name__)
 

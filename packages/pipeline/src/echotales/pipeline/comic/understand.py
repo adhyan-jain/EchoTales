@@ -12,13 +12,17 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
 import numpy as np
-from PIL import Image
-from scipy import ndimage
-
-from echotales.pipeline.comic.bubbles import Bubble, cluster_speakers, detect_bubbles, trim_bubble_mask
+from echotales.pipeline.comic.bubbles import (
+    Bubble,
+    cluster_speakers,
+    detect_bubbles,
+    trim_bubble_mask,
+)
 from echotales.pipeline.comic.ingest import PageImage
 from echotales.pipeline.comic.ocr import OcrEngine
 from echotales.pipeline.comic.panels import detect_panels
+from PIL import Image
+from scipy import ndimage
 
 #: Half-L1 distance between tail-target colour signatures under which two tails point at the same character.
 #: Tuned on Pepper&Carrot ep01, which has one speaker: it validates "same character merges", not "different

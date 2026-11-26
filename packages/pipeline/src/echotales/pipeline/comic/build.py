@@ -9,14 +9,11 @@ moves come from the project's own `compute_camera_trajectory`, so easing matches
 from __future__ import annotations
 
 import subprocess
-import wave
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
 import numpy as np
-from PIL import Image, ImageDraw, ImageFont
-
 from echotales.pipeline.comic.ingest import PageImage
 from echotales.pipeline.comic.inpaint import Inpainter, srt_text
 from echotales.pipeline.comic.parallax import DepthEstimator, parallax_warp
@@ -25,6 +22,7 @@ from echotales.pipeline.comic.understand import ComicUnderstanding
 from echotales.pipeline.compositor.camera import compute_camera_trajectory
 from echotales.pipeline.hwaccel import h264_args
 from echotales.pipeline.screenplay.schema import CameraMove
+from PIL import Image, ImageDraw, ImageFont
 
 #: Silence before a shot's first line, after its last, and the length of a panel nobody speaks in.
 LEAD, TAIL, HOLD = 0.3, 0.4, 2.0

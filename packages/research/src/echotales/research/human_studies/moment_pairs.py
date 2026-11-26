@@ -14,9 +14,8 @@ import random
 from collections import defaultdict
 from pathlib import Path
 
-from scipy.stats import kendalltau
-
 from echotales.research.stats import bradley_terry
+from scipy.stats import kendalltau
 
 
 def make_pairs(chapters: list[list[dict]], *, pairs_per_chapter: int = 30, overlap: int = 20,

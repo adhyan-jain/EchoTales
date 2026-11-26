@@ -11,11 +11,11 @@ from __future__ import annotations
 
 import random
 
-from ecrdt.replica import Replica
-from ecrdt.baselines import NaiveUnionReplica, ACLReplica
-from ecrdt.ablations import NoProvenanceReplica, FlatPerAgentCRDTReplica, ClosureOnlyReplica
-from ecrdt.model import Event
+from ecrdt.ablations import ClosureOnlyReplica, FlatPerAgentCRDTReplica, NoProvenanceReplica
 from ecrdt.audit import audit_non_interference, total_violation_count
+from ecrdt.baselines import ACLReplica, NaiveUnionReplica
+from ecrdt.model import Event
+from ecrdt.replica import Replica
 
 
 def run_clean_workload(n_replicas=6, n_facts=40, rounds=10, seed=17):

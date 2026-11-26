@@ -5,7 +5,12 @@ from __future__ import annotations
 from echotales.core.enums import BlockType, TargetKind
 from echotales.core.models import Block, Chapter, DiscoursePosition, Self
 from echotales.core.store import Store
-from echotales.pipeline.render.direction import PanelDirection, _validate_direction, build_prompt, system_prompt
+from echotales.pipeline.render.direction import (
+    PanelDirection,
+    _validate_direction,
+    build_prompt,
+    system_prompt,
+)
 
 PASSAGE = "Fang Yuan stood on the cliff. The elders of the righteous sects surrounded him. He held the Spring Autumn Cicada."
 CAST = {"Fang Yuan": "black hair"}

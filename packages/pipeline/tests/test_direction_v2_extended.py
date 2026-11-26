@@ -4,15 +4,13 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-import pytest
 
+import pytest
 from echotales.core.models import Block, Chapter
 from echotales.core.store import Store
 from echotales.pipeline import flow
 from echotales.pipeline.render.direction import (
     CharacterDirection,
-    DirectionConservationAudit,
-    OthersDirection,
     PanelDirection,
     check_direction_conservation,
     enforce_shot_variety,

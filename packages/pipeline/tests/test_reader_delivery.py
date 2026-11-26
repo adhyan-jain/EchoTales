@@ -9,7 +9,6 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
-
 from echotales.core.enums import BlockType, SpanType
 from echotales.core.models import Block, Chapter, Span
 from echotales.core.store import Store

@@ -6,7 +6,6 @@ import tempfile
 from pathlib import Path
 
 import pytest
-
 from echotales.core.models import CharacterBibleEntry, LocationBibleEntry
 from echotales.core.store import Store
 from echotales.pipeline.assets.approval import (

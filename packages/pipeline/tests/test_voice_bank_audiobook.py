@@ -11,7 +11,6 @@ from pathlib import Path
 import numpy as np
 import pytest
 import soundfile as sf
-
 from echotales.pipeline.errors import ErrorCode
 from echotales.pipeline.voice.bank import (
     BANK_KINDS,

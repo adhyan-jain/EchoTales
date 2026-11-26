@@ -24,9 +24,9 @@ This module categorizes narration spans into:
 from __future__ import annotations
 
 import re
+from collections.abc import Sequence
 from dataclasses import dataclass
 from enum import StrEnum
-from typing import Sequence
 
 from echotales.core.enums import SpanType
 from echotales.core.models import Span

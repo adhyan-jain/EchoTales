@@ -21,7 +21,6 @@ tombstone GC must not run ahead of causal stability.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Dict, List, Set
 
 from .model import Event
 from .orset import Dot
@@ -29,21 +28,21 @@ from .orset import Dot
 
 @dataclass
 class CompactionResult:
-    compacted_events: Dict[Dot, Event]
+    compacted_events: dict[Dot, Event]
     bytes_before: int
     bytes_after: int
     events_before: int
     events_after: int
 
 
-def causally_stable(events: Dict[Dot, Event], replica_ids: List[str], seen: Dict[str, Dict[str, int]]) -> Set[Dot]:
+def causally_stable(events: dict[Dot, Event], replica_ids: list[str], seen: dict[str, dict[str, int]]) -> set[Dot]:
     """An event is stable once every replica's context has causally observed it.
 
     `seen[r]` is replica r's own per-origin-replica counter high-watermark
     (its ORSet/event-log context). A dot (origin, c) is stable iff
     min over r in replica_ids of seen[r].get(origin, 0) >= c.
     """
-    stable: Set[Dot] = set()
+    stable: set[Dot] = set()
     for dot in events:
         origin, c = dot
         if all(seen.get(r, {}).get(origin, 0) >= c for r in replica_ids):
@@ -51,7 +50,7 @@ def causally_stable(events: Dict[Dot, Event], replica_ids: List[str], seen: Dict
     return stable
 
 
-def compact_for_target(events: Dict[Dot, Event], target: str, stable: Set[Dot]) -> CompactionResult:
+def compact_for_target(events: dict[Dot, Event], target: str, stable: set[Dot]) -> CompactionResult:
     """Collapse stable disclosure chains terminating at `target` into single
     synthetic communicate/observe events, per fact, keeping only the
     earliest-establishing chain's endpoint. Non-stable events (still
@@ -60,8 +59,8 @@ def compact_for_target(events: Dict[Dot, Event], target: str, stable: Set[Dot]) 
     bytes_before = sum(e.size_bytes() for e in events.values())
     events_before = len(events)
 
-    kept: Dict[Dot, Event] = {}
-    terminal_for_target: Dict[str, Event] = {}
+    kept: dict[Dot, Event] = {}
+    terminal_for_target: dict[str, Event] = {}
 
     for dot, e in events.items():
         is_terminal_for_target = (

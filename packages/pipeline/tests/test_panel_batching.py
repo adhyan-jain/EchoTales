@@ -5,15 +5,15 @@ from __future__ import annotations
 import base64
 import io
 from pathlib import Path
-import pytest
-from PIL import Image
 
+import pytest
 from echotales.core.enums import AliasType, BlockType, ReferenceMode, SpanType, TargetKind
 from echotales.core.models import Block, Chapter, DiscoursePosition, Mention, Self
 from echotales.core.store import Store
 from echotales.pipeline.render import compiled_route
 from echotales.pipeline.render.panels import PanelImageRequest, render_panels
 from echotales.pipeline.workers_contract import ImageWorkerResponse
+from PIL import Image
 
 
 class FakeWorker:

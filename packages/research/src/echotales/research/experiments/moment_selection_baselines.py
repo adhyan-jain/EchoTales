@@ -16,13 +16,12 @@ from __future__ import annotations
 import itertools
 
 import numpy as np
-from scipy.stats import kendalltau
-
 from echotales.research import stats
 from echotales.research.baselines import moment_scorers as ms
 from echotales.research.config import ExperimentConfig, derive_seed
 from echotales.research.datasets import public_chapters
 from echotales.research.schema import RunResult, Trial
+from scipy.stats import kendalltau
 
 HYPOTHESIS_ID = "H-SELECT"
 DEFAULT_PARAMS = {"n_novels": 8, "chapters_per_novel": 2, "budget": 0.2, "llm": False}

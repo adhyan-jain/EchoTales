@@ -32,10 +32,7 @@ _INTENSITY = {DeliveryPolarity.HEIGHTENED: 3, DeliveryPolarity.WARM: 2, Delivery
               DeliveryPolarity.HUSHED: 1, DeliveryPolarity.HESITANT: 1, DeliveryPolarity.FLAT: 0}
 
 _VISUAL = frozenset(
-    "red blue green white black golden grey gray dark light bright shadow sun moon fire smoke rain "
-    "snow river sea garden window door hall room table horse carriage road tree trees hill field "
-    "dress coat hat hair eyes face hand hands blood sword knife gun ran fell struck threw climbed "
-    "rode danced wept smiled kneeled knelt stood rose jumped burst crowd ball church house street".split()
+    ["red", "blue", "green", "white", "black", "golden", "grey", "gray", "dark", "light", "bright", "shadow", "sun", "moon", "fire", "smoke", "rain", "snow", "river", "sea", "garden", "window", "door", "hall", "room", "table", "horse", "carriage", "road", "tree", "trees", "hill", "field", "dress", "coat", "hat", "hair", "eyes", "face", "hand", "hands", "blood", "sword", "knife", "gun", "ran", "fell", "struck", "threw", "climbed", "rode", "danced", "wept", "smiled", "kneeled", "knelt", "stood", "rose", "jumped", "burst", "crowd", "ball", "church", "house", "street"]
 )
 
 
@@ -82,8 +79,7 @@ def llm_zero_shot(texts: list[str], *, model: str = "qwen2.5:7b") -> list[float]
 _SAID = re.compile(r"\b(said|says|asked|replied|cried|answered|exclaimed|whispered|shouted|"
                    r"returned|added|continued|observed|remarked|muttered|called)\b", re.I)
 _CAPWORD = re.compile(r"(?<![.!?]\s)(?<!^)\b([A-Z][a-z]{2,})\b")
-_NOT_NAMES = frozenset("The This That There Then When What Where Which While However But And "
-                       "She Her His Him They Their You Your Yes Not Now Mrs Miss Sir Lady Lord".split())
+_NOT_NAMES = frozenset(["The", "This", "That", "There", "Then", "When", "What", "Where", "Which", "While", "However", "But", "And", "She", "Her", "His", "Him", "They", "Their", "You", "Your", "Yes", "Not", "Now", "Mrs", "Miss", "Sir", "Lady", "Lord"])
 
 
 def listener_ambiguity(text: str, seen_names: set[str]) -> float:

@@ -14,7 +14,6 @@ import sys
 from pathlib import Path
 
 import pytest
-
 from echotales.core.enums import AliasType, ReferenceMode
 
 SCRIPT = Path(__file__).resolve().parents[3] / "scripts" / "chimera" / "sio_synthetic_oracle.py"

@@ -9,8 +9,6 @@ import wave
 from pathlib import Path
 
 import pytest
-from PIL import Image
-
 from echotales.pipeline.compositor.engine import CompositionShotSpec
 from echotales.pipeline.screenplay.schema import CameraMove
 from echotales.pipeline.video.ltx import generate_ltx_video
@@ -23,6 +21,7 @@ from echotales.pipeline.video.wan import (
     generate_wan_s2v_dialogue,
     generate_wan_video,
 )
+from PIL import Image
 
 
 @pytest.fixture

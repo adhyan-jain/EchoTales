@@ -8,9 +8,10 @@ Enforces the 4-Check automated QA gate with automatic re-rolls and human review 
 from __future__ import annotations
 
 import time
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 from echotales.core.models import ReviewItem
 from echotales.core.store import Store
@@ -29,7 +30,11 @@ from echotales.pipeline.screenplay.schema import (
     ScreenplayShot,
     ShotSize,
 )
-from echotales.pipeline.workers_contract import ImageWorkerRequest, ImageWorkerResponse, run_image_worker
+from echotales.pipeline.workers_contract import (
+    ImageWorkerRequest,
+    ImageWorkerResponse,
+    run_image_worker,
+)
 
 
 @dataclass(slots=True)

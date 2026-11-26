@@ -10,12 +10,11 @@ pytest.importorskip("cv2")
 from pathlib import Path
 
 import numpy as np
-from PIL import Image, ImageDraw
-
 from echotales.core.store import Store
 from echotales.pipeline.comic import runner
 from echotales.pipeline.comic.ocr import TextLine
 from echotales.pipeline.voice.bank import VoiceBank, parse_speaker_info
+from PIL import Image, ImageDraw
 
 INFO = "ID  AGE  GENDER  ACCENTS  REGION\np225  23  F    English    Southern  England\np226  22  M    English    Surrey\n"
 
@@ -69,7 +68,6 @@ def test_ingest_understand_build_writes_versioned_video(tmp_path: Path, monkeypa
 
 def test_comic_job_refuses_an_unknown_source_by_name(tmp_path: Path, monkeypatch) -> None:
     import pytest
-
     from echotales.pipeline import jobs
 
     monkeypatch.setattr(runner, "comic_root", lambda novel_id, data_root=None: tmp_path / "comic")

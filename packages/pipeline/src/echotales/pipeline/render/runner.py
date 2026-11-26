@@ -138,8 +138,8 @@ def render_videos(
 
         if prune_visual_narration:
             from echotales.pipeline.render.narration_pruning import (
-                classify_span_visual_status,
                 NarrationVisualStatus,
+                classify_span_visual_status,
             )
 
             span_map = {s.id: classify_span_visual_status(s) for s in chapter_spans}

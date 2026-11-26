@@ -9,9 +9,9 @@ import hashlib
 from pathlib import Path
 
 from echotales.core.enums import (
+    OBSERVER_READER,
     AliasType,
     AssertedBy,
-    OBSERVER_READER,
     Prominence,
     ReferenceMode,
     SpanType,

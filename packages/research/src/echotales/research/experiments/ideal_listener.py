@@ -27,7 +27,6 @@ import random
 from concurrent.futures import ProcessPoolExecutor
 
 import numpy as np
-
 from echotales.research.config import ExperimentConfig, derive_seed
 from echotales.research.controllers.casting import cast
 from echotales.research.datasets import pdnc

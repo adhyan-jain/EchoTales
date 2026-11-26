@@ -125,10 +125,8 @@ class ChatterboxEngine:
         free_cuda_cache()
 
     def synthesize(self, request: SynthesisRequest) -> Path:
-        import torchaudio
-
         import torch
-
+        import torchaudio
         from echotales.pipeline.voice.delivery import split_for_tts, strip_enclosing_quotes
 
         model = self._ensure_model()

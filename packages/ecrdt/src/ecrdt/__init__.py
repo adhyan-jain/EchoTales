@@ -5,16 +5,16 @@ See README.md at the package root for the formal model, proofs, prior-art map,
 and benchmark results.
 """
 
+from .audit import audit_non_interference
+from .baselines import ACLReplica, NaiveUnionReplica
 from .model import Dot, Event
 from .replica import Replica
-from .baselines import NaiveUnionReplica, ACLReplica
-from .audit import audit_non_interference
 
 __all__ = [
+    "ACLReplica",
     "Dot",
     "Event",
-    "Replica",
     "NaiveUnionReplica",
-    "ACLReplica",
+    "Replica",
     "audit_non_interference",
 ]

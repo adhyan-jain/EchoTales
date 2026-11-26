@@ -537,7 +537,7 @@ def _pick_reference(clips: list[Path]) -> Path | None:
     for clip in clips[:40]:
         try:
             seconds = sf.info(str(clip)).duration
-        except Exception:  # noqa: BLE001 - an unreadable header just means "cannot judge this one"
+        except Exception:
             continue
         if _REF_SECONDS[0] <= seconds <= _REF_SECONDS[1]:
             return clip

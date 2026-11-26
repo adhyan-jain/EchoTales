@@ -5,8 +5,6 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-from PIL import Image
-
 from echotales.pipeline.compositor.camera import (
     apply_parallax_transform,
     compute_camera_trajectory,
@@ -28,6 +26,7 @@ from echotales.pipeline.compositor.manga import (
     render_onomatopoeia_overlay,
 )
 from echotales.pipeline.screenplay.schema import CameraMove
+from PIL import Image
 
 
 @pytest.fixture

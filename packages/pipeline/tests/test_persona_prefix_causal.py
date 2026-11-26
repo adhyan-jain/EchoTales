@@ -9,7 +9,6 @@ mechanism on a synthetic three-chapter volume, invented text only, so they run w
 from __future__ import annotations
 
 import pytest
-
 from echotales.core.enums import AliasType, BlockType, ReferenceMode, SpanType, TargetKind
 from echotales.core.models import Block, Chapter, DiscoursePosition, Mention, Self, Span
 from echotales.core.state import StateResolver
@@ -145,7 +144,7 @@ class _FakeClient:
     def __init__(self) -> None:
         self.calls = 0
 
-    def complete(self, task, prompt, schema, *, system="", novel_id="", **_kw):  # noqa: ANN001, ANN003, ANN201
+    def complete(self, task, prompt, schema, *, system="", novel_id="", **_kw):
         import hashlib
         import types
 

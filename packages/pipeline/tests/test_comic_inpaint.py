@@ -4,9 +4,8 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
-from PIL import Image, ImageDraw
-
 from echotales.pipeline.comic.inpaint import CvInpainter, get_inpainter, srt_text
+from PIL import Image, ImageDraw
 
 
 def _gradient_with_text() -> tuple[Image.Image, Image.Image, Image.Image]:

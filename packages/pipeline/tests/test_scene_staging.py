@@ -4,8 +4,14 @@ from __future__ import annotations
 
 import re
 
-from echotales.pipeline.persona.genre import GENRES, STYLE_LEADS, style_lead
-from echotales.pipeline.render.compiler import CharacterBrief, OutputMode, PanelBrief, compile_prompt, model_profile
+from echotales.pipeline.persona.genre import GENRES, STYLE_LEADS
+from echotales.pipeline.render.compiler import (
+    CharacterBrief,
+    OutputMode,
+    PanelBrief,
+    compile_prompt,
+    model_profile,
+)
 from echotales.pipeline.render.direction import build_prompt, system_prompt
 from echotales.pipeline.render.plan import PanelPlan
 from echotales.pipeline.render.staging import (

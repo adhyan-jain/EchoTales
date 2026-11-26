@@ -14,11 +14,10 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 import numpy as np
-from PIL import Image
-from scipy import ndimage
-
 from echotales.pipeline.comic.ocr import TextLine
 from echotales.pipeline.comic.panels import Panel
+from PIL import Image
+from scipy import ndimage
 
 #: Per-channel distance from the bubble's fill colour that still counts as the same fill.
 FILL_TOL = 34

@@ -11,10 +11,25 @@ from pathlib import Path
 import pytest
 from _builds import record_build
 from echotales.core.enums import (
-    AliasType, AssertedBy, AttributionMethod, BlockType, Prominence, SpanType, TargetKind, TruthStatus,
+    AliasType,
+    AssertedBy,
+    AttributionMethod,
+    BlockType,
+    Prominence,
+    SpanType,
+    TargetKind,
+    TruthStatus,
 )
 from echotales.core.interval import FuzzyInterval
-from echotales.core.models import AliasBinding, Attribute, Block, Chapter, DiscoursePosition, Self, Span
+from echotales.core.models import (
+    AliasBinding,
+    Attribute,
+    Block,
+    Chapter,
+    DiscoursePosition,
+    Self,
+    Span,
+)
 from echotales.core.store import Store
 from echotales.pipeline import review_gate as rg
 from echotales.pipeline.jobs import JobQueue

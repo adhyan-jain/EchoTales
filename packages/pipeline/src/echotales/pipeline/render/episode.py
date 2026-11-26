@@ -28,8 +28,6 @@ from datetime import date
 from pathlib import Path
 
 import numpy as np
-from PIL import Image
-
 from echotales.core.models import DiscoursePosition
 from echotales.core.store import Store
 from echotales.pipeline import paths
@@ -48,6 +46,7 @@ from echotales.pipeline.render.shots import (
 )
 from echotales.pipeline.screenplay.schema import CameraMove
 from echotales.pipeline.voice.timing import LineTiming
+from PIL import Image
 
 TIMINGS = ("voice", "fixed")
 MOTIONS = ("stills", "ltx-local")

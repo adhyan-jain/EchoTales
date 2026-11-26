@@ -19,7 +19,6 @@ import re
 import urllib.request
 
 import numpy as np
-
 from echotales.research.config import ExperimentConfig, derive_seed
 from echotales.research.datasets import pdnc
 from echotales.research.schema import RunResult, Trial

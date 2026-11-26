@@ -16,7 +16,6 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
-
 from echotales.pipeline.voice import qa
 from echotales.pipeline.voice.engine import SynthesisRequest, TTSEngine
 
@@ -62,7 +61,7 @@ def _pace_error(text: str, path: Path) -> float | None:
     """0 for a line at the expected rate, growing with how far the take is from it; None when it cannot be judged."""
     try:
         x, sr = qa.read_mono(path)
-    except Exception:  # noqa: BLE001 -- an unreadable file is the stub/other-format case; nothing to judge
+    except Exception:
         return None
     lead, trail = qa.edge_silence(x, sr)
     cps = qa.speech_rate(text, len(x) / sr - lead - trail)

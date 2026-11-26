@@ -322,7 +322,10 @@ def body_age_years(
     Why a number and not only the band: "youth" cannot make an image model draw a boy of fifteen, "a 15-year-old boy" can
     (RI's reborn body, owner review 2026-11-19)."""
     from echotales.pipeline.persona.traits import age_years_from_text
-    from echotales.pipeline.resolve.appearance_extract import _chapters_by_body, gather_appearance_passages
+    from echotales.pipeline.resolve.appearance_extract import (
+        _chapters_by_body,
+        gather_appearance_passages,
+    )
 
     stored = standing_values(store, persona_id, position=position).get("age", "")
     if stored.strip().isdigit():

@@ -13,11 +13,7 @@ from collections.abc import Callable
 
 #: Common people and props a prompt writer adds for atmosphere. Closed on purpose: it names what an invention looks like in
 #: this genre of scene; anything it does not list is not judged, so a miss is silent and a false reject is impossible.
-_INVENTABLE = (
-    "girl boy child children woman women man men elder monk soldier guard servant maiden beggar dog cat horse crane bird "
-    "dragon sword spear banner flag lantern lamp torch pavilion temple pagoda gate bridge boat tower palace throne altar "
-    "fountain statue candle scroll book bow arrow shield armor fire flame lightning petal blossom cherry"
-).split()
+_INVENTABLE = ["girl", "boy", "child", "children", "woman", "women", "man", "men", "elder", "monk", "soldier", "guard", "servant", "maiden", "beggar", "dog", "cat", "horse", "crane", "bird", "dragon", "sword", "spear", "banner", "flag", "lantern", "lamp", "torch", "pavilion", "temple", "pagoda", "gate", "bridge", "boat", "tower", "palace", "throne", "altar", "fountain", "statue", "candle", "scroll", "book", "bow", "arrow", "shield", "armor", "fire", "flame", "lightning", "petal", "blossom", "cherry"]
 _NAME = re.compile(r"\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)+\b")
 
 

@@ -8,13 +8,16 @@ text only, so these tests run without any novel.
 from __future__ import annotations
 
 import pytest
-
 from echotales.core.enums import AliasType, BlockType, ReferenceMode, SpanType, TargetKind
 from echotales.core.models import Block, Chapter, DiscoursePosition, Mention, Self, Span
 from echotales.core.state import StateResolver
 from echotales.core.store import Store
 from echotales.pipeline.persona import build_personas
-from echotales.pipeline.persona.traits import anchored_window, gender_from_anchors, infer_traits_deterministic
+from echotales.pipeline.persona.traits import (
+    anchored_window,
+    gender_from_anchors,
+    infer_traits_deterministic,
+)
 
 NARRATION = {1: "Mei stood, her sleeve trailing.", 2: "Mei waited and she sighed.", 3: "Mei spoke."}
 TRAIT_KEYS = ("age_band", "gender", "register", "archetype", "big_five")

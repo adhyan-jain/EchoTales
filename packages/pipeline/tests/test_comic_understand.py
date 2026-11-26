@@ -7,11 +7,10 @@ import pytest
 pytest.importorskip("scipy")
 
 import numpy as np
-from PIL import Image, ImageDraw
-
 from echotales.pipeline.comic.ingest import PageImage
 from echotales.pipeline.comic.ocr import TextLine
 from echotales.pipeline.comic.understand import ComicUnderstanding, understand_pages
+from PIL import Image, ImageDraw
 
 
 class FakeOcr:

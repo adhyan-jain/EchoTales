@@ -7,9 +7,8 @@ import pytest
 pytest.importorskip("cv2")
 
 import numpy as np
-from PIL import Image
-
 from echotales.pipeline.comic.parallax import parallax_warp
+from PIL import Image
 
 
 def _scene():

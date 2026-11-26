@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import pytest
-
 from echotales.core.enums import SpanType
 from echotales.core.models import Span
 from echotales.pipeline.render.narration_pruning import (

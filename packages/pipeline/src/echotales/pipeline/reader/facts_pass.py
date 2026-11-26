@@ -16,8 +16,6 @@ import re
 from collections.abc import Callable
 from dataclasses import dataclass
 
-from pydantic import BaseModel, Field
-
 from echotales.core.enums import AliasType, AssertedBy, TargetKind, TruthStatus
 from echotales.core.models import AliasBinding, Attribute, Chapter, DiscoursePosition, FuzzyInterval
 from echotales.core.store import Store
@@ -26,6 +24,7 @@ from echotales.pipeline.llm.tasks import Task
 from echotales.pipeline.persona.split import persona_at
 from echotales.pipeline.reader.speakers_pass import CastEntry, NameIndex, build_cast, windows
 from echotales.pipeline.resolve.appearance_extract import APPEARANCE_KEYS
+from pydantic import BaseModel, Field
 
 OBSERVER_READER = "reader"
 #: Confidence of a fact one 7B reading produced and a validator accepted: below an explicit declaration (1.0).
@@ -419,7 +418,7 @@ def read_chapter_facts(store: Store, client: ModelClient, chapter: Chapter) -> F
                 if focus_names
                 else NamesOut()
             )
-        except Exception:  # noqa: BLE001
+        except Exception:
             continue
         for claim in appearance.appearance:
             _store_appearance(store, novel_id, number, pos, claim, text, index, report, n_blocks)

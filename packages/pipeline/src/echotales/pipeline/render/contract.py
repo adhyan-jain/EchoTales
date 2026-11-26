@@ -208,7 +208,7 @@ class GenerationRequest:
     receives; everything else here is provenance/config that the pre-Phase-1
     caches never captured (see `render/cache_key.py`)."""
 
-    base: "PanelImageRequest"
+    base: PanelImageRequest
     backend_name: str
     checkpoint_id: str = ""
     checkpoint_version: str = ""

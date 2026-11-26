@@ -575,6 +575,7 @@ def test_llm_boundary_never_leaves_blocks_without_a_segment(
 
 def test_director_conservation_audit(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     import json
+
     from echotales.pipeline import paths
 
     store = Store(tmp_path / "d.db")

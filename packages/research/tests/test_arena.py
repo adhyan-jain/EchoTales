@@ -4,7 +4,6 @@ statistics, and each experiment's stub path."""
 import json
 
 import pytest
-
 from echotales.research import stats
 from echotales.research.config import derive_seed, stable_hash
 from echotales.research.runner import available, run_experiment

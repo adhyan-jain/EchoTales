@@ -131,7 +131,7 @@ class GeminiImageEngine:
 
         return None, str(candidate.get("finishReason", "no_image"))
 
-    def generate(self, request: "PanelImageRequest") -> Path:
+    def generate(self, request: PanelImageRequest) -> Path:
         prompt = request.prompt
         out_path: Path = request.out_path
 

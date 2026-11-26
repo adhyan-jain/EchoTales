@@ -6,16 +6,15 @@ import io
 import zipfile
 from pathlib import Path
 
-import pytest
 import numpy as np
-from PIL import Image
-
+import pytest
 from echotales.pipeline.comic.ingest import (
     ComicInputError,
     load_pages,
     natural_key,
     slice_webtoon,
 )
+from PIL import Image
 
 
 def _page(color: int = 90, size: tuple[int, int] = (120, 160)) -> Image.Image:

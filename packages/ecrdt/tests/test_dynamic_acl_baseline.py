@@ -22,15 +22,15 @@ tests establish two things:
    every operation `DynamicCausalACLReplica` exposes and shows none of
    them can reproduce what `Replica.infer()` does.
 """
+import os
 import random
 import sys
-import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from ecrdt.replica import Replica
-from ecrdt.baselines import DynamicCausalACLReplica
 from ecrdt.audit import audit_non_interference, total_violation_count
+from ecrdt.baselines import DynamicCausalACLReplica
+from ecrdt.replica import Replica
 
 
 def test_dynamic_causal_acl_matches_ecrdt_zero_leaks_under_random_workload():

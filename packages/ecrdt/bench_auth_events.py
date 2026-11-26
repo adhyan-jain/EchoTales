@@ -26,8 +26,8 @@ not 1, for the identical observable outcome.
 """
 from __future__ import annotations
 
-from ecrdt.incremental import IncrementalReplica
 from ecrdt.baselines import AutoDerivingACLReplica
+from ecrdt.incremental import IncrementalReplica
 
 
 def events_for_ecrdt(n_pairs: int, delegate_fraction: float) -> dict:

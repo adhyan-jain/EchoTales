@@ -10,8 +10,8 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from ecrdt.replica import Replica
 from ecrdt.incremental import IncrementalReplica
+from ecrdt.replica import Replica
 
 
 def _apply_same_op(ref, inc, op, args):

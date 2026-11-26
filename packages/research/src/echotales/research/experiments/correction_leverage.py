@@ -31,8 +31,6 @@ import random
 from concurrent.futures import ProcessPoolExecutor
 
 import numpy as np
-from scipy.stats import norm
-
 from echotales.research.config import ExperimentConfig, derive_seed
 from echotales.research.datasets import pdnc
 from echotales.research.evaluators.voice_geometry import (
@@ -50,6 +48,7 @@ from echotales.research.experiments.ideal_listener import (
 from echotales.research.models.listener import ListenerParams, simulate
 from echotales.research.schema import RunResult, Trial
 from echotales.research.transforms.error_injection import inject
+from scipy.stats import norm
 
 HYPOTHESIS_ID = "H-LEVER"
 #: Error-type mix of the product ladder's real errors on PDNC (H-CAL: 52%

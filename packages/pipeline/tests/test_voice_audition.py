@@ -12,7 +12,6 @@ from pathlib import Path
 import numpy as np
 import pytest
 import soundfile as sf
-
 from echotales.pipeline.voice.audition import (
     PASSAGES,
     ClipStats,

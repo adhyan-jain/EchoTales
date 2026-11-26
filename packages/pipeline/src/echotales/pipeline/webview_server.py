@@ -68,9 +68,8 @@ from echotales.core.lifecycle import JobStatus
 from echotales.core.models import Job, ReviewItem
 from echotales.core.store import Store
 from echotales.pipeline import paths, research_demo
-from echotales.pipeline.compute import default_image_engine
-from echotales.pipeline.errors import ErrorCode
 from echotales.pipeline._multipart import MultipartError, parse_single_file
+from echotales.pipeline.compute import default_image_engine
 from echotales.pipeline.corrections import (
     AppliedCorrectionError,
     Correction,
@@ -80,6 +79,7 @@ from echotales.pipeline.corrections import (
     new_manual_entity_id,
 )
 from echotales.pipeline.engines import registry as engine_registry
+from echotales.pipeline.errors import ErrorCode
 from echotales.pipeline.jobs import (
     ALLOWED_HTTP_ENGINES,
     JOB_KINDS,
@@ -2490,8 +2490,8 @@ def make_handler(
                     if handle is None:
                         return self._json(404, {"error": f"unknown novel {novel_id!r}"})
                     from echotales.core.models import CharacterBibleEntry
-                    from echotales.pipeline.assets.turnaround import generate_character_assets
                     from echotales.pipeline.assets.approval import register_asset_candidate
+                    from echotales.pipeline.assets.turnaround import generate_character_assets
                     out_dir = paths.asset_dir(novel_id, "references") / "turnarounds"
                     out_dir.mkdir(parents=True, exist_ok=True)
                     char = handle.store.bible_at(novel_id, 1.0).characters.get(self_id)
@@ -2524,8 +2524,8 @@ def make_handler(
                     if handle is None:
                         return self._json(404, {"error": f"unknown novel {novel_id!r}"})
                     from echotales.core.models import LocationBibleEntry
-                    from echotales.pipeline.assets.location import generate_location_assets
                     from echotales.pipeline.assets.approval import register_asset_candidate
+                    from echotales.pipeline.assets.location import generate_location_assets
                     out_dir = paths.asset_dir(novel_id, "references") / "locations"
                     out_dir.mkdir(parents=True, exist_ok=True)
                     loc = handle.store.bible_at(novel_id, 1.0).locations.get(loc_id)

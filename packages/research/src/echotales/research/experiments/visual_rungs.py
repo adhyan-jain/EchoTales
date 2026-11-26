@@ -19,7 +19,6 @@ with prompts from the product's own `build_image_prompt`:
 from __future__ import annotations
 
 import numpy as np
-
 from echotales.research.config import ExperimentConfig
 from echotales.research.datasets import visual_beats as vb
 from echotales.research.schema import RunResult, Trial

@@ -25,10 +25,11 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from enum import StrEnum
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Mapping, Sequence
+from typing import TYPE_CHECKING, Any
 
 from echotales.core.enums import (
     OBSERVER_READER,
@@ -764,7 +765,7 @@ def compute_asset_input_digest(
     h.update(prompt.encode("utf-8"))
     if rendering_params:
         for k, v in sorted(rendering_params.items()):
-            h.update(f"::{k}={v}".encode("utf-8"))
+            h.update(f"::{k}={v}".encode())
     for pd in sorted(parent_digests):
-        h.update(f"::parent={pd}".encode("utf-8"))
+        h.update(f"::parent={pd}".encode())
     return h.hexdigest()

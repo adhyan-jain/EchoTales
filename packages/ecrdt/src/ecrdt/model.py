@@ -13,7 +13,6 @@ proven non-interfering.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import FrozenSet, Optional
 
 from .orset import Dot
 
@@ -35,8 +34,8 @@ class Event:
     kind: str
     fact: str
     actor: str
-    target: Optional[str] = None  # addressee, for communicate/retract_knowledge
-    deps: FrozenSet[Dot] = field(default_factory=frozenset)
+    target: str | None = None  # addressee, for communicate/retract_knowledge
+    deps: frozenset[Dot] = field(default_factory=frozenset)
 
     def __post_init__(self) -> None:
         if self.kind not in KINDS:

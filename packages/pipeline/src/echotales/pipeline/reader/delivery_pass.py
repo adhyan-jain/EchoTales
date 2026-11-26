@@ -23,8 +23,6 @@ import re
 from collections import Counter
 from dataclasses import dataclass, field
 
-from pydantic import BaseModel, Field
-
 from echotales.core.enums import SpanType
 from echotales.core.models import Chapter, Span
 from echotales.core.store import Store
@@ -32,6 +30,7 @@ from echotales.pipeline.llm.client import ModelClient
 from echotales.pipeline.llm.tasks import Task
 from echotales.pipeline.reader.quotes import quote_starts
 from echotales.pipeline.reader.speakers_pass import MAX_ATTEMPTS, _span_at, windows
+from pydantic import BaseModel, Field
 
 #: Word shown to the model -> EARS emotion (or reading style) stored and voiced.
 LABELS: dict[str, str] = {

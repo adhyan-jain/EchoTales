@@ -2,9 +2,7 @@
 
 from __future__ import annotations
 
-
 import pytest
-
 from echotales.core.enums import Prominence
 from echotales.core.models import DiscoursePosition, Self
 from echotales.core.store import Store

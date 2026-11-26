@@ -1,13 +1,13 @@
+import os
 import random
 import sys
-import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from ecrdt.replica import Replica
-from ecrdt.baselines import NaiveUnionReplica, ACLReplica
 from ecrdt.audit import audit_non_interference, total_violation_count
+from ecrdt.baselines import ACLReplica, NaiveUnionReplica
 from ecrdt.orset import ORSet
+from ecrdt.replica import Replica
 
 
 def test_world_convergence_commutative_idempotent():

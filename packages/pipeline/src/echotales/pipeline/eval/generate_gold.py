@@ -33,7 +33,14 @@ from pathlib import Path
 from echotales.core.enums import AliasType
 from echotales.core.store import Store
 from echotales.pipeline.eval.coref_score import _block_starts
-from echotales.pipeline.eval.gold import GoldMention, GoldSet, MentionKind, Provenance, read_gold, write_gold
+from echotales.pipeline.eval.gold import (
+    GoldMention,
+    GoldSet,
+    MentionKind,
+    Provenance,
+    read_gold,
+    write_gold,
+)
 
 
 def _extract_gold_from_db(

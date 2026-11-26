@@ -24,7 +24,6 @@ from __future__ import annotations
 import random
 
 import numpy as np
-
 from echotales.research import stats
 from echotales.research.config import ExperimentConfig, derive_seed
 from echotales.research.controllers.casting import cast, mean_pairwise_distance

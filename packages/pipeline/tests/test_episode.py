@@ -10,7 +10,6 @@ import subprocess
 from pathlib import Path
 
 import pytest
-from PIL import Image
 from _anime_helpers import build_chapter
 from echotales.core.enums import OBSERVER_READER, TargetKind
 from echotales.core.interval import FuzzyInterval
@@ -21,6 +20,7 @@ from echotales.pipeline.render.plan import load_panel_plan
 from echotales.pipeline.render.shots import MotionLevel
 from echotales.pipeline.screenplay.schema import CameraMove
 from echotales.pipeline.voice.timing import build_timing
+from PIL import Image
 
 NOVEL = "t"
 

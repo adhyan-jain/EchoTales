@@ -3,9 +3,8 @@
 from __future__ import annotations
 
 import numpy as np
-from PIL import Image
-
 from echotales.pipeline.comic.panels import detect_panels
+from PIL import Image
 
 
 def _page(boxes: list[tuple[int, int, int, int]], size=(600, 800), bg=255) -> Image.Image:

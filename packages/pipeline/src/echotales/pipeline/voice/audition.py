@@ -25,7 +25,6 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 
 import numpy as np
-
 from echotales.pipeline.voice import qa
 from echotales.pipeline.voice.bank import BankVoice, VoiceBank
 from echotales.pipeline.voice.engine import SynthesisRequest, TTSEngine
@@ -99,7 +98,7 @@ def measure_voice(voice: BankVoice, bank: VoiceBank) -> ClipStats | None:
         return None
     try:
         x, sr = qa.read_mono(Path(voice.reference_clip))
-    except Exception:  # noqa: BLE001 - one unreadable clip must not abort the whole audition
+    except Exception:
         return None
     s = measure_array(x, sr)
     s.voice_id, s.bank, s.licence = voice.speaker_id, bank.bank_id, bank.licence

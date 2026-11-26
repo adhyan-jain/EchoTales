@@ -12,8 +12,6 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from PIL import Image
-
 from echotales.pipeline.compositor.camera import (
     apply_parallax_transform,
     compute_camera_trajectory,
@@ -29,6 +27,7 @@ from echotales.pipeline.compositor.manga import (
 )
 from echotales.pipeline.hwaccel import h264_args
 from echotales.pipeline.screenplay.schema import CameraMove
+from PIL import Image
 
 
 @dataclass(slots=True)

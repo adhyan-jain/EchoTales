@@ -28,7 +28,6 @@ F. full            -> replica.Replica, unmodified.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict, FrozenSet, Set, Tuple
 
 from .model import Event
 from .orset import Dot, ORSet
@@ -40,7 +39,7 @@ class NoProvenanceReplica:
     replica_id: str
     _counter: int = 0
     W: ORSet = field(default_factory=ORSet)
-    E: Dict[Dot, Event] = field(default_factory=dict)
+    E: dict[Dot, Event] = field(default_factory=dict)
 
     def _new_dot(self) -> Dot:
         self._counter += 1
@@ -80,18 +79,16 @@ class NoProvenanceReplica:
         self.E[dot] = e
         return e
 
-    def merge(self, other: "NoProvenanceReplica") -> None:
+    def merge(self, other: NoProvenanceReplica) -> None:
         self.W = self.W.join(other.W)
         for dot, e in other.E.items():
             self.E.setdefault(dot, e)
 
-    def materialize(self) -> Tuple[Set[str], Dict[str, FrozenSet[Dot]]]:
+    def materialize(self) -> tuple[set[str], dict[str, frozenset[Dot]]]:
         me = self.replica_id
-        established: Dict[str, Set[Dot]] = {}
+        established: dict[str, set[Dot]] = {}
         for e in _topo_order(self.E):
-            if e.kind == "observe" and e.actor == me:
-                established.setdefault(e.fact, set()).add(e.dot)
-            elif e.kind == "communicate" and e.target == me:
+            if (e.kind == "observe" and e.actor == me) or (e.kind == "communicate" and e.target == me):
                 established.setdefault(e.fact, set()).add(e.dot)
             elif e.kind == "infer" and e.actor == me:
                 # NO closure check here -- the ablation.
@@ -126,14 +123,14 @@ class FlatPerAgentCRDTReplica:
         """A real, local learning event (the agent's own honest OBSERVE)."""
         self.K.add(fact, self._new_dot())
 
-    def merge(self, other: "FlatPerAgentCRDTReplica") -> None:
+    def merge(self, other: FlatPerAgentCRDTReplica) -> None:
         self.W = self.W.join(other.W)
         self.K = self.K.join(other.K)  # <-- the ablation: K is merged just like W
 
     def knows(self, fact: str) -> bool:
         return self.K.contains(fact)
 
-    def materialized_facts(self) -> Set[str]:
+    def materialized_facts(self) -> set[str]:
         return self.K.facts()
 
 
@@ -157,7 +154,7 @@ class ClosureOnlyReplica:
     replica_id: str
     _counter: int = 0
     W: ORSet = field(default_factory=ORSet)
-    E: Dict[Dot, Event] = field(default_factory=dict)
+    E: dict[Dot, Event] = field(default_factory=dict)
 
     def _new_dot(self) -> Dot:
         self._counter += 1
@@ -190,15 +187,15 @@ class ClosureOnlyReplica:
         self.E[dot] = e
         return e
 
-    def merge(self, other: "ClosureOnlyReplica") -> None:
+    def merge(self, other: ClosureOnlyReplica) -> None:
         self.W = self.W.join(other.W)
         for dot, e in other.E.items():
             self.E.setdefault(dot, e)
 
-    def trusted_facts(self) -> Set[str]:
+    def trusted_facts(self) -> set[str]:
         """Global closure: an event is trusted iff every dep is trusted.
         No actor/target check anywhere -- the ablation."""
-        trusted_dots: Set[Dot] = set()
+        trusted_dots: set[Dot] = set()
         for e in _topo_order(self.E):
             if e.kind in ("assert_world", "retract_world"):
                 trusted_dots.add(e.dot)
@@ -210,5 +207,5 @@ class ClosureOnlyReplica:
     def knows(self, fact: str) -> bool:
         return fact in self.trusted_facts()
 
-    def materialized_facts(self) -> Set[str]:
+    def materialized_facts(self) -> set[str]:
         return self.trusted_facts()

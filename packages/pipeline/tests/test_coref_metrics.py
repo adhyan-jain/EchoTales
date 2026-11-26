@@ -9,7 +9,6 @@ from the metric's definition in the comment above it, not captured from a run.
 import math
 
 import pytest
-
 from echotales.pipeline.eval.coref_score import (
     MetricScore,
     _max_weight_matching,

@@ -11,12 +11,11 @@ while the windowed evidence is held fixed, and every short-horizon key must not 
 
 from __future__ import annotations
 
-from hypothesis import given, settings
-from hypothesis import strategies as st
-
 from echotales.core.enums import Prominence
 from echotales.pipeline.persona.build import _trait_values
 from echotales.pipeline.persona.traits import infer_traits_deterministic
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 SHORT_HORIZON_KEYS = ("age_band", "gender", "register", "archetype")
 

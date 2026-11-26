@@ -4,7 +4,14 @@ from __future__ import annotations
 
 from echotales.core.enums import BlockType, Prominence, TargetKind
 from echotales.core.interval import FuzzyInterval
-from echotales.core.models import Block, Chapter, DiscoursePosition, Persona, Self, SelfPersonaBinding
+from echotales.core.models import (
+    Block,
+    Chapter,
+    DiscoursePosition,
+    Persona,
+    Self,
+    SelfPersonaBinding,
+)
 from echotales.core.store import Store
 from echotales.pipeline.llm.client import ModelClient
 from echotales.pipeline.llm.stub import StubProvider

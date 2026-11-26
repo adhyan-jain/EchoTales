@@ -10,7 +10,6 @@ the decision.
 from __future__ import annotations
 
 import pytest
-
 from echotales.core.enums import AliasType, BlockType, Decision, ReferenceMode, SpanType, TargetKind
 from echotales.core.models import Block, Candidate, Chapter, Mention
 from echotales.core.store import Store

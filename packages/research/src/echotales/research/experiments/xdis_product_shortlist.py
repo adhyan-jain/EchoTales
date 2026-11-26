@@ -24,7 +24,6 @@ from collections import Counter
 from dataclasses import dataclass, field
 
 import numpy as np
-
 from echotales.research.config import ExperimentConfig, derive_seed
 from echotales.research.experiments import gate_xdis as gx
 from echotales.research.experiments.disagreement_posterior import _llm

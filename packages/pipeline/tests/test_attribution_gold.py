@@ -5,7 +5,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-
 from echotales.core.models import CharacterBibleEntry, StoryBibleSnapshot
 from echotales.pipeline.voice.attribution import (
     DialogueLine,

@@ -11,7 +11,15 @@ import zipfile
 import pytest
 from echotales.core.enums import OBSERVER_READER, AliasType, BlockType, TargetKind
 from echotales.core.interval import FuzzyInterval
-from echotales.core.models import AliasBinding, Attribute, Block, Chapter, DiscoursePosition, Self, VoiceProfile
+from echotales.core.models import (
+    AliasBinding,
+    Attribute,
+    Block,
+    Chapter,
+    DiscoursePosition,
+    Self,
+    VoiceProfile,
+)
 from echotales.core.store import Store
 from echotales.pipeline import packs
 from echotales.pipeline.corrections import Correction, CorrectionLog, CorrectionType

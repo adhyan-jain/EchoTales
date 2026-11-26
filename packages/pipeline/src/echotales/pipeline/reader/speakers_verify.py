@@ -13,8 +13,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from pydantic import BaseModel
-
 from echotales.core.enums import AttributionMethod, SpanType
 from echotales.core.models import Chapter
 from echotales.core.store import Store
@@ -22,6 +20,7 @@ from echotales.pipeline.llm.client import ModelClient
 from echotales.pipeline.llm.tasks import Task
 from echotales.pipeline.reader.quotes import QUOTE, quote_starts
 from echotales.pipeline.reader.speakers_pass import first_person_tag, own_explicit_tag
+from pydantic import BaseModel
 
 #: Characters of context kept on each side of the block holding the line.
 CONTEXT_CHARS = 700

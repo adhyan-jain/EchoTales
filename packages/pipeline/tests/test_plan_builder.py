@@ -205,13 +205,13 @@ def test_self_with_no_bound_persona_yet_produces_no_character_spec(
 
 def test_build_render_plan_with_visual_registry_integration(store: Store, tmp_path) -> None:
     """Integration test: build_render_plan with visual_registry uses VisualMemorySelector."""
+    from echotales.core.readset import fact_ref
     from echotales.core.visual_memory import (
         FactProvenance,
         VisualAssetKind,
         VisualAssetRecord,
         VisualAssetRegistry,
     )
-    from echotales.core.readset import fact_ref
 
     store.add_self(
         Self(id="s1", novel_id=NOVEL, canonical_label="Hero", first_attested_pos=DiscoursePosition(chapter=1))

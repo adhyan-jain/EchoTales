@@ -281,7 +281,10 @@ class TestDirectorV2:
         assert varied[1].camera_angle != varied[0].camera_angle
 
     def test_conservation_audit(self) -> None:
-        from echotales.pipeline.render.direction import CharacterDirection, check_direction_conservation
+        from echotales.pipeline.render.direction import (
+            CharacterDirection,
+            check_direction_conservation,
+        )
 
         beat_text = "Fang Yuan stood on the cliff holding his sword as the elders surrounded him."
         d = PanelDirection(

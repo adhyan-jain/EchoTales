@@ -974,7 +974,12 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
                     json.dumps(report.to_dict(), ensure_ascii=False), encoding="utf-8")
     elif job.kind == "companion":
         from echotales.pipeline import paths
-        from echotales.pipeline.companion import build_companion, parse_through, site_dir_name, write_companion_site
+        from echotales.pipeline.companion import (
+            build_companion,
+            parse_through,
+            site_dir_name,
+            write_companion_site,
+        )
 
         through = parse_through(params.get("through"))
         # The folder comes from the project and the chapter, never from the request.
@@ -999,8 +1004,8 @@ def _dispatch(store: Store, job: Job, params: dict[str, Any]) -> str:
             fn=lambda: refimg.search_batch(store, novel_id, title, self_ids=self_ids),
         )
     elif job.kind == "reference_gen":
-        from echotales.pipeline.persona.reference_gen import generate_references
         from echotales.pipeline.compute import default_image_engine
+        from echotales.pipeline.persona.reference_gen import generate_references
         from echotales.pipeline.render.panels import get_engine
 
         engine_name = params.get("engine") or default_image_engine()

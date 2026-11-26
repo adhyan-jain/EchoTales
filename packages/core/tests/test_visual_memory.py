@@ -14,9 +14,6 @@ All tests are model-free (no GPU, no diffusion models, deterministic SQLite scra
 from __future__ import annotations
 
 import pytest
-from hypothesis import given, settings
-from hypothesis import strategies as st
-
 from echotales.core.enums import (
     OBSERVER_READER,
     OBSERVER_SYSTEM,
@@ -44,6 +41,8 @@ from echotales.core.visual_memory import (
     VisualMemorySelector,
     VisualRequest,
 )
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 SELF_ID = "n:self:fang_yuan"
 BODY1 = "n:self:fang_yuan:body1"

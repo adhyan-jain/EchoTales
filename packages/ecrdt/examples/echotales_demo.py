@@ -22,8 +22,8 @@ graph already contains them.
 This is a demonstration of the mapping only -- it does not touch
 echotales-core or echotales-pipeline, and does not generate any real media.
 """
-import sys
 import os
+import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 

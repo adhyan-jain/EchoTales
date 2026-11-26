@@ -70,8 +70,6 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
-from pydantic import BaseModel, Field
-
 from echotales.core.enums import AliasType, Provenance, ReferenceMode, SpanType
 from echotales.core.models import Mention
 from echotales.core.store import Store
@@ -81,6 +79,7 @@ from echotales.pipeline.ingest.adapters import ChapterRange
 from echotales.pipeline.ingest.runner import ingest_novel
 from echotales.pipeline.llm.base import LLMRequest, LLMUnavailable
 from echotales.pipeline.llm.ollama import OllamaProvider
+from pydantic import BaseModel, Field
 
 log = logging.getLogger(__name__)
 

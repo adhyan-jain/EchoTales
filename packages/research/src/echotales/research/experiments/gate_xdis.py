@@ -32,7 +32,6 @@ import random
 from pathlib import Path
 
 import numpy as np
-
 from echotales.research.config import ExperimentConfig, derive_seed
 from echotales.research.schema import RunResult, Trial
 
@@ -381,7 +380,7 @@ def analyse(rows: list[dict], p: dict, base_seed: int, stub: bool, *, n_before: 
         o: dict = {f"{rate:.2f}": metrics_at(int(round(rate * n)), float(cur[int(round(rate * n))]), n, e_total)
                    for rate in p["rates"]}
         o["auc_capture"] = float(np.mean(cur[1:] / e_total)) if e_total else 0.0
-        o["distinct_score_levels"] = int(len(np.unique(sc[name])))
+        o["distinct_score_levels"] = len(np.unique(sc[name]))
         o["auroc"] = auroc(sc[name], err) if name != "P0_none" else None
         ops[name] = o
 

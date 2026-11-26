@@ -18,7 +18,6 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
-
 from echotales.pipeline.paths import RESEARCH_CACHE_DIR, VOICE_BANK_DIR
 
 CACHE = RESEARCH_CACHE_DIR / "voice_embeddings_ears.json"
@@ -54,9 +53,8 @@ def ears_geometry(*, refresh: bool = False) -> BankGeometry:
     import librosa
     import torch
     from chatterbox.models.voice_encoder import VoiceEncoder
-    from safetensors.torch import load_file
-
     from echotales.pipeline.voice.bank import load_ears
+    from safetensors.torch import load_file
 
     bank = load_ears(VOICE_BANK_DIR / "ears")
     ve = VoiceEncoder()

@@ -8,10 +8,8 @@ LotM identical, ORV loses only the sleeve clause and the xianxia culture negativ
 
 from __future__ import annotations
 
-from _requires import requires_clip
-
 import pytest
-
+from _requires import requires_clip
 from echotales.core.enums import BlockType, SpanType
 from echotales.core.models import Block, Chapter, Span
 from echotales.core.store import Store

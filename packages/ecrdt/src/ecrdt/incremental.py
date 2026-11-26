@@ -32,7 +32,6 @@ O(|delta| + backlog drained this call), not O(|E|).
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict, FrozenSet, List, Set, Tuple
 
 from .model import Event
 from .orset import Dot, ORSet
@@ -43,13 +42,13 @@ class IncrementalReplica:
     replica_id: str
     _counter: int = 0
     W: ORSet = field(default_factory=ORSet)
-    E: Dict[Dot, Event] = field(default_factory=dict)  # full log kept for parity/compaction/audit, NOT re-walked
+    E: dict[Dot, Event] = field(default_factory=dict)  # full log kept for parity/compaction/audit, NOT re-walked
 
     # incremental materialization state -- the actual optimization
-    _delivered: Set[Dot] = field(default_factory=set)           # DAG-structurally processed (any kind)
-    _pending: Dict[Dot, Event] = field(default_factory=dict)     # waiting on a dep not yet delivered
-    _established: Dict[str, Set[Dot]] = field(default_factory=dict)  # K_i, incrementally maintained
-    _ever_established: Set[Dot] = field(default_factory=set)     # append-only, for infer's closure check
+    _delivered: set[Dot] = field(default_factory=set)           # DAG-structurally processed (any kind)
+    _pending: dict[Dot, Event] = field(default_factory=dict)     # waiting on a dep not yet delivered
+    _established: dict[str, set[Dot]] = field(default_factory=dict)  # K_i, incrementally maintained
+    _ever_established: set[Dot] = field(default_factory=set)     # append-only, for infer's closure check
 
     # accounting, for the scaling benchmark
     events_processed: int = 0
@@ -89,11 +88,11 @@ class IncrementalReplica:
         self._ingest(dot, e)
         return e
 
-    def infer(self, fact: str, premises: List[str]) -> Event:
+    def infer(self, fact: str, premises: list[str]) -> Event:
         missing = [p for p in premises if p not in self._established or not self._established[p]]
         if missing:
             raise ValueError(f"cannot INFER {fact!r}: missing premises {missing}")
-        deps: Set[Dot] = set()
+        deps: set[Dot] = set()
         for p in premises:
             deps |= self._established[p]
         dot = self._new_dot()
@@ -113,7 +112,7 @@ class IncrementalReplica:
         self._ingest(dot, e)
         return e
 
-    def retract_knowledge(self, target: str, fact: str, establishing_dots: FrozenSet[Dot]) -> Event:
+    def retract_knowledge(self, target: str, fact: str, establishing_dots: frozenset[Dot]) -> Event:
         dot = self._new_dot()
         e = Event(dot=dot, kind="retract_knowledge", fact=fact, actor=self.replica_id, target=target,
                    deps=establishing_dots)
@@ -122,7 +121,7 @@ class IncrementalReplica:
         return e
 
     # ---- merge: add new events to the pending buffer, then drain ----
-    def merge(self, other: "IncrementalReplica") -> None:
+    def merge(self, other: IncrementalReplica) -> None:
         self.W = self.W.join(other.W)
         for dot, e in other.E.items():
             if dot not in self.E:
@@ -154,10 +153,7 @@ class IncrementalReplica:
 
     def _apply(self, e: Event) -> None:
         me = self.replica_id
-        if e.kind == "observe" and e.actor == me:
-            self._established.setdefault(e.fact, set()).add(e.dot)
-            self._ever_established.add(e.dot)
-        elif e.kind == "communicate" and e.target == me:
+        if (e.kind == "observe" and e.actor == me) or (e.kind == "communicate" and e.target == me):
             self._established.setdefault(e.fact, set()).add(e.dot)
             self._ever_established.add(e.dot)
         elif e.kind == "infer" and e.actor == me:
@@ -173,7 +169,7 @@ class IncrementalReplica:
         # whose deps point at this assert) can become ready.
 
     # ---- read path: O(1), always up to date (no dirty/recompute step) ----
-    def materialize(self) -> Tuple[Set[str], Dict[str, FrozenSet[Dot]]]:
+    def materialize(self) -> tuple[set[str], dict[str, frozenset[Dot]]]:
         K = {f for f, dots in self._established.items() if dots}
         provenance = {f: frozenset(dots) for f, dots in self._established.items() if dots}
         return K, provenance

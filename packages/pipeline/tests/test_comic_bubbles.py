@@ -7,11 +7,10 @@ import pytest
 pytest.importorskip("scipy")
 
 import numpy as np
-from PIL import Image, ImageDraw
-
 from echotales.pipeline.comic.bubbles import cluster_speakers, detect_bubbles
 from echotales.pipeline.comic.ocr import TextLine
 from echotales.pipeline.comic.panels import Panel
+from PIL import Image, ImageDraw
 
 
 def _scene() -> tuple[Image.Image, list[Panel]]:

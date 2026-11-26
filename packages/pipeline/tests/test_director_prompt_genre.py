@@ -5,7 +5,6 @@ from __future__ import annotations
 from types import SimpleNamespace
 
 import pytest
-
 from echotales.pipeline.persona import genre
 from echotales.pipeline.render.direction import (
     CharacterDirection,
@@ -25,7 +24,7 @@ class _Capture:
         self.system = ""
         self.prompt = ""
 
-    def complete(self, task, prompt, model, *, system="", novel_id=""):  # noqa: ANN001
+    def complete(self, task, prompt, model, *, system="", novel_id=""):
         self.system, self.prompt = system, prompt
         return SimpleNamespace(value=self.reply)
 

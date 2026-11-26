@@ -30,7 +30,6 @@ import time
 from pathlib import Path
 
 import numpy as np
-
 from echotales.research.config import ExperimentConfig, derive_seed
 from echotales.research.schema import RunResult, Trial
 
@@ -141,7 +140,6 @@ def _clip(voice_id: str) -> Path:
 
 def render(units, out_dir: Path, engine_name: str, base_seed: int) -> list[dict]:
     import torch
-
     from echotales.pipeline.voice.engine import SynthesisRequest, get_engine
 
     tts = get_engine(engine_name)
@@ -252,7 +250,7 @@ def _boot(xs, resamples, seed):
     bs = xs[rng.integers(0, len(xs), (resamples, len(xs)))].mean(axis=1)
     return {"mean": round(float(xs.mean()), 4), "ci": [round(float(np.percentile(bs, 2.5)), 4),
                                                        round(float(np.percentile(bs, 97.5)), 4)],
-            "n": int(len(xs))}
+            "n": len(xs)}
 
 
 def analyse(units, meas, ref_emb, genders_by_voice, p, base_seed, manip):

@@ -47,7 +47,11 @@ from echotales.pipeline.persona.split import (
     standing_values,
     write_epochs,
 )
-from echotales.pipeline.persona.traits import TraitProfile, anchored_window, infer_traits_deterministic
+from echotales.pipeline.persona.traits import (
+    TraitProfile,
+    anchored_window,
+    infer_traits_deterministic,
+)
 
 #: Below this many mentions an entity gets a deterministic profile only. A
 #: model call per walk-on is exactly the per-entity equivalent of the
@@ -225,7 +229,7 @@ class _MemoClient:
     def __init__(self, inner: object) -> None:
         self.inner, self.cache = inner, {}
 
-    def complete(self, task, prompt, schema, *, system="", novel_id="", **kwargs):  # noqa: ANN001, ANN003, ANN201
+    def complete(self, task, prompt, schema, *, system="", novel_id="", **kwargs):
         key = (task, prompt, system)
         if key not in self.cache:
             self.cache[key] = self.inner.complete(task, prompt, schema, system=system, novel_id=novel_id, **kwargs)  # type: ignore[attr-defined]

@@ -30,8 +30,8 @@ from echotales.pipeline.anaphora import (
     infer_gender,
     most_informative_label,
     present_cast,
-    resolve_kinship_group,
     resolve_anaphora_for_novel,
+    resolve_kinship_group,
     resolve_pronoun,
     validate_groups,
 )

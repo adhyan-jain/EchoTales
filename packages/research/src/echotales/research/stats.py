@@ -14,8 +14,6 @@ import random
 from collections.abc import Sequence
 
 import numpy as np
-from scipy import optimize
-
 from echotales.pipeline.eval.stats import (  # noqa: F401  (re-exported)
     Interval,
     PairedComparison,
@@ -23,6 +21,7 @@ from echotales.pipeline.eval.stats import (  # noqa: F401  (re-exported)
     paired_bootstrap,
     rate,
 )
+from scipy import optimize
 
 
 def wilson(successes: int, n: int, z: float = 1.96) -> tuple[float, float, float]:

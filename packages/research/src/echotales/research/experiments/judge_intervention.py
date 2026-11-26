@@ -20,7 +20,6 @@ every error type (all loss is truncation -- which would re-kill T3).
 from __future__ import annotations
 
 import numpy as np
-
 from echotales.research.config import ExperimentConfig
 from echotales.research.datasets import visual_beats as vb
 from echotales.research.schema import RunResult, Trial

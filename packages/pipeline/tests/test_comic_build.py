@@ -12,18 +12,21 @@ from pathlib import Path
 
 import numpy as np
 import pytest
-from PIL import Image
-
 from echotales.core.store import Store
-from echotales.pipeline.comic.build import camera_window, plan_shots, build_episode
 from echotales.pipeline.comic.bubbles import Bubble
+from echotales.pipeline.comic.build import build_episode, camera_window, plan_shots
 from echotales.pipeline.comic.ingest import PageImage
 from echotales.pipeline.comic.to_graph import comic_to_store
-from echotales.pipeline.comic.understand import ComicUnderstanding, PageUnderstanding, PanelUnderstanding
+from echotales.pipeline.comic.understand import (
+    ComicUnderstanding,
+    PageUnderstanding,
+    PanelUnderstanding,
+)
 from echotales.pipeline.voice.bank import VoiceBank, parse_speaker_info
 from echotales.pipeline.voice.engine import get_engine
 from echotales.pipeline.voice.runner import render_novel
 from echotales.pipeline.voice.timing import build_timing
+from PIL import Image
 
 INFO = "ID  AGE  GENDER  ACCENTS  REGION\np225  23  F    English    Southern  England\np226  22  M    English    Surrey\n"
 

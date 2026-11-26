@@ -18,23 +18,22 @@ extension (signed events) is noted as future work, not attempted here.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict, FrozenSet, List, Optional, Set, Tuple
 
 from .model import Event
 from .orset import Dot, ORSet
 
 
-def _topo_order(events: Dict[Dot, Event]) -> List[Event]:
+def _topo_order(events: dict[Dot, Event]) -> list[Event]:
     """Kahn's algorithm over the deps DAG; ties broken by dot for determinism."""
     indeg = {d: 0 for d in events}
-    children: Dict[Dot, List[Dot]] = {d: [] for d in events}
+    children: dict[Dot, list[Dot]] = {d: [] for d in events}
     for d, e in events.items():
         for dep in e.deps:
             if dep in events:
                 indeg[d] += 1
                 children[dep].append(d)
     ready = sorted([d for d, k in indeg.items() if k == 0])
-    order: List[Event] = []
+    order: list[Event] = []
     while ready:
         d = ready.pop(0)
         order.append(events[d])
@@ -53,10 +52,10 @@ class Replica:
     replica_id: str
     _counter: int = 0
     W: ORSet = field(default_factory=ORSet)
-    E: Dict[Dot, Event] = field(default_factory=dict)
+    E: dict[Dot, Event] = field(default_factory=dict)
     # local knowledge of *other* facts' payloads is out of scope; we track
     # fact ids only, matching the abstraction in the brief.
-    _facts_seen_locally: Set[str] = field(default_factory=set)
+    _facts_seen_locally: set[str] = field(default_factory=set)
     # Pure memoization of materialize(), invalidated whenever E changes.
     # NOTE: this is *not* delta-incremental materialization. A dot that
     # fails an INFER/RETRACT precondition because a dependency has not
@@ -68,7 +67,7 @@ class Replica:
     # for not-yet-satisfiable nodes; not implemented this session (see
     # AUDIT.md "weakest point").
     _dirty: bool = True
-    _cache: Optional[Tuple[Set[str], Dict[str, FrozenSet[Dot]]]] = field(default=None, repr=False)
+    _cache: tuple[set[str], dict[str, frozenset[Dot]]] | None = field(default=None, repr=False)
     materialize_calls: int = 0
     materialize_full_recomputes: int = 0
 
@@ -115,13 +114,13 @@ class Replica:
         self._dirty = True
         return e
 
-    def infer(self, fact: str, premises: List[str]) -> Event:
+    def infer(self, fact: str, premises: list[str]) -> Event:
         """Precondition: actor must already know every premise."""
         known, provenance = self.materialize()
         missing = [p for p in premises if p not in known]
         if missing:
             raise ValueError(f"cannot INFER {fact!r}: missing premises {missing}")
-        deps: Set[Dot] = set()
+        deps: set[Dot] = set()
         for p in premises:
             deps |= provenance[p]
         dot = self._new_dot()
@@ -141,7 +140,7 @@ class Replica:
         self._dirty = True
         return e
 
-    def retract_knowledge(self, target: str, fact: str, establishing_dots: FrozenSet[Dot]) -> Event:
+    def retract_knowledge(self, target: str, fact: str, establishing_dots: frozenset[Dot]) -> Event:
         """Revoke a specific replica's knowledge of `fact` (add-wins: a later,
         concurrent OBSERVE/COMMUNICATE/INFER for that replica survives)."""
         dot = self._new_dot()
@@ -158,7 +157,7 @@ class Replica:
         return e
 
     # ---- merge --------------------------------------------------------
-    def merge(self, other: "Replica") -> None:
+    def merge(self, other: Replica) -> None:
         self.W = self.W.join(other.W)
         new_dots = [dot for dot in other.E if dot not in self.E]
         for dot in new_dots:
@@ -167,7 +166,7 @@ class Replica:
             self._dirty = True
 
     # ---- materialization (the projection K_i = view(E, i)) ------------
-    def materialize(self) -> Tuple[Set[str], Dict[str, FrozenSet[Dot]]]:
+    def materialize(self) -> tuple[set[str], dict[str, frozenset[Dot]]]:
         """Return (K_i, provenance) where provenance[f] is the set of *this
         replica's own* establishing dots for fact f, surviving retraction.
 
@@ -184,13 +183,10 @@ class Replica:
             return self._cache
         self.materialize_full_recomputes += 1
         me = self.replica_id
-        established: Dict[str, Set[Dot]] = {}
-        ever_established: Set[Dot] = set()
+        established: dict[str, set[Dot]] = {}
+        ever_established: set[Dot] = set()
         for e in _topo_order(self.E):
-            if e.kind == "observe" and e.actor == me:
-                established.setdefault(e.fact, set()).add(e.dot)
-                ever_established.add(e.dot)
-            elif e.kind == "communicate" and e.target == me:
+            if (e.kind == "observe" and e.actor == me) or (e.kind == "communicate" and e.target == me):
                 established.setdefault(e.fact, set()).add(e.dot)
                 ever_established.add(e.dot)
             elif e.kind == "infer" and e.actor == me:
@@ -215,10 +211,10 @@ class Replica:
     def event_log_size_bytes(self) -> int:
         return sum(e.size_bytes() for e in self.E.values())
 
-    def event_context(self) -> Dict[str, int]:
+    def event_context(self) -> dict[str, int]:
         """High-watermark counter per origin replica across the *event log*
         (superset of W.context, which only tracks assert/retract dots)."""
-        ctx: Dict[str, int] = {}
+        ctx: dict[str, int] = {}
         for (origin, counter) in self.E:
             ctx[origin] = max(ctx.get(origin, 0), counter)
         return ctx

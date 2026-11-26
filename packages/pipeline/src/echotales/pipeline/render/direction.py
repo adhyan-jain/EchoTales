@@ -1503,9 +1503,7 @@ def enforce_shot_variety(directions: list[PanelDirection]) -> list[PanelDirectio
                     d_copy.shot = "close"
                 else:
                     d_copy.shot = "wide"
-            elif d_copy.shot == "close":
-                d_copy.shot = "medium"
-            elif d_copy.shot == "wide":
+            elif d_copy.shot == "close" or d_copy.shot == "wide":
                 d_copy.shot = "medium"
 
         # Also check camera angle collision on same subject

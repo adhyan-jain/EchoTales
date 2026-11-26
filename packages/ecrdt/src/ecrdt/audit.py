@@ -10,16 +10,14 @@ a measured number rather than an assertion.
 """
 from __future__ import annotations
 
-from typing import Dict, Set
-
 
 def audit_non_interference(
-    apparent_knowledge: Dict[str, Set[str]],
-    ground_truth_disclosures: Dict[str, Set[str]],
-) -> Dict[str, Set[str]]:
+    apparent_knowledge: dict[str, set[str]],
+    ground_truth_disclosures: dict[str, set[str]],
+) -> dict[str, set[str]]:
     """Return {replica_id: set of facts it apparently knows but was never
     causally disclosed}. Empty dict-of-empty-sets == no violations."""
-    violations: Dict[str, Set[str]] = {}
+    violations: dict[str, set[str]] = {}
     for replica_id, facts in apparent_knowledge.items():
         allowed = ground_truth_disclosures.get(replica_id, set())
         bad = facts - allowed
@@ -28,5 +26,5 @@ def audit_non_interference(
     return violations
 
 
-def total_violation_count(violations: Dict[str, Set[str]]) -> int:
+def total_violation_count(violations: dict[str, set[str]]) -> int:
     return sum(len(v) for v in violations.values())

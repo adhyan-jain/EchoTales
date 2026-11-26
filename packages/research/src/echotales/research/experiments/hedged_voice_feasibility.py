@@ -16,7 +16,6 @@ the generator cannot express a hedge, whatever listeners would make of one.
 from __future__ import annotations
 
 import numpy as np
-
 from echotales.research.config import ExperimentConfig
 from echotales.research.schema import RunResult, Trial
 
@@ -50,9 +49,12 @@ def run(cfg: ExperimentConfig, *, stub: bool):
     else:
         import torch
         from chatterbox.tts import ChatterboxTTS, Conditionals, T3Cond
-
         from echotales.pipeline.paths import RESEARCH_SCRATCH_DIR
-        from echotales.research.evaluators.voice_geometry import ears_geometry, identify, load_encoder
+        from echotales.research.evaluators.voice_geometry import (
+            ears_geometry,
+            identify,
+            load_encoder,
+        )
         from echotales.research.human_studies.synthesize import _clip_for
 
         geom, ve = ears_geometry(), load_encoder()

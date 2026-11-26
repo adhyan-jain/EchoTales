@@ -42,10 +42,9 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from ecrdt.replica import Replica
-from ecrdt.baselines import AutoDerivingACLReplica
 from ecrdt.audit import audit_non_interference, total_violation_count
-
+from ecrdt.baselines import AutoDerivingACLReplica
+from ecrdt.replica import Replica
 
 # ---------------------------------------------------------------------------
 # Control: E-CRDT itself performs the equivalent operation safely under all

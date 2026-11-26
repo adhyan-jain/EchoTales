@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from echotales.core.enums import SpanType, TargetKind
 from echotales.core.store import Store
@@ -227,7 +227,7 @@ def lock_bible(store: Store, novel_id: str, note: str = "") -> dict:  # type: ig
     previous = store.list_bible_locks(novel_id)
     digest, chapters, counts = fact_digests(store, novel_id)
     lock = store.add_bible_lock(novel_id, {
-        "created_at": datetime.now(timezone.utc).isoformat(timespec="seconds"), "note": note,
+        "created_at": datetime.now(UTC).isoformat(timespec="seconds"), "note": note,
         "pipeline_version": PIPELINE_VERSION, "digest": digest, "chapter_digests": chapters, "counts": counts,
     })
     return {

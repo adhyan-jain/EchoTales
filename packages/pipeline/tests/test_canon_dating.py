@@ -10,7 +10,6 @@ per-body wiki traits exist). Synthetic strings only; the wiki loader is stubbed.
 from __future__ import annotations
 
 import pytest
-
 from echotales.pipeline.persona import canon as canon_mod
 from echotales.pipeline.persona import wiki_canon as wiki_mod
 

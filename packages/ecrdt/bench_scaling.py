@@ -27,16 +27,15 @@ import csv
 import os
 import random
 import time
-from typing import List, Tuple
 
+from ecrdt.baselines import ACLReplica, NaiveUnionReplica
 from ecrdt.replica import Replica
-from ecrdt.baselines import NaiveUnionReplica, ACLReplica
 
 OUT_DIR = os.path.join(os.path.dirname(__file__), "scaling_results")
 os.makedirs(OUT_DIR, exist_ok=True)
 
 
-def _write_csv(path: str, header: List[str], rows: List[Tuple]) -> None:
+def _write_csv(path: str, header: list[str], rows: list[tuple]) -> None:
     with open(path, "w", newline="") as fh:
         w = csv.writer(fh)
         w.writerow(header)
@@ -92,7 +91,7 @@ def _svg_line_chart(path: str, title: str, series: dict, xlabel: str, ylabel: st
 # Experiment A: world-only scaling
 # ---------------------------------------------------------------------------
 
-def experiment_a_world_only(sizes=(1_000, 10_000, 50_000, 100_000)) -> List[Tuple]:
+def experiment_a_world_only(sizes=(1_000, 10_000, 50_000, 100_000)) -> list[tuple]:
     rows = []
     for n in sizes:
         for name, cls, kw in (("ecrdt", Replica, {}), ("naive", NaiveUnionReplica, {}), ("acl", ACLReplica, {})):
@@ -124,7 +123,7 @@ def experiment_a_world_only(sizes=(1_000, 10_000, 50_000, 100_000)) -> List[Tupl
 # Experiment B: epistemic (materialize-heavy) scaling
 # ---------------------------------------------------------------------------
 
-def experiment_b_epistemic(sizes=(200, 500, 1_000, 2_000)) -> List[Tuple]:
+def experiment_b_epistemic(sizes=(200, 500, 1_000, 2_000)) -> list[tuple]:
     rows = []
     for n in sizes:
         rep = Replica(replica_id="a")
@@ -157,7 +156,7 @@ def experiment_b_epistemic(sizes=(200, 500, 1_000, 2_000)) -> List[Tuple]:
 # Experiment C: agent-count scaling, fixed op budget, random-pair gossip
 # ---------------------------------------------------------------------------
 
-def experiment_c_agents(agent_counts=(2, 10, 50, 100), ops_per_agent=200) -> List[Tuple]:
+def experiment_c_agents(agent_counts=(2, 10, 50, 100), ops_per_agent=200) -> list[tuple]:
     rows = []
     for n_agents in agent_counts:
         rng = random.Random(3)
