@@ -35,6 +35,7 @@ relicensed (decision D7 in `docs/design/decisions.md`).
 | NameTag 3 English (UFAL; registry name `nametag3-english`) | NER comparison, **eval-only** | CC BY-NC-SA 4.0 (non-commercial, share-alike) | **stated here** (`engines/registry.py`). Never in a shipped path |
 | gemma2:9b (reader) | speaker and appearance reading | Gemma Terms of Use | **verify** |
 | qwen2.5:7b (name finding) | mention detection | Apache-2.0 for this size | **verify** |
+| qwen3:8b (NER context classifier) | `mentions.detector=hybrid` context classification (8.2B exact, 8B class, D70 addendum) | Apache-2.0 | **verify** |
 | ollama | local model server | MIT | **verify** |
 | Wan 2.2 (Wan-AI/Wan2.2-TI2V-5B-Diffusers; A14B optional) | RunPod image-to-video worker (`workers/runpod/wan_video`; optional cloud, never run) | Apache-2.0 | **verify** against the model card |
 | Qwen-Image-Edit-2509 (Qwen/Qwen-Image-Edit-2509) | RunPod multi-reference keyframe worker (`workers/runpod/qwen_image_edit`; optional cloud, never run) | Apache-2.0 | **verify** against the model card |

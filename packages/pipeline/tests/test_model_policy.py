@@ -83,3 +83,34 @@ def test_client_refuses_a_big_ollama_model_and_stub_is_untouched() -> None:
         ollama._provider_for(profile, tasks.Task.NER)
     stub = ModelClient(settings=Settings(model_backend=ModelBackend.STUB))
     assert stub._provider_for(profile, tasks.Task.NER) is not None
+
+
+# ---- owner addendum 2026-11-27: the ceiling is the advertised size class ----
+
+def _classed(name: str, params_b: float, size_class_b: float, approval: str = "policy") -> reg.EngineSpec:
+    return dataclasses.replace(_spec(name, params_b, approval), size_class_b=size_class_b)
+
+
+def test_qwen3_8b_exact_8_2_class_8_passes() -> None:
+    q = reg.get("llm", "qwen3:8b")
+    assert (q.params_b, q.size_class_b, q.approval) == (8.2, 8.0, "policy")
+    reg.check_model_policy(q)
+    reg.check_llm_model("qwen3:8b", provider="ollama")
+
+
+def test_class_9_not_excepted_fails_but_gemma_passes() -> None:
+    with pytest.raises(reg.ModelPolicyError):
+        reg.check_model_policy(_classed("other-model", 9.0, 9.0))
+    reg.check_model_policy(reg.get("llm", "gemma2:9b"))
+
+
+def test_class_14_fails() -> None:
+    with pytest.raises(reg.ModelPolicyError):
+        reg.check_model_policy(_classed("other-model", 14.8, 14.0))
+
+
+def test_unregistered_tags_use_the_size_in_the_tag() -> None:
+    reg.check_llm_model("foo:8b", provider="ollama")
+    for tag in ("foo:9b", "foo:70b"):
+        with pytest.raises(reg.ModelPolicyError):
+            reg.check_llm_model(tag, provider="ollama")

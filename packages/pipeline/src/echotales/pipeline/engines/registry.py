@@ -67,6 +67,9 @@ class EngineSpec:
     version: str | None = None
     #: Parameter count in billions, for the open-weight size policy (D70).
     params_b: float | None = None
+    #: Advertised size class in billions (qwen3:8b is 8.2B exact, class 8). The D70 ceiling applies to this (owner
+    #: addendum 2026-11-27); `params_b` is still recorded exactly.
+    size_class_b: float | None = None
     quantization: str | None = None
     approval: Literal["policy", "owner_exception", "not_authorized"] | None = None
     #: Repo-relative path of the measurement file for this model.
@@ -125,12 +128,18 @@ ENGINES: tuple[EngineSpec, ...] = (
     # Digest and quantization are from `ollama list` / `ollama show` on the dev machine, 2026-11-26.
     EngineSpec("gemma2:9b", "llm", "local-low", "Gemma Terms of Use", None, "llm-model", role="model", where="gpu",
                setup_label="gemma2:9b", note="reader and director; 9.2B is an owner-approved exception (D70)",
-               version="ff02c3702f32", params_b=9.2, quantization="Q4_0", approval="owner_exception",
+               version="ff02c3702f32", params_b=9.2, size_class_b=9.0, quantization="Q4_0", approval="owner_exception",
                eval_ref="data/eval/reader/bakeoff-gemma2-9b.json"),
     EngineSpec("qwen2.5:7b", "llm", "local-low", "Apache-2.0", True, "llm-model", role="model", where="gpu",
                setup_label="qwen2.5:7b", note="name finding",
-               version="845dbda0ea48", params_b=7.6, quantization="Q4_K_M", approval="policy",
+               version="845dbda0ea48", params_b=7.6, size_class_b=7.0, quantization="Q4_K_M", approval="policy",
                eval_ref="data/eval/reader/bakeoff-qwen2.5-7b.json"),
+    # Owner addendum 2026-11-27 to D70: the ceiling is the advertised class, so 8.2B exact is allowed as an "8B" model.
+    # Digest and quantization from `ollama list` / `ollama show qwen3:8b`, 2026-11-27.
+    EngineSpec("qwen3:8b", "llm", "local-low", "Apache-2.0", True, "llm-model", role="model", where="gpu",
+               setup_label="qwen3:8b", note="NER context classifier (mentions.detector=hybrid)",
+               version="500a1f067a9f", params_b=8.2, size_class_b=8.0, quantization="Q4_K_M", approval="policy",
+               eval_ref="data/eval/ner/final/bakeoff-hybrid-qwen3-8b-0.7-0.3-test-rescored-filtered.json"),
     # Served by vLLM on a RunPod pod (`RUNPOD_SERVED_MODELS` in .env.example). Above the owner's ceiling, so refused
     # by `check_model_policy`; the entries exist so the refusal names a reason. Parameter counts are the model cards'.
     EngineSpec("llama70b", "llm", "cloud", "verify (Llama community licence)", None, "llm-model", role="model",
@@ -144,20 +153,20 @@ ENGINES: tuple[EngineSpec, ...] = (
                note="RunPod served-model alias; not authorised (D70)"),
     # ---- named-entity recognition (candidates for the romanized-name NER work; none is wired into a stage here) ----
     EngineSpec("urchade/gliner_medium-v2.1", "ner", "local-low", "Apache-2.0", True, "ner-model", role="model",
-               params_b=0.2, approval="policy", note="GLiNER zero-shot span NER; parameter count approximate"),
+               params_b=0.2, size_class_b=1.0, approval="policy", note="GLiNER zero-shot span NER; parameter count approximate"),
     EngineSpec("urchade/gliner_large-v2.1", "ner", "local-low", "Apache-2.0", True, "ner-model", role="model",
-               params_b=0.5, approval="policy", note="GLiNER zero-shot span NER; parameter count approximate"),
+               params_b=0.5, size_class_b=1.0, approval="policy", note="GLiNER zero-shot span NER; parameter count approximate"),
     EngineSpec("urchade/gliner_multi-v2.1", "ner", "local-low", "Apache-2.0", True, "ner-model", role="model",
-               params_b=0.5, approval="policy", note="GLiNER multilingual; parameter count approximate"),
+               params_b=0.5, size_class_b=1.0, approval="policy", note="GLiNER multilingual; parameter count approximate"),
     EngineSpec("numind/NuNER_Zero", "ner", "local-low", "verify (MIT per the model card, not re-read here)", None,
-               "ner-model", role="model", params_b=0.4, approval="policy",
+               "ner-model", role="model", params_b=0.4, size_class_b=1.0, approval="policy",
                note="NuNER Zero span NER; parameter count approximate"),
     EngineSpec("en_core_web_sm", "ner", "local-low", "MIT", True, "ner-model", role="model",
-               params_b=0.00001, approval="policy", note="spaCy English small pipeline, CPU"),
+               params_b=0.00001, size_class_b=1.0, approval="policy", note="spaCy English small pipeline, CPU"),
     EngineSpec("en_core_web_trf", "ner", "local-low", "MIT", True, "ner-model", role="model",
-               params_b=0.125, approval="policy", note="spaCy English transformer pipeline (RoBERTa-base)"),
+               params_b=0.125, size_class_b=1.0, approval="policy", note="spaCy English transformer pipeline (RoBERTa-base)"),
     EngineSpec("nametag3-english", "ner", "local-low", "CC BY-NC-SA 4.0", False, "ner-model", role="model",
-               params_b=0.6, approval="policy", note="UFAL NameTag 3 English; eval-only, non-commercial"),
+               params_b=0.6, size_class_b=1.0, approval="policy", note="UFAL NameTag 3 English; eval-only, non-commercial"),
     # ---- speech ----
     EngineSpec("stub", "tts", "local-low", _APACHE_REPO, True, "tts", note="silent placeholder audio"),
     EngineSpec("chatterbox", "tts", "local-low", "MIT", True, "tts", where="gpu", setup_label="Chatterbox TTS",
@@ -284,8 +293,23 @@ OWNER_APPROVED_EXCEPTIONS = frozenset({"gemma2:9b"})
 MAX_OPEN_WEIGHT_PARAMS_B = 8.0
 
 
+_SIZE_IN_NAME = re.compile(r"(?<![\d.])(\d+(?:\.\d+)?)b(?![a-z])", re.IGNORECASE)
+
+
 class ModelPolicyError(ValueError):
     """An open-weight model above the owner's size ceiling (or marked not authorised) was selected."""
+
+
+def effective_size_b(spec: EngineSpec) -> float | None:
+    """The size the ceiling applies to: advertised class, else the size in the tag, else the exact count.
+
+    Why (owner addendum 2026-11-27): qwen3:8b is advertised as 8B and ollama reports 8.2B; comparing the exact count
+    would refuse a model the owner called allowed. The exact count stays in `params_b` for the record.
+    """
+    if spec.size_class_b is not None:
+        return spec.size_class_b
+    sizes = [float(m) for m in _SIZE_IN_NAME.findall(spec.name)]
+    return max(sizes) if sizes else spec.params_b
 
 
 def check_model_policy(spec: EngineSpec) -> None:
@@ -300,19 +324,17 @@ def check_model_policy(spec: EngineSpec) -> None:
     if spec.approval == "not_authorized":
         raise ModelPolicyError(f"model {spec.name!r} is not authorised by the owner's open-weight policy (D70)")
     excepted = spec.approval == "owner_exception" and spec.name in OWNER_APPROVED_EXCEPTIONS
-    if spec.params_b is not None and spec.params_b > MAX_OPEN_WEIGHT_PARAMS_B and not excepted:
+    size = effective_size_b(spec)
+    if size is not None and size > MAX_OPEN_WEIGHT_PARAMS_B and not excepted:
         raise ModelPolicyError(
-            f"model {spec.name!r} has {spec.params_b:g}B parameters, above the owner's {MAX_OPEN_WEIGHT_PARAMS_B:g}B "
+            f"model {spec.name!r} is in the {size:g}B size class, above the owner's {MAX_OPEN_WEIGHT_PARAMS_B:g}B "
             f"ceiling, and is not an approved exception ({', '.join(sorted(OWNER_APPROVED_EXCEPTIONS))}); see D70")
-
-
-_SIZE_IN_NAME = re.compile(r"(?<![\d.])(\d+(?:\.\d+)?)b(?![a-z])", re.IGNORECASE)
 
 
 def check_llm_model(name: str, *, provider: str) -> None:
     """Fail-closed policy check for the model a local (`ollama`) or RunPod provider is about to load.
 
-    A registered name uses its recorded `params_b`. An unregistered name falls back to the size written in the tag
+    A registered name uses its advertised size class (see `effective_size_b`). An unregistered name falls back to the size written in the tag
     (`llama3:70b`, `qwen72b`); a name with no size in it passes, because refusing every unknown tag would also refuse
     the small models people legitimately pull, and the registry is where such a model gets its size recorded.
     Stub and hosted-API providers are exempt (D70).
