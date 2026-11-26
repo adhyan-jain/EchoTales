@@ -265,6 +265,60 @@ def score_predictions(
     return {"metrics": result, "errors": errors}
 
 
+def _metrics_by_source(
+    docs: Sequence[dict[str, Any]],
+    preds: dict[str, list[NerSpan]],
+    *,
+    label_map: LabelMap | None = None,
+    min_score: float | None = None,
+) -> dict[str, Any]:
+    """The same metrics structure as `score_predictions`, filtered per record source (no re-detection)."""
+    return {
+        src: score_predictions([d for d in docs if d.get("source") == src], preds,
+                               label_map=label_map, min_score=min_score)["metrics"]
+        for src in SOURCES
+    }
+
+
+def _raw_predictions(preds: dict[str, list[NerSpan]]) -> dict[str, list[list[Any]]]:
+    """Unthresholded detector output as JSON-safe rows, so a result can be re-scored without the detector."""
+    return {doc: [[s.start, s.end, s.label, s.score, s.text] for s in spans] for doc, spans in preds.items()}
+
+
+def _predictions_from_json(raw: dict[str, list[list[Any]]]) -> dict[str, list[NerSpan]]:
+    return {
+        doc: [NerSpan(text=t, start=a, end=b, label=lab, score=sc) for a, b, lab, sc, t in rows]
+        for doc, rows in raw.items()
+    }
+
+
+def rescore_payload(
+    payload: dict[str, Any],
+    docs: Sequence[dict[str, Any]],
+    *,
+    threshold: float | None = None,
+    sweep: bool = False,
+    label_map: LabelMap | None = None,
+) -> dict[str, Any]:
+    """Score a saved result's stored predictions against `docs` (the same split/source). No detector runs.
+
+    Refuses a result without stored predictions, or one that does not cover every gold doc, rather than silently
+    scoring the missing docs as empty.
+    """
+    if "predictions" not in payload:
+        raise ValueError("result has no stored predictions (written before predictions were recorded)")
+    raw = payload["predictions"]
+    missing = [d["doc_id"] for d in docs if d["doc_id"] not in raw]
+    if missing:
+        raise ValueError(f"{len(missing)} gold docs missing from stored predictions, e.g. {missing[:3]}")
+    preds = _predictions_from_json(raw)
+    result = evaluate(None, docs, label_map=label_map, threshold=threshold,
+                      detected=(preds, payload.get("runtime") or {}))
+    if sweep:
+        result["sweep"] = sweep_thresholds(docs, preds, label_map=label_map)
+    return result
+
+
 # ---------------------------------------------------------------------------
 # Running a detector
 # ---------------------------------------------------------------------------
@@ -332,6 +386,8 @@ def evaluate(
         "n_pred_spans": sum(len(normalize_predictions(v, label_map)) for v in preds.values()),
         "threshold": threshold,
         "runtime": runtime,
+        "metrics_by_source": _metrics_by_source(docs, preds, label_map=label_map, min_score=threshold),
+        "predictions": _raw_predictions(preds),
         **scored,
     }
 
@@ -385,6 +441,47 @@ def _git_commit(cwd: Path) -> str | None:
                               check=True, timeout=10).stdout.strip()
     except Exception:
         return None
+
+
+OLLAMA_URL = "http://localhost:11434"
+
+
+def _ollama_call(url: str, body: dict[str, Any] | None, timeout: float) -> Any:
+    import urllib.request
+
+    data = json.dumps(body).encode("utf-8") if body is not None else None
+    req = urllib.request.Request(url, data=data, method="POST" if body is not None else "GET",
+                                 headers={"Content-Type": "application/json"})
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
+        return json.loads(resp.read().decode("utf-8"))
+
+
+def ollama_model_meta(tag: str, *, base_url: str = OLLAMA_URL, timeout: float = 5.0) -> dict[str, Any]:
+    """Digest, parameter size and quantization from /api/show, and the VRAM the model holds right now from /api/ps.
+
+    Call it right after detection, while the model is still loaded (ollama unloads after its keep-alive). Every
+    field is None when ollama is unreachable or the tag is not known; this never raises, so a bake-off cannot be
+    lost to a metadata lookup. /api/show is POST: the daemon answers GET with 405.
+    """
+    meta: dict[str, Any] = {"digest": None, "parameter_size": None, "quantization_level": None, "size_vram": None}
+    try:
+        show = _ollama_call(f"{base_url}/api/show", {"model": tag}, timeout)
+        details = show.get("details") or {}
+        meta["digest"] = show.get("digest") or details.get("digest")
+        meta["parameter_size"] = details.get("parameter_size")
+        meta["quantization_level"] = details.get("quantization_level")
+    except Exception:
+        pass
+    try:
+        ps = _ollama_call(f"{base_url}/api/ps", None, timeout)
+        names = {tag, f"{tag}:latest"}
+        for entry in ps.get("models") or []:
+            if {entry.get("name"), entry.get("model")} & names:
+                meta["size_vram"] = entry.get("size_vram")
+                break
+    except Exception:
+        pass
+    return meta
 
 
 def hardware_info() -> dict[str, Any]:

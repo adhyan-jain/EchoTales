@@ -115,6 +115,39 @@ def test_sweep_falls_back_to_max_f1():
     assert sw["chosen"]["f1"] == max(r["f1"] for r in sw["rows"])
 
 
+def test_predictions_round_trip_to_rescore_and_by_source(tmp_path):
+    import json
+
+    d1 = _doc("Fang Yuan bowed to Bai Ling.", [(0, 9, "person", "ordinary"), (22, 30, "person", "ordinary")])
+    d2 = _doc("Vael'thar came.", [(0, 9, "person", "invented")], "d2", "invented")
+    d2["source"] = "public_domain"
+    docs = [d1, d2]
+    preds = {"d1": [_sp(0, 9, score=0.9), _sp(22, 30, score=0.35), _sp(10, 15, "location", score=0.5)],
+             "d2": [_sp(0, 9, score=0.7)]}
+    res = ns.evaluate(None, docs, threshold=0.4, detected=(preds, {"wall_seconds": 0.1}))
+    assert set(res["metrics_by_source"]) == {"synthetic", "public_domain"}
+    assert res["metrics_by_source"]["synthetic"]["exact"]["span_only"]["overall"]["tp"] == 1
+    assert res["metrics_by_source"]["public_domain"]["overlap"]["span_only"]["overall"]["tp"] == 1
+    assert res["metrics"]["overlap"]["span_only"]["overall"]["tp"] == 2
+    # Raw predictions are stored unthresholded, so the 0.35 span is still there.
+    assert len(res["predictions"]["d1"]) == 3
+
+    out = ns.write_result(tmp_path / "r.json", res, {"system": "x"})
+    payload = json.loads(out.read_text(encoding="utf-8"))
+    again = ns.rescore_payload(payload, docs, threshold=0.4)
+    assert again["metrics"] == res["metrics"]
+    assert again["metrics_by_source"] == res["metrics_by_source"]
+    lower = ns.rescore_payload(payload, docs, threshold=0.3)
+    assert lower["metrics"]["overlap"]["span_only"]["overall"]["tp"] == 3
+    # A result that does not cover every gold doc is refused rather than scored as empty.
+    payload["predictions"].pop("d2")
+    with pytest.raises(ValueError, match="missing"):
+        ns.rescore_payload(payload, docs)
+    # Unreachable ollama degrades to nulls instead of raising.
+    meta = ns.ollama_model_meta("nope:0b", base_url="http://127.0.0.1:9", timeout=0.5)
+    assert meta == {"digest": None, "parameter_size": None, "quantization_level": None, "size_vram": None}
+
+
 def test_evaluate_heuristic_runs_and_serialises(tmp_path):
     docs = ns.load_gold(GOLD_DIR, "dev")
     res = ns.evaluate(HeuristicDetector(), docs)
