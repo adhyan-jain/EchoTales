@@ -92,6 +92,8 @@ class CommonnessProfile:
 
     determiner_rate: dict[str, float] = field(default_factory=dict)
     plural_rate: dict[str, float] = field(default_factory=dict)
+    #: Occurrences of `<key>s`, kept so a plural-shaped surface can be judged from its stem's counts.
+    plural_hits: dict[str, int] = field(default_factory=dict)
     occurrences: dict[str, int] = field(default_factory=dict)
     #: Casefolded corpus, retained so surfaces discovered *after* the profile
     #: was built can still be measured. Layer 1 now proposes vocabulary the
@@ -139,6 +141,27 @@ class CommonnessProfile:
             self.determiner_rate.get(key, 0.0) >= DETERMINER_RATE_THRESHOLD
             or self.plural_rate.get(key, 0.0) >= PLURAL_RATE_THRESHOLD
         )
+
+    def is_plural_class(self, surface: str) -> bool:
+        """Whether the surface, or its singular, names a class that both pluralises and occurs: "Predicaments".
+
+        The determiner and plural tests above judge the surface exactly as written, so the plural form of a class
+        never failed them: RI ch5 has "wild beasts called Predicament" and 12 "Predicaments", the plural scored only
+        12 hits against its own (zero) plural, and the hybrid detector accepted it as an organisation 12 times.
+        Judging the stem's counts (singular + plural together, both forms present) closes that, independent of the
+        label because a name of an individual does not pluralise whatever it names (a family surname, "Bennets",
+        stays under the 5% rate threshold).
+        """
+        key = surface.casefold().strip()
+        stem = key[:-1] if len(key) > 4 and key.endswith("s") and not key.endswith(("ss", "us", "is")) else key
+        if len(stem) < 3 or is_scale_term(surface):
+            return False
+        if stem not in self.occurrences and self.corpus:
+            self.measure(stem)
+        singular, plural = self.occurrences.get(stem, 0), self.plural_hits.get(stem, 0)
+        if singular < 1 or plural < 1 or singular + plural < MIN_OCCURRENCES:
+            return False
+        return plural / (singular + plural) >= PLURAL_RATE_THRESHOLD
 
     def measure(self, surface: str) -> None:
         """Measure one surface against the retained corpus, caching the result."""
@@ -196,6 +219,7 @@ def _measure_into(profile: CommonnessProfile, key: str, lowered: str) -> None:
     plural_hits = len(re.findall(rf"\b{escaped}s\b", lowered))
 
     profile.occurrences[key] = total
+    profile.plural_hits[key] = plural_hits
     profile.determiner_rate[key] = determiner_hits / total
     profile.plural_rate[key] = plural_hits / (total + plural_hits)
 

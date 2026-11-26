@@ -184,7 +184,11 @@ def cmd_run(args: argparse.Namespace) -> int:
     try:
         stage("0 ingest", lambda: ingest_novel(novel, store, sources_path=args.sources, chapters=chapters))
         stage("2 segment", lambda: segment_novel(novel, store))
-        stage("3 mentions", lambda: detect_mentions(novel, store, lexicon=lexicon, client=client))
+        # `--ner` beats config.json for this run only: a copy, so the process-wide settings are not mutated.
+        ner = getattr(args, "ner", None)
+        mention_settings = get_settings().model_copy(update={"mentions_detector": ner}) if ner else None
+        stage("3 mentions", lambda: detect_mentions(
+            novel, store, lexicon=lexicon, client=client, settings=mention_settings))
         stage(
             "4 speakers",
             lambda: attribute_novel(

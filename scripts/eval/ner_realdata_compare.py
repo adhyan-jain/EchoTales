@@ -72,7 +72,7 @@ def main() -> None:
     ap.add_argument("--novel", required=True)
     ap.add_argument("--src", required=True)
     ap.add_argument("--last", type=float, required=True)
-    ap.add_argument("--mode", choices=["legacy", "hybrid"], required=True)
+    ap.add_argument("--mode", choices=["legacy", "hybrid", "fast"], required=True)
     ap.add_argument("--out", required=True)
     ap.add_argument("--gliner-model", default="")
     ap.add_argument("--classifier-model", default="")
@@ -93,7 +93,7 @@ def main() -> None:
     from echotales.pipeline.mentions import detect_mentions, load_or_seed
     from echotales.pipeline.resolve import resolve_novel
 
-    cfg = get_settings().model_copy(update={"lexicon_path": lexdir, "mentions_detector": "llm" if a.mode == "legacy" else "hybrid"})
+    cfg = get_settings().model_copy(update={"lexicon_path": lexdir, "mentions_detector": {"legacy": "llm"}.get(a.mode, a.mode)})
     if a.gliner_model:
         cfg = cfg.model_copy(update={"mentions_gliner_model": a.gliner_model})
     if a.classifier_model:

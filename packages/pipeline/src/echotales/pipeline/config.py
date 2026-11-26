@@ -200,11 +200,14 @@ class Settings(BaseSettings):
     #: Empty: `voice/runner.py::_narrator_voice`'s deterministic choice.
     voice_narrator: str = ""
 
-    #: Layer-1 mention detector (`mentions.detector` in config.json). "llm": the Qwen vocabulary pass, today's
-    #: behaviour and the default until the D69 bake-off picks from measured numbers. "hybrid": GLiNER + spaCy +
-    #: gazetteer votes with the LLM only as tie-breaker (`mentions/hybrid.py`). "heuristic": the capitalisation regex,
-    #: even when a model is available. Hybrid needs the `ml` extra and is ignored in stub mode.
-    mentions_detector: str = "llm"
+    #: Layer-1 mention detector (`mentions.detector` in config.json, `--ner` on `run`). "llm": the Qwen vocabulary pass,
+    #: the legacy path. "hybrid": GLiNER + spaCy + gazetteer votes with the LLM only as tie-breaker
+    #: (`mentions/hybrid.py`), best measured quality (boundary F1 0.903). "fast": GLiNER-medium alone at 0.4, no LLM,
+    #: same precision, about 4 points less recall (0.881), roughly 8x less compute. "heuristic": the capitalisation
+    #: regex, even when a model is available. Empty (absent from config.json) = follow `ECHOTALES_COMPUTE`: local-low
+    #: "fast", local-high and cloud "hybrid"; a stub run, or one without the `ml` extra, stays on the legacy path
+    #: (`mentions/runner.py::resolve_detector_mode`). Hybrid and fast need the `ml` extra and are ignored in stub mode.
+    mentions_detector: str = ""
     #: A HF repo id or a local directory (GLiNER.from_pretrained takes either), so an offline box can pin a revision.
     mentions_gliner_model: str = "urchade/gliner_medium-v2.1"
     #: Ollama model for the hybrid context classifier (`Task.NER_CLASSIFY`); qwen3:8b won the D69 bake-off. It only

@@ -53,6 +53,15 @@ def build_parser() -> argparse.ArgumentParser:
         help="force the deterministic path even when a model backend is configured",
     )
     p_run.add_argument(
+        "--ner",
+        choices=("fast", "hybrid", "llm", "heuristic"),
+        default=None,
+        help="mention detector for this run, beating `mentions.detector` in config.json. Default: from "
+        "ECHOTALES_COMPUTE (local-low fast, local-high/cloud hybrid; stub runs stay on the legacy llm path). "
+        "fast = GLiNER only, same precision, ~4 points lower recall, ~8x less compute, no LLM; hybrid = best "
+        "quality (showcases); llm = the legacy Qwen vocabulary pass",
+    )
+    p_run.add_argument(
         "--skip-appearance",
         action="store_true",
         help="skip Phase 7b appearance extraction (one model call per prominent "

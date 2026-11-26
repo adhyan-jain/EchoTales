@@ -173,6 +173,34 @@ def strip_honorifics(name: str, *, strip_articles: bool = False) -> str:
 _POSSESSIVE_RE = re.compile(r"['’]s\b|s['’]$", re.IGNORECASE)
 
 
+#: Footnote markers a translator glues to the last letter of a name ("Dokja¹", "Reader-nim³"; also plain digits,
+#: "Sangah-ssi2"). The superscripts are alphanumeric to `str.isalnum`, so they also made the gazetteer refuse "Dokja"
+#: in "Dokja¹" as a fragment of a longer word.
+_SUPERSCRIPTS = "\u00b2\u00b3\u00b9\u2070\u2074\u2075\u2076\u2077\u2078\u2079"
+FOOTNOTE_MARK_AT = re.compile(rf"(?:[{_SUPERSCRIPTS}]+|\d{{1,3}})(?!\w)")
+_FOOTNOTE_TAIL = re.compile(rf"(?<=[^\W\d_])(?:[{_SUPERSCRIPTS}]+|\d+)$")
+_POSSESSIVE_TAIL = re.compile(r"['’]s$", re.IGNORECASE)
+
+
+def strip_name_tail(surface: str) -> str:
+    """A detected name span without the possessive `'s` / `’s` and glued footnote markers that rode along.
+
+    GLiNER and spaCy return the clitic with the name: "Fang Zhi’s" became the surface of RI's Fang Zhi (2 mentions),
+    so the entity existed only as a broken form; the same pass kept "Yoo Sangah-ssi²" and "Reader-nim³" on ORV. The
+    footnote rule needs a capitalised last word glued to the digits, so "tls123" (a username) and "Rank 5" are left
+    alone. Both curly and straight apostrophes, as `strip_morphology` already does for matching.
+    """
+    out = surface.rstrip()
+    while True:
+        prev = out
+        out = _POSSESSIVE_TAIL.sub("", out)
+        last = out.rsplit(None, 1)[-1] if out else ""
+        if last[:1].isupper():
+            out = _FOOTNOTE_TAIL.sub("", out)
+        if out == prev:
+            return out
+
+
 def strip_morphology(name: str, *, plural: bool = True) -> str:
     """Remove possessive and plural inflection.
 

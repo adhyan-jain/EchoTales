@@ -58,3 +58,22 @@ modest for a 2-3x time cost; the possessive bug should be fixed before it become
 **Model policy note.** qwen3:8b reports 8.2B in `ollama show`, above the 8.0B ceiling read literally (D70). It is not in the
 engine registry, so `check_llm_model` passes it by its "8b" tag only. Whether it is an owner exception needs a decision before
 a registry entry can be added.
+
+## Fixes and the `fast` detector (2026-11-27)
+
+**Three real-data defects fixed** (regression tests in `packages/pipeline/tests/test_fast_ner_and_name_tails.py`):
+1. Possessive `’s` / `'s` rode along on encoder spans ("Fang Zhi’s"): `normalize.strip_name_tail`, applied to every model vote in `HybridDetector`.
+2. Footnote markers glued to a capitalised word ("Yoo Sangah-ssi²", "Reader-nim³", also plain digits): same helper; the gazetteer boundary now treats a glued marker as a word edge, otherwise the trimmed name lost the mention it came from.
+3. "Predicaments" (RI ch5, "wild beasts called Predicament", accepted 12 times as an organisation at GLiNER 0.80): it was not the gazetteer but the label exemption in `rejected()` (the determiner test is for persons only) combined with a plural test that judged the plural form against its own, zero, plural. `CommonnessProfile.is_plural_class` judges the stem (singular and plural both present, 5% plural rate, 8 occurrences) for any label.
+
+**`mentions.detector = "fast"`**: GLiNER-medium alone at 0.4, no spaCy, no LLM, then the unchanged production filters. Bake-off system `fast` (the production builder itself), `--pipeline-filters`: boundary F1 dev 0.871 (P .896 R .848), test 0.881 (P .916 R .848), identical to GLiNER@0.4 + filters. About 11.5 s for each split's whole text (1.6 s per 1k tokens on test, model load included). Absent config now follows `ECHOTALES_COMPUTE`: local-low fast, local-high and cloud hybrid, stub unchanged.
+
+**RI ch1-5, scratch DBs, cold caches** (`data/scratch/ner_realdata_fixes/`):
+
+| Detector | Mentions | Distinct surfaces | Entities | Detection wall time | Peak GPU |
+|---|---|---|---|---|---|
+| legacy qwen2.5:7b | 203 | 30 | 21 | 58.5 s | 4.9 GB |
+| hybrid | 226 | 44 | 31 | 151.5 s | 5.8 GB |
+| fast | 216 | 41 | 29 | 11.5 s | 1.1 GB |
+
+"Fang Zhi" is a clean surface (2 mentions) in all three; no "Predicament(s)" and no digit- or possessive-suffixed surface in any. ORV ch1-3 with fast: "Yoo Sangah-ssi" 4 mentions, no marker variants.

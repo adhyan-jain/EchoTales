@@ -14,7 +14,7 @@
     "narrator": "libritts_r2803"
   },
   "mentions": {
-    "detector": "llm",
+    "_detector": "Optional key `detector`: fast | hybrid | llm | heuristic. Absent = follows ECHOTALES_COMPUTE (local-low: fast, local-high and cloud: hybrid; stub runs use the legacy path). fast = GLiNER only, same precision as hybrid, about 4 points lower recall (boundary F1 0.881 vs 0.903), about 8x less compute, no LLM. hybrid = GLiNER + spaCy + qwen3:8b on the doubtful ones, best quality, used for showcases. `echotales run --ner X` overrides it for one run.",
     "gliner_model": "urchade/gliner_medium-v2.1",
     "classifier_model": "qwen3:8b",
     "tau_high": 0.7,

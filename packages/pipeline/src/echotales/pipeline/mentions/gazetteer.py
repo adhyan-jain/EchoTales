@@ -24,6 +24,7 @@ from dataclasses import dataclass
 
 import ahocorasick
 from echotales.core.enums import AliasType
+from echotales.pipeline.ingest.normalize import FOOTNOTE_MARK_AT
 
 #: Surface forms that are common words in some contexts and names in others.
 #:
@@ -197,6 +198,10 @@ def _is_boundary(
 
     before = text[orig_start - 1] if orig_start > 0 else " "
     after = text[orig_end + 1] if orig_end + 1 < len(text) else " "
+    # A footnote marker glued to the name ("Dokja¹") is not part of the word: the superscript is `isalnum`, so
+    # "Dokja" was refused here as a fragment and the mention was lost once its detected surface lost the marker.
+    if after.isalnum() and text[orig_end].isalpha() and FOOTNOTE_MARK_AT.match(text, orig_end + 1):
+        after = " "
     return not (before.isalnum() or after.isalnum())
 
 

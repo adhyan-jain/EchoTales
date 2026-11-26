@@ -22,6 +22,13 @@ Routing, in order (`_route`):
 With no classifier (stub / offline) the classifier route REJECTS: precision over recall (non-negotiable 9), and the
 rejected surface still reaches the graph the day a model-backed run confirms it.
 
+Fast mode (`fast=True`, `mentions.detector = "fast"`): GLiNER alone at `FAST_GLINER_THRESHOLD`, no spaCy vote and no
+classifier. Measured on the romanized gold (boundary F1, production filters): GLiNER-medium at 0.4 alone scores 0.881 on
+test against the full hybrid's 0.903 (precision .916 vs .918, recall .848 vs .888) at about 8 s per 1k tokens against
+55-64 s. Routing there is: confirmed gazetteer alias accepts, any GLiNER vote at the threshold accepts, nothing else does
+(a seed-only or rule-only candidate is rejected: precision over recall). Word-like surfaces are accepted per occurrence
+only and `may_promote` keeps them out of the confirmed aliases, exactly as in the hybrid.
+
 DEVIATION from the brief, flagged: the brief lists the word-like test after the accepts. Applied there it would never
 fire for a high-scoring "Will", which is the case it exists for, so it runs before the score accept. A gazetteer
 alias still wins over it (that alias was confirmed by evidence, not by the encoder).
@@ -35,10 +42,10 @@ import json
 import logging
 from collections import Counter
 from collections.abc import Callable, Iterable, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from echotales.core.enums import AliasType
-from echotales.pipeline.ingest.normalize import non_name_reason
+from echotales.pipeline.ingest.normalize import non_name_reason, strip_name_tail
 from echotales.pipeline.mentions.candidate import (
     ClassifiedCandidate,
     NameCandidate,
@@ -59,6 +66,10 @@ TAU_LOW = 0.3
 
 #: Rule-based votes have no calibrated probability. A confirmed alias is the strongest evidence the pipeline has; a
 #: Layer-0 seed (speech-attribution regex) is deliberately mid, so a seed alone goes to the classifier rather than in.
+#: The threshold GLiNER-medium is run at in fast mode: the dev-set optimum of the D69 bake-off (0.881 boundary F1 on
+#: test). It is a measured constant, not a setting: a second knob would be a third tuning mechanism for one number.
+FAST_GLINER_THRESHOLD = 0.4
+
 GAZETTEER_VOTE_SCORE = 1.0
 SEED_VOTE_SCORE = 0.5
 
@@ -86,6 +97,19 @@ def _digest(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
+def _trimmed(span: NerSpan) -> NerSpan | None:
+    """The span without a trailing possessive or glued footnote marker; None when nothing name-like is left.
+
+    Real-data check (NER_ROMANIZED.md): the encoders return "Fang Zhi’s" (2 RI mentions, so the entity existed only as a
+    broken surface) and "Yoo Sangah-ssi²" / "Reader-nim³" on ORV. The cut is applied to the end offset, so the mention
+    keeps pointing at the text it came from.
+    """
+    surface = strip_name_tail(span.text)
+    if surface == span.text:
+        return span
+    return replace(span, text=surface, end=span.start + len(surface)) if len(surface) >= 2 else None
+
+
 class HybridDetector(MentionDetector):
     def __init__(
         self,
@@ -98,7 +122,9 @@ class HybridDetector(MentionDetector):
         tau_high: float = TAU_HIGH,
         tau_low: float = TAU_LOW,
         is_wordlike: Callable[[str], bool] | None = None,
+        fast: bool = False,
     ) -> None:
+        self.fast = fast
         self.gliner = gliner
         self.spacy = spacy
         self.known_aliases = tuple(known_aliases)
@@ -113,7 +139,7 @@ class HybridDetector(MentionDetector):
     @property
     def name(self) -> str:
         parts = [v.name for v in (self.gliner, self.spacy) if v is not None]
-        return "hybrid(" + "+".join(parts) + ")"
+        return ("fast(" if self.fast else "hybrid(") + "+".join(parts) + ")"
 
     # ---- model passes ---------------------------------------------------
 
@@ -143,7 +169,7 @@ class HybridDetector(MentionDetector):
     def _raw(spans: list[NerSpan], source: str, voter: GlinerDetector | SpacyDetector) -> list[_RawVote]:
         mid = getattr(voter, "model_id", None) or getattr(voter, "model_name", None)
         # Read after the pass: both detectors learn their version only once the model has loaded.
-        return [_RawVote(s, source, mid, voter.model_version) for s in spans]
+        return [_RawVote(t, source, mid, voter.model_version) for s in spans if (t := _trimmed(s)) is not None]
 
     # ---- merge ----------------------------------------------------------
 
@@ -214,6 +240,14 @@ class HybridDetector(MentionDetector):
         sources = c.sources
         if "gazetteer" in sources:
             return done("accept", "confirmed gazetteer alias")
+        if self.fast:
+            # No classifier to consult and no second voter: one GLiNER vote at the measured threshold is the whole
+            # decision. A candidate only a rule voted for (a Layer-0 seed) is not enough on its own.
+            gliner = [v for v in c.votes if v.source == "gliner" and v.score >= FAST_GLINER_THRESHOLD]
+            if gliner:
+                best = max(gliner, key=lambda v: v.score)
+                return done("accept", f"fast: gliner {best.score:.2f} >= {FAST_GLINER_THRESHOLD}", best.label)
+            return done("reject", "fast: no gliner vote at the threshold")
         if len(sources) == 1 and c.max_score < self.tau_low:
             return done("reject", f"single source {next(iter(sources))} scored {c.max_score:.2f} < tau_low {self.tau_low}")
         # Before the tau_high accept on purpose: a common word scores high as a "name" exactly when it is not one
@@ -287,7 +321,7 @@ class HybridDetector(MentionDetector):
         # `known_names` is the runner's roster of names already seen: for this detector those are the "confirmed
         # aliases" (the runner's own gazetteer matches them exactly with or without us).
         return [
-            _to_span(r, positional=self._wordlike(r.candidate.surface))
+            _to_span(r, positional=self._wordlike(r.candidate.surface), detector="fast" if self.fast else "hybrid")
             for r in self.detect_candidates(text, known_names, chapter=chapter)
             if r.accepted
         ]
@@ -296,7 +330,7 @@ class HybridDetector(MentionDetector):
         return self.detect_with_context(text, [])
 
 
-def _to_span(r: ClassifiedCandidate, *, positional: bool = False) -> NerSpan:
+def _to_span(r: ClassifiedCandidate, *, positional: bool = False, detector: str = "hybrid") -> NerSpan:
     c = r.candidate
     model_votes = [v for v in c.votes if v.source in _MODEL_SOURCES]
     best = max(model_votes, key=lambda v: v.score, default=None)
@@ -320,7 +354,7 @@ def _to_span(r: ClassifiedCandidate, *, positional: bool = False) -> NerSpan:
         score=c.max_score,
         positional=positional,
         provenance=SpanProvenance(
-            detector="hybrid",
+            detector=detector,
             model_id=best.model_id if best else None,
             model_version=best.model_version if best else None,
             ner_score=best.score if best else None,
@@ -352,8 +386,10 @@ def build_hybrid_detector(
     classifier: Classifier | None = None,
     seed_names: Iterable[str] = (),
     is_wordlike: Callable[[str], bool] | None = None,
+    fast: bool = False,
 ) -> HybridDetector | None:
-    """The configured hybrid detector, or None when it must not be built (the caller then runs the legacy path).
+    """The configured hybrid (or, with `fast`, GLiNER-only) detector, or None when it must not be built (the caller
+    then runs the legacy path).
 
     None, with a warning, when the run is a stub run or GLiNER is not importable. Stub runs are the CI and offline
     iteration mode and must never download or load a model; an install without the `ml` extra must still run.
@@ -361,18 +397,25 @@ def build_hybrid_detector(
     """
     from echotales.pipeline.config import LLMMode, ModelBackend
 
+    kind = "fast" if fast else "hybrid"
+
     stub = getattr(settings, "llm_mode", None) is LLMMode.STUB or getattr(client, "backend", None) is ModelBackend.STUB
     if stub:
-        log.warning("mentions.detector=hybrid ignored in stub mode (no models are loaded); using the legacy path")
+        log.warning("mentions.detector=%s ignored in stub mode (no models are loaded); using the legacy path", kind)
         return None
     if not _importable("gliner"):
-        log.warning("mentions.detector=hybrid needs the `ml` extra (gliner is not importable); using the legacy path")
+        log.warning("mentions.detector=%s needs the `ml` extra (gliner is not importable); using the legacy path", kind)
         return None
+    model = str(getattr(settings, "mentions_gliner_model", "urchade/gliner_medium-v2.1"))
+    if fast:
+        return HybridDetector(
+            gliner=GlinerDetector(model, threshold=FAST_GLINER_THRESHOLD), is_wordlike=is_wordlike, fast=True,
+        )
     tau_high = float(getattr(settings, "mentions_tau_high", TAU_HIGH))
     tau_low = float(getattr(settings, "mentions_tau_low", TAU_LOW))
     # GLiNER's own cut is tau_low, not its 0.5 default: a vote it drops never reaches routing, which would make the
     # reject band and the two-source agreement rule unreachable below 0.5.
-    gliner = GlinerDetector(str(getattr(settings, "mentions_gliner_model", "urchade/gliner_medium-v2.1")), threshold=tau_low)
+    gliner = GlinerDetector(model, threshold=tau_low)
     spacy = None
     if _spacy_ready("en_core_web_sm"):
         spacy = SpacyDetector("en_core_web_sm")

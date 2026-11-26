@@ -3,6 +3,7 @@
     python scripts/eval/ner_bakeoff.py --system heuristic --split dev --out data/eval/ner/
     python scripts/eval/ner_bakeoff.py --system qwen-llm:qwen2.5:7b --split dev --sweep
     python scripts/eval/ner_bakeoff.py --system gliner:urchade/gliner_medium-v2.1 --split test --threshold 0.4
+    python scripts/eval/ner_bakeoff.py --system fast --split test --pipeline-filters   # the production fast detector
     python scripts/eval/ner_bakeoff.py --rescore data/eval/ner/bakeoff-qwen-llm-qwen2.5-7b-dev.json --split dev --sweep
 
 Tune thresholds on `--split dev` only (`--sweep`), then run `--split test` once with the chosen `--threshold`.
@@ -71,6 +72,8 @@ def build_system(spec: str, threshold: float | None):
         return mod.NameTagDetector(), {"system": spec, "model": "nametag3"}
     if name == "hybrid":
         return build_hybrid(spec)
+    if name == "fast":
+        return build_fast()
     raise SystemExit(f"unknown system {spec!r}")
 
 
@@ -80,6 +83,41 @@ GLINER_LOCAL = Path.home() / ".cache/huggingface/local/gliner_medium-v2.1"
 GLINER_REVISION = "40ec419335d09393f298636f471328b722c6da9e"
 GLINER_SHA256 = "922214c0c60f7835bb5c00f52ad1769d38518d5183f85de7bc03893a8403c023"
 CLASSIFY_CACHE_DIR = ROOT / "data/scratch/ner_classify_cache"
+
+
+def build_fast():
+    """Exactly the production `mentions.detector = "fast"` detector: the same builder the runner calls, with the local
+    GLiNER-medium weights. Its own routing rule (any GLiNER vote at 0.4) is what is measured, so a difference from the
+    plain `gliner:...` system at 0.4 is the hybrid's candidate merge and span trimming, not a different model."""
+    from echotales.pipeline.config import LLMMode, Settings
+    from echotales.pipeline.mentions.hybrid import FAST_GLINER_THRESHOLD, build_hybrid_detector
+
+    det = build_hybrid_detector(
+        Settings(llm_mode=LLMMode.LOCAL, mentions_gliner_model=str(GLINER_LOCAL)), client=None, fast=True
+    )
+    if det is None:
+        raise SystemExit("the fast detector needs the `ml` extra (gliner is not importable)")
+    meta = {
+        "system": "fast", "model": "gliner-medium", "gliner_threshold": FAST_GLINER_THRESHOLD, "classifier": None,
+        "gliner_model_id": str(GLINER_LOCAL), "gliner_hf_revision": GLINER_REVISION,
+        "gliner_safetensors_sha256": GLINER_SHA256,
+        "gazetteer": "none (the eval corpus has no roster)",
+    }
+    return det, meta
+
+
+def run_fast(det, docs, ns) -> tuple[tuple[dict, dict], dict]:
+    """GLiNER over ALL docs in one load (`precompute` unloads it once), then the routing pass; timed as one figure."""
+    import time
+
+    t0 = time.perf_counter()
+    det.precompute([d["text"] for d in docs])
+    t_enc = time.perf_counter() - t0
+    preds, runtime = ns.detect_all(det, docs)
+    total = t_enc + runtime["wall_seconds"]
+    runtime["wall_seconds"] = round(total, 3)
+    runtime["seconds_per_1k_tokens"] = round(total / runtime["whitespace_tokens"] * 1000, 4)
+    return (preds, runtime), {"encoder_seconds": round(t_enc, 3), "route_counts": dict(det.route_counts)}
 
 
 def parse_hybrid_spec(spec: str) -> tuple[str, float, float]:
@@ -245,6 +283,9 @@ def main() -> None:
         detected, hybrid_extra = run_hybrid(detector, docs, ns)
         meta.update(hybrid_extra)
         meta.update(ns.ollama_model_meta(meta["classifier_model"]))
+    elif args.system == "fast":
+        detected, fast_extra = run_fast(detector, docs, ns)
+        meta.update(fast_extra)
     else:
         detected = ns.detect_all(detector, docs)
     if args.system.partition(":")[0] == "qwen-llm":

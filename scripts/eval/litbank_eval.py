@@ -46,8 +46,8 @@ def main() -> int:
     ap.add_argument("--limit", type=int, default=0, help="seeded subset size (0 = all 100)")
     ap.add_argument("--seed", type=int, default=20260925)
     ap.add_argument("--out", default="data/eval/litbank_results.json")
-    ap.add_argument("--detector", choices=["llm", "hybrid"], default=None,
-                    help="mentions.detector override; hybrid needs the ml extra and a stopped ollama before GLiNER loads")
+    ap.add_argument("--detector", choices=["llm", "hybrid", "fast"], default=None,
+                    help="mentions.detector override; hybrid and fast need the ml extra and a stopped ollama before GLiNER loads")
     ap.add_argument("--gliner-model", default="", help="HF id or local directory for GLiNER (hybrid only)")
     ap.add_argument("--classifier-model", default="", help="ollama model for the hybrid classifier")
     ap.add_argument("--runs", default=str(RUNS), help="scratch dir for the DB and caches (name caches go in <runs>/lexicons)")

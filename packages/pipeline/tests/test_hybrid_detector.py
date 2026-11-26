@@ -289,16 +289,16 @@ class TestRunnerWiring:
         # GLiNER and ollama never co-resident: its unload precedes the first model call.
         assert events.index("gliner.unload") < events.index("complete:ner_classify")
 
-    def test_absent_config_is_the_legacy_path(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    def test_explicit_llm_is_the_legacy_path(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(
-            hybrid_mod, "build_hybrid_detector", lambda *a, **k: pytest.fail("hybrid must not be built by default")
+            hybrid_mod, "build_hybrid_detector", lambda *a, **k: pytest.fail("hybrid must not be built when llm is explicit")
         )
         monkeypatch.setattr("echotales.pipeline.mentions.runner.build_hybrid_detector", hybrid_mod.build_hybrid_detector)
         events: list[str] = []
         store = _store()
         detect_mentions(
             "t", store, client=_client(events, ner_entities=[NerEntity(text="Fang Yuan", label="character")]),
-            settings=_settings(tmp_path, llm_mode=LLMMode.LOCAL), use_commonness_filter=False,
+            settings=_settings(tmp_path, llm_mode=LLMMode.LOCAL, mentions_detector="llm"), use_commonness_filter=False,
         )
         (m,) = store.get_mentions("t")
         assert (m.detector, m.model_id, m.ner_score) == ("llm:fake-model", "fake-model", 0.85)
@@ -355,7 +355,7 @@ class TestRunnerWiring:
 
     def test_defaults_and_config_json_keys(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         defaults = Settings()
-        assert (defaults.mentions_detector, defaults.mentions_tau_high, defaults.mentions_tau_low) == ("llm", 0.7, 0.3)
+        assert (defaults.mentions_detector, defaults.mentions_tau_high, defaults.mentions_tau_low) == ("", 0.7, 0.3)
         assert defaults.mentions_gliner_model == "urchade/gliner_medium-v2.1"
         assert defaults.mentions_classifier_model == "qwen3:8b"
         cfg = tmp_path / "config.json"

@@ -193,6 +193,10 @@ def detect_mentions_in_chapter(
             return "non_name"
         if label == "character" and profile is not None and profile.is_common_noun(surface):
             return "common_noun"
+        # Any label: a class that pluralises is no individual whatever it is called (RI ch5 "Predicaments", accepted
+        # 12 times as an organisation because the determiner exemption above is for non-persons).
+        if profile is not None and profile.is_plural_class(surface):
+            return "common_noun"
         if surface in credits or looks_like_credit(surface):
             return "credit"
         return None
@@ -369,6 +373,30 @@ def _make_mention(
     )
 
 
+DETECTOR_MODES = ("llm", "hybrid", "fast", "heuristic")
+
+
+def resolve_detector_mode(cfg: Settings, client: object | None) -> str:
+    """The Layer-1 detector this run uses: an explicit `mentions.detector` always wins, otherwise `ECHOTALES_COMPUTE`.
+
+    Default, when absent: local-low "fast" (GLiNER alone, no LLM; the laptop the project is developed on runs one model
+    at a time, and fast costs about an eighth of the hybrid's compute for 0.881 vs 0.903 boundary F1), local-high and
+    cloud "hybrid". A stub run (stub llm_mode, a stub backend, or no client at all) keeps today's legacy path so tests and
+    CI never load a model. A missing `ml` extra falls back to the legacy path inside `build_hybrid_detector`, with a warning.
+    """
+    mode = cfg.mentions_detector.strip().lower()
+    if mode:
+        if mode not in DETECTOR_MODES:
+            raise ValueError(f"mentions.detector {mode!r} is not one of {', '.join(DETECTOR_MODES)}")
+        return mode
+    from echotales.pipeline.compute import LOCAL_LOW, parse_mode
+    from echotales.pipeline.config import LLMMode, ModelBackend
+
+    if client is None or cfg.llm_mode is LLMMode.STUB or getattr(client, "backend", None) is ModelBackend.STUB:
+        return "llm"
+    return "fast" if parse_mode(getattr(cfg, "compute", LOCAL_LOW)) == LOCAL_LOW else "hybrid"
+
+
 def detect_mentions(
     novel_id: str,
     store: Store,
@@ -395,10 +423,8 @@ def detect_mentions(
     lex = lexicon or Lexicon()
     report = MentionReport(novel_id=novel_id)
 
-    mode = cfg.mentions_detector
-    if mode not in ("llm", "hybrid", "heuristic"):
-        raise ValueError(f"mentions.detector {mode!r} is not one of llm, hybrid, heuristic")
-    #: "heuristic" is chosen on purpose, so a client does not turn the model back on; absent config is "llm".
+    mode = resolve_detector_mode(cfg, client)
+    #: "heuristic" is chosen on purpose, so a client does not turn the model back on.
     use_client = client is not None and mode != "heuristic"
 
     #: Explicit detector wins; otherwise the model decides layer 1 per chapter.
@@ -442,8 +468,9 @@ def detect_mentions(
     hybrid: HybridDetector | None = None
     classify_cache: ClassifyCache | None = None
     classifier: LlmNameClassifier | None = None
-    if mode == "hybrid" and detector is None:
-        if client is not None:
+    if mode in ("hybrid", "fast") and detector is None:
+        # Fast never asks a model about a candidate, so no classifier and no ollama call at all.
+        if client is not None and mode == "hybrid":
             classify_cache = ClassifyCache(
                 Path(cfg.lexicon_path) / f"{novel_id}-ner-classify-cache.json",
                 model=getattr(client, "model_for", lambda _t: "")(Task.NER_CLASSIFY),
@@ -455,6 +482,7 @@ def detect_mentions(
             classifier=classifier,
             seed_names=seed_names,
             is_wordlike=profile.only_capitalised_at_sentence_start if profile is not None else None,
+            fast=mode == "fast",
         )
         if hybrid is not None:
             chapter_ner, name_cache, detector_label = hybrid, None, None
@@ -551,7 +579,7 @@ def detect_mentions(
             # confirmed alias: next chapter it would be accepted at every "will" with no context check.
             if (
                 mention.alias_type is AliasType.RIGID_NAME and mention.confidence >= 0.7
-                and (hybrid is None or mention.detector != "hybrid"
+                and (hybrid is None or mention.detector not in ("hybrid", "fast")
                      or hybrid.may_promote(mention.text, mention.evidence_json))
             ):
                 lex.learn(mention.text)
