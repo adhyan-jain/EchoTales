@@ -70,9 +70,95 @@ def build_system(spec: str, threshold: float | None):
         mod = _need("nametag_ner", spec)
         return mod.NameTagDetector(), {"system": spec, "model": "nametag3"}
     if name == "hybrid":
-        mod = _need("hybrid", spec)
-        return mod.HybridDetector(), {"system": spec, "model": "hybrid"}
+        return build_hybrid(spec)
     raise SystemExit(f"unknown system {spec!r}")
+
+
+#: GLiNER-medium weights are read from a local directory (no network). The revision and file hash identify them in
+#: every result; they are the values recorded when the weights were copied in, not re-derived per run.
+GLINER_LOCAL = Path.home() / ".cache/huggingface/local/gliner_medium-v2.1"
+GLINER_REVISION = "40ec419335d09393f298636f471328b722c6da9e"
+GLINER_SHA256 = "922214c0c60f7835bb5c00f52ad1769d38518d5183f85de7bc03893a8403c023"
+CLASSIFY_CACHE_DIR = ROOT / "data/scratch/ner_classify_cache"
+
+
+def parse_hybrid_spec(spec: str) -> tuple[str, float, float]:
+    """`hybrid:<llm tag>:<tau_high>:<tau_low>` -> (tag, tau_high, tau_low).
+
+    The tag may itself contain colons (`qwen3:8b`), so the two thresholds are split off from the right.
+    """
+    name, _, rest = spec.partition(":")
+    if name != "hybrid" or rest.count(":") < 2:
+        raise SystemExit("hybrid spec is hybrid:<llm tag>:<tau_high>:<tau_low>, e.g. hybrid:qwen3:8b:0.7:0.3")
+    tag, hi, lo = rest.rsplit(":", 2)
+    try:
+        tau_high, tau_low = float(hi), float(lo)
+    except ValueError as exc:
+        raise SystemExit(f"hybrid thresholds must be numbers: {spec!r}") from exc
+    if not tag or not 0.0 <= tau_low <= tau_high <= 1.0:
+        raise SystemExit(f"hybrid needs a tag and 0 <= tau_low <= tau_high <= 1: {spec!r}")
+    return tag, tau_high, tau_low
+
+
+def build_hybrid(spec: str, *, client=None, gliner=None, spacy=None, cache_dir: Path | None = None):
+    """GLiNER (cut at tau_low, so the reject band is reachable) + spaCy + the context classifier.
+
+    No gazetteer and no seed names: the eval corpus has no roster, so the gazetteer-accept route never fires and the
+    result measures the encoders plus the classifier alone, not a run that has already learned a cast. `client`,
+    `gliner` and `spacy` are injectable for tests.
+    """
+    tag, tau_high, tau_low = parse_hybrid_spec(spec)
+    from echotales.pipeline.mentions.gliner_ner import GlinerDetector
+    from echotales.pipeline.mentions.hybrid import HybridDetector
+    from echotales.pipeline.mentions.ner_classify import ClassifyCache, LlmNameClassifier
+    from echotales.pipeline.mentions.spacy_ner import SpacyDetector
+
+    if client is None:
+        from echotales.pipeline.llm.client import ModelClient
+        from echotales.pipeline.llm.ollama import OllamaProvider
+
+        client = ModelClient(provider_override=OllamaProvider(model=tag))
+    gliner = gliner or GlinerDetector(str(GLINER_LOCAL), threshold=tau_low)
+    spacy = spacy or SpacyDetector("en_core_web_sm")
+    cache = ClassifyCache((cache_dir or CLASSIFY_CACHE_DIR) / f"{slug(tag)}.json", model=tag)
+    classifier = LlmNameClassifier(client, cache=cache)
+    det = HybridDetector(gliner=gliner, spacy=spacy, classifier=classifier, tau_high=tau_high, tau_low=tau_low)
+    meta = {
+        "system": spec, "model": "hybrid", "classifier_model": tag, "provider": "ollama", "temperature": 0.0,
+        "tau_high": tau_high, "tau_low": tau_low,
+        "gliner_model_id": str(GLINER_LOCAL), "gliner_hf_revision": GLINER_REVISION,
+        "gliner_safetensors_sha256": GLINER_SHA256, "spacy_model": "en_core_web_sm",
+        "gazetteer": "none (the eval corpus has no roster; the gazetteer-accept route cannot fire)",
+        "classify_cache": str(cache.path),
+    }
+    return det, meta
+
+
+def run_hybrid(det, docs, ns) -> tuple[tuple[dict, dict], dict]:
+    """GLiNER then spaCy over ALL docs (GLiNER unloaded inside `precompute`), then routing and classifier calls.
+
+    Two timed phases so the cost of the classifier is visible on its own; `seconds_per_1k_tokens` covers both.
+    Returns (detected, extra_meta).
+    """
+    import time
+
+    cache = det.classifier.cache
+    before = len(cache._data)
+    t0 = time.perf_counter()
+    det.precompute([d["text"] for d in docs])
+    t_enc = time.perf_counter() - t0
+    preds, runtime = ns.detect_all(det, docs)
+    t_cls = runtime["wall_seconds"]
+    cache.flush()
+    total = t_enc + t_cls
+    runtime["wall_seconds"] = round(total, 3)
+    runtime["seconds_per_1k_tokens"] = round(total / runtime["whitespace_tokens"] * 1000, 4)
+    extra = {
+        "encoder_seconds": round(t_enc, 3), "route_and_classifier_seconds": round(t_cls, 3),
+        "classifier_calls": det.classifier.calls, "classifier_new_verdicts_cached": len(cache._data) - before,
+        "route_counts": dict(det.route_counts),
+    }
+    return (preds, runtime), extra
 
 
 def slug(spec: str) -> str:
@@ -155,7 +241,12 @@ def main() -> None:
     detector, meta = build_system(args.system, args.threshold)
     meta["threshold"] = args.threshold
 
-    detected = ns.detect_all(detector, docs)
+    if args.system.partition(":")[0] == "hybrid":
+        detected, hybrid_extra = run_hybrid(detector, docs, ns)
+        meta.update(hybrid_extra)
+        meta.update(ns.ollama_model_meta(meta["classifier_model"]))
+    else:
+        detected = ns.detect_all(detector, docs)
     if args.system.partition(":")[0] == "qwen-llm":
         # Sampled right after detection: the model is still loaded and its VRAM is reported by /api/ps.
         meta.update(ns.ollama_model_meta(args.system.partition(":")[2]))
