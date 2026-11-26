@@ -9,7 +9,7 @@ are `public_domain_dev.jsonl` / `public_domain_test.jsonl` (`"source": "public_d
 the loader reads every `*.jsonl`.
 
 Record: `{doc_id, source: synthetic|public_domain, background: zh|ko|ja|in|eu|invented|mixed, split: dev|test, text,
-spans: [{start, end, surface, label, category}]}`. Offsets are Python character offsets, end exclusive, and
+spans: [{start, end, surface, label, category, generic_role?}]}`. Offsets are Python character offsets, end exclusive, and
 `text[start:end] == surface` is validated. Dev is for tuning thresholds; test is run once.
 
 Labels: `person`, `title_epithet`, `location`, `organization`, `item`.
@@ -32,7 +32,25 @@ sentence start), `shared_title` (one title held by different people in the same 
 
 ## Scoring conventions
 
-Greedy 1:1 matching, exact and overlap, span-only and label-aware. `person` and `title_epithet` are one compatible
+**Headline: `boundary`** (convention-tolerant), with `exact` and `overlap` reported alongside. Boundary matches two
+overlapping spans whose surfaces are equal after trimming a leading article and attached honorifics (the project's own
+`ingest.normalize.strip_honorifics`, case-folded). Reason: on gemma2:9b dev most exact-mode errors (99 FP / 115 missed)
+were convention mismatches ("the Emperor" vs "Emperor", "Dokja" vs "Dokja-ssi"), not detection failures. Not covered
+because `strip_honorifics` does not know them: spaced suffixes ("Tae-sik sunbae") and "Mr. and Mrs. Collins" vs
+"Mrs. Collins".
+
+**`generic_role`**: a span-level boolean written by the builder on `title_epithet` spans whose surface (minus a leading
+article) is all lower-case ("the dean", "guild master", "village chief"). EchoTales keeps generic descriptors out of
+the graph (non-negotiable 4), so by default these gold spans are excluded from the name metrics (not a miss if
+skipped, and a prediction matching one is not a false positive) and reported as `generic_role` recall. Capitalised
+titles ("the Emperor", "Heavenly Demon") are ordinary gold. `--include-generic` (`include_generic=True`) scores them as
+names. Flagged: 19 synthetic dev, 31 synthetic test, 0 public-domain dev, 5 public-domain test.
+
+Nested predictions (a short surface strictly inside a longer predicted span, e.g. "Bai" in "Bai Ningbing") are dropped
+in `normalize_predictions`, matching the `QwenNerDetector._locate` fix, so result files written before that fix rescore
+fairly.
+
+Greedy 1:1 matching, boundary, exact and overlap, span-only and label-aware. `person` and `title_epithet` are one compatible
 group (a detector predicting `character` for "the clan head" is correct). Passages are 60-90 words, shorter than a
 chapter window: this measures detection quality, not long-context behaviour.
 

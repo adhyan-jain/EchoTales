@@ -142,3 +142,13 @@ def test_locate_requires_word_boundary():
     assert all(text[s.start : s.end] == "Ling" for s in spans)
     names = _locate([NerEntity(text="Fang Yuan", label="character")], text, 0.8)
     assert len(names) == 1
+
+
+def test_locate_drops_occurrences_nested_in_a_longer_surface():
+    # The model returned both the short and the long surface; "Bai" inside "Bai Ningbing" is the same mention.
+    text = "Bai Ningbing smiled. Later Bai left. Dokja-ssi nodded."
+    spans = _locate([NerEntity(text="Bai Ningbing", label="character"), NerEntity(text="Bai", label="character"),
+                     NerEntity(text="Dokja-ssi", label="character"), NerEntity(text="Dokja", label="character")],
+                    text, 0.8)
+    assert [(s.start, s.text) for s in spans] == [
+        (0, "Bai Ningbing"), (text.index("Bai left"), "Bai"), (text.index("Dokja-ssi"), "Dokja-ssi")]

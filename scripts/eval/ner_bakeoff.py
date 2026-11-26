@@ -80,10 +80,13 @@ def slug(spec: str) -> str:
 
 
 def _print_summary(result: dict) -> None:
-    for mode in ("exact", "overlap"):
+    for mode in ("boundary", "exact", "overlap"):
         for variant in ("span_only", "label_aware"):
             o = result["metrics"][mode][variant]["overall"]
             print(f"{mode:7s} {variant:11s} P={o['precision']:.3f} R={o['recall']:.3f} F1={o['f1']:.3f}")
+    g = result["metrics"]["boundary"]["span_only"].get("generic_role", {})
+    if g.get("gold"):
+        print(f"generic_role_recall (boundary) {g['matched']}/{g['gold']} = {g['recall']:.3f}")
     if "sweep" in result:
         c = result["sweep"]["chosen"]
         print(f"sweep chose threshold {c['threshold']} ({result['sweep']['rule']}): "
@@ -100,7 +103,8 @@ def _rescore(ap: argparse.ArgumentParser, args, ns) -> Path:
     docs = ns.load_gold(gold_dir if gold_dir.is_absolute() else ROOT / gold_dir, args.split)
     if payload.get("source"):
         docs = [d for d in docs if d["source"] == payload["source"]]
-    result = ns.rescore_payload(payload, docs, threshold=args.threshold, sweep=args.sweep)
+    result = ns.rescore_payload(payload, docs, threshold=args.threshold, sweep=args.sweep,
+                              include_generic=args.include_generic)
     result.update({"split": args.split, "gold": gold, "source": payload.get("source")})
     meta = {**payload.get("system", {}), "threshold": args.threshold, "rescored_from": str(src)}
     suffix = f"-t{args.threshold}" if args.threshold is not None else "-rescored"
@@ -123,6 +127,8 @@ def main() -> None:
     ap.add_argument("--sweep", action="store_true", help="threshold sweep from one detection pass (use on dev)")
     ap.add_argument("--source", choices=["synthetic", "public_domain"], default=None,
                     help="score only records of this source (synthetic text is too clean to be the only yardstick)")
+    ap.add_argument("--include-generic", action="store_true",
+                    help="score generic_role gold spans (bare role nouns) as ordinary names; default excludes them")
     ap.add_argument("--out", default=None,
                     help="output directory (default data/eval/ner/; with --rescore, the input file's directory)")
     args = ap.parse_args()
@@ -147,7 +153,8 @@ def main() -> None:
     if args.system.partition(":")[0] == "qwen-llm":
         # Sampled right after detection: the model is still loaded and its VRAM is reported by /api/ps.
         meta.update(ns.ollama_model_meta(args.system.partition(":")[2]))
-    result = ns.evaluate(detector, docs, threshold=args.threshold, detected=detected)
+    result = ns.evaluate(detector, docs, threshold=args.threshold, detected=detected,
+                         include_generic=args.include_generic)
     result.update({"split": args.split, "gold": args.gold, "source": args.source})
     if args.sweep:
         result["sweep"] = ns.sweep_thresholds(docs, detected[0])

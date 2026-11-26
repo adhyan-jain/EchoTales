@@ -157,3 +157,43 @@ def test_evaluate_heuristic_runs_and_serialises(tmp_path):
 
     payload = json.loads(out.read_text())
     assert payload["system"] == {"system": "heuristic"} and "timestamp" in payload and "hardware" in payload
+
+
+def test_boundary_mode_ignores_article_and_honorific():
+    cases = [("the Emperor", "Emperor"), ("Dokja-ssi", "Dokja"), ("Mr. Darcy", "Darcy")]
+    for gold_surface, pred_surface in cases:
+        text = f"x {gold_surface} y"
+        doc = _doc(text, [(2, 2 + len(gold_surface), "person", "ordinary")])
+        a = text.index(pred_surface)
+        m = ns.score_predictions([doc], {"d1": [_sp(a, a + len(pred_surface), text=pred_surface)]})["metrics"]
+        assert m["boundary"]["span_only"]["overall"]["tp"] == 1, gold_surface
+        assert m["exact"]["span_only"]["overall"]["tp"] == 0, gold_surface
+    # Overlapping but a different name is not a boundary match.
+    doc = _doc("Fang Yuan bowed", [(0, 9, "person", "ordinary")])
+    m = ns.score_predictions([doc], {"d1": [_sp(0, 4, text="Fang")]})["metrics"]
+    assert m["boundary"]["span_only"]["overall"]["tp"] == 0
+
+
+def test_generic_role_excluded_by_default_and_reported():
+    text = "The dean spoke to Fang Yuan"
+    gold = [(0, 8, "title_epithet", "shared_title"), (18, 27, "person", "ordinary")]
+    doc = _doc(text, gold)
+    doc["spans"][0]["generic_role"] = True
+    # Predicting only the name: the skipped generic role is not a miss.
+    m = ns.score_predictions([doc], {"d1": [_sp(18, 27, text='Fang Yuan')]})["metrics"]["boundary"]["span_only"]
+    assert (m["overall"]["fn"], m["overall"]["fp"]) == (0, 0)
+    assert m["generic_role"] == {"gold": 1, "matched": 0, "recall": 0.0}
+    # Predicting the generic role as well is not a false positive either, and counts toward its recall.
+    m = ns.score_predictions([doc], {"d1": [_sp(0, 8, text='The dean'), _sp(18, 27, text='Fang Yuan')]})["metrics"]["boundary"]["span_only"]
+    assert (m["overall"]["fn"], m["overall"]["fp"]) == (0, 0) and m["generic_role"]["recall"] == 1.0
+    # include_generic scores it as ordinary gold.
+    m = ns.score_predictions([doc], {"d1": [_sp(18, 27, text='Fang Yuan')]}, include_generic=True)["metrics"]["boundary"]["span_only"]
+    assert m["overall"]["fn"] == 1
+
+
+def test_nested_predictions_suppressed():
+    doc = _doc("Bai Ningbing smiled", [(0, 12, "person", "ordinary")])
+    preds = {"d1": [NerSpan(text="Bai Ningbing", start=0, end=12, label="character"),
+                    NerSpan(text="Bai", start=0, end=3, label="character")]}
+    m = ns.score_predictions([doc], preds)["metrics"]["exact"]["span_only"]["overall"]
+    assert (m["tp"], m["fp"]) == (1, 0)

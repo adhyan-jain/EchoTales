@@ -391,6 +391,11 @@ def _locate(entities: list[NerEntity], text: str, confidence: float) -> list[Ner
                 )
             )
             start = text.find(surface, start + 1)
+    # A short surface is found again inside every occurrence of a longer one when the model returns both ("Bai
+    # Ningbing" and "Bai": the nested "Bai" is the same mention, not a second character; likewise "Dokja" inside
+    # "Dokja-ssi"). Measured as a large share of gemma2:9b's false positives on the romanized-name gold.
+    spans = [s for s in spans
+             if not any(o.start <= s.start and s.end <= o.end and o.end - o.start > s.end - s.start for o in spans)]
     spans.sort(key=lambda s: s.start)
     return spans
 

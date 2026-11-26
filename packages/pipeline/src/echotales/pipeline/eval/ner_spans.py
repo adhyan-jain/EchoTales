@@ -5,9 +5,13 @@ detector find the right character spans", not "did it link them to the right ent
 (`mentions/ner.py`) is where a missed hard name is lost for good (EVOLUTION 4.85/4.86: hard cases are lost at mention
 detection, not retrieval), so it gets its own measurable surface.
 
-Matching is 1:1 greedy per document, in two strictnesses:
+Matching is 1:1 greedy per document, in three strictnesses:
 
 - **exact**: same start and end.
+- **boundary** (the headline): overlapping spans whose surfaces are equal once a leading article and attached
+  honorifics are trimmed (`ingest.normalize.strip_honorifics`, the project's own list). Gold and detectors follow
+  different conventions ("the Emperor" vs "Emperor", "Dokja" vs "Dokja-ssi"); measured on gemma2:9b dev, most of the
+  99 exact-mode FP / 115 misses were such mismatches, not detection failures.
 - **overlap**: any shared character. A predicted span can match at most one gold span and vice versa; without the
   1:1 rule a single long prediction ("Heavenly Demon Sect elders") would "recover" three gold spans.
 
@@ -33,6 +37,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from echotales.pipeline.ingest.normalize import strip_honorifics
 from echotales.pipeline.mentions.ner import NerSpan
 
 GOLD_LABELS = ("person", "title_epithet", "location", "organization", "item")
@@ -54,6 +59,8 @@ DEFAULT_LABEL_MAP: dict[str, str] = {
     "item": "item",
 }
 _PERSONISH = frozenset({"person", "title_epithet"})
+
+MODES = ("boundary", "exact", "overlap")
 
 THRESHOLDS = tuple(round(0.1 + 0.05 * i, 2) for i in range(17))  # 0.10 .. 0.90
 
@@ -138,6 +145,16 @@ def _map_label(label: str, label_map: LabelMap | None) -> str:
     return (label_map or DEFAULT_LABEL_MAP).get(label, label)
 
 
+def boundary_key(surface: str) -> str:
+    """Comparison key for the boundary mode: trimmed, article- and honorific-stripped, case-folded.
+
+    Falls back to the plain trimmed surface when stripping would leave nothing ("Sir" alone), so a bare honorific
+    still matches itself rather than everything.
+    """
+    plain = surface.strip(" \t\n.,;:!?\"'")
+    return (strip_honorifics(plain, strip_articles=True) or plain).casefold()
+
+
 def match_spans(
     gold: Sequence[dict[str, Any]],
     pred: Sequence[NerSpan],
@@ -150,7 +167,7 @@ def match_spans(
     Candidates are taken best-first (largest character overlap, then the closest boundaries) so that a short
     prediction inside a long gold span cannot steal it from the prediction that actually covers it.
     """
-    if mode not in ("exact", "overlap"):
+    if mode not in MODES:
         raise ValueError(mode)
     cands: list[tuple[int, int, int, int]] = []
     for gi, g in enumerate(gold):
@@ -162,6 +179,8 @@ def match_spans(
                     cands.append((0, 0, gi, pi))
                 continue
             ov = min(g["end"], p.end) - max(g["start"], p.start)
+            if mode == "boundary" and (ov <= 0 or boundary_key(g["surface"]) != boundary_key(p.text)):
+                continue
             if ov > 0:
                 slack = abs(g["start"] - p.start) + abs(g["end"] - p.end)
                 cands.append((-ov, slack, gi, pi))
@@ -194,7 +213,12 @@ def _dedupe(spans: Iterable[NerSpan]) -> list[NerSpan]:
         if key not in seen:
             seen.add(key)
             out.append(s)
-    return out
+    # A span strictly inside a longer one is the same mention reported twice: an LLM that returns both "Bai Ningbing"
+    # and "Bai" gets "Bai" located inside every "Bai Ningbing" (and "Dokja" inside "Dokja-ssi"). The same rule is in
+    # QwenNerDetector._locate; applying it here lets result files written before that fix be rescored fairly.
+    return [s for s in out
+            if not any(o is not s and o.start <= s.start and s.end <= o.end and (o.end - o.start) > (s.end - s.start)
+                       for o in out)]
 
 
 def normalize_predictions(spans: Iterable[NerSpan], label_map: LabelMap | None = None) -> list[NerSpan]:
@@ -210,8 +234,15 @@ def score_predictions(
     *,
     label_map: LabelMap | None = None,
     min_score: float | None = None,
+    include_generic: bool = False,
 ) -> dict[str, Any]:
-    """Score already-detected spans against gold. Pure: no detector, no timing."""
+    """Score already-detected spans against gold. Pure: no detector, no timing.
+
+    Gold spans flagged `generic_role` (bare role nouns such as "the dean") are left out of the name metrics by
+    default, and a prediction that matches one is not a false positive: EchoTales keeps generic descriptors out of
+    the graph (non-negotiable 4), so a detector that skips them is right. They are reported separately as
+    `generic_role` recall. `include_generic=True` scores them as ordinary gold.
+    """
     norm: dict[str, list[NerSpan]] = {}
     for d in docs:
         spans = normalize_predictions(preds.get(d["doc_id"], []), label_map)
@@ -221,7 +252,7 @@ def score_predictions(
 
     result: dict[str, Any] = {}
     errors: dict[str, Any] = {}
-    for mode in ("exact", "overlap"):
+    for mode in MODES:
         for variant, label_aware in (("span_only", False), ("label_aware", True)):
             totals = {"tp": 0, "pred": 0, "gold": 0}
             by_bg: dict[str, dict[str, int]] = defaultdict(lambda: {"tp": 0, "pred": 0, "gold": 0})
@@ -229,10 +260,27 @@ def score_predictions(
             by_cat: dict[str, dict[str, int]] = defaultdict(lambda: {"gold": 0, "matched": 0})
             fps: list[dict[str, Any]] = []
             misses: list[dict[str, Any]] = []
+            generic = {"gold": 0, "matched": 0}
             for d in docs:
-                gold = d["spans"]
-                pred = norm[d["doc_id"]]
-                pairs = match_spans(gold, pred, mode=mode, label_aware=label_aware)
+                all_gold = d["spans"]
+                pred_all = norm[d["doc_id"]]
+                pairs_all = match_spans(all_gold, pred_all, mode=mode, label_aware=label_aware)
+                if include_generic:
+                    gold, pred, pairs = all_gold, pred_all, pairs_all
+                else:
+                    gen_g = {i for i, g in enumerate(all_gold) if g.get("generic_role")}
+                    # Also drop an unmatched prediction that merely overlaps a generic gold span: under exact mode
+                    # "the dean" vs gold "dean" would otherwise be charged as a false positive for skipping nothing.
+                    gen_p = {pi for gi, pi in pairs_all if gi in gen_g} | {
+                        pi for pi, p in enumerate(pred_all)
+                        if any(min(all_gold[gi]["end"], p.end) > max(all_gold[gi]["start"], p.start) for gi in gen_g)}
+                    generic["gold"] += len(gen_g)
+                    generic["matched"] += sum(1 for gi, _ in pairs_all if gi in gen_g)
+                    keep_g = [i for i in range(len(all_gold)) if i not in gen_g]
+                    keep_p = [i for i in range(len(pred_all)) if i not in gen_p]
+                    gold = [all_gold[i] for i in keep_g]
+                    pred = [pred_all[i] for i in keep_p]
+                    pairs = match_spans(gold, pred, mode=mode, label_aware=label_aware)
                 matched_g = {g for g, _ in pairs}
                 matched_p = {p for _, p in pairs}
                 bg = by_bg[d["background"]]
@@ -260,6 +308,7 @@ def score_predictions(
                 "by_gold_label": {k: {**v, "recall": v["matched"] / v["gold"]} for k, v in sorted(by_label.items())},
                 "by_category": {k: {**v, "recall": v["matched"] / v["gold"]} for k, v in sorted(by_cat.items())},
                 "by_background": {k: _prf(v["tp"], v["pred"], v["gold"]) for k, v in sorted(by_bg.items())},
+                "generic_role": {**generic, "recall": generic["matched"] / generic["gold"] if generic["gold"] else None},
             }
             errors.setdefault(mode, {})[variant] = {"false_positives": fps, "missed": misses}
     return {"metrics": result, "errors": errors}
@@ -271,11 +320,12 @@ def _metrics_by_source(
     *,
     label_map: LabelMap | None = None,
     min_score: float | None = None,
+    include_generic: bool = False,
 ) -> dict[str, Any]:
     """The same metrics structure as `score_predictions`, filtered per record source (no re-detection)."""
     return {
         src: score_predictions([d for d in docs if d.get("source") == src], preds,
-                               label_map=label_map, min_score=min_score)["metrics"]
+                               label_map=label_map, min_score=min_score, include_generic=include_generic)["metrics"]
         for src in SOURCES
     }
 
@@ -299,6 +349,7 @@ def rescore_payload(
     threshold: float | None = None,
     sweep: bool = False,
     label_map: LabelMap | None = None,
+    include_generic: bool = False,
 ) -> dict[str, Any]:
     """Score a saved result's stored predictions against `docs` (the same split/source). No detector runs.
 
@@ -313,7 +364,7 @@ def rescore_payload(
         raise ValueError(f"{len(missing)} gold docs missing from stored predictions, e.g. {missing[:3]}")
     preds = _predictions_from_json(raw)
     result = evaluate(None, docs, label_map=label_map, threshold=threshold,
-                      detected=(preds, payload.get("runtime") or {}))
+                      detected=(preds, payload.get("runtime") or {}), include_generic=include_generic)
     if sweep:
         result["sweep"] = sweep_thresholds(docs, preds, label_map=label_map)
     return result
@@ -372,6 +423,7 @@ def evaluate(
     label_map: LabelMap | None = None,
     threshold: float | None = None,
     detected: tuple[dict[str, list[NerSpan]], dict[str, Any]] | None = None,
+    include_generic: bool = False,
 ) -> dict[str, Any]:
     """Run a detector and score it. `threshold` filters on `NerSpan.score` after detection.
 
@@ -379,14 +431,16 @@ def evaluate(
     the expensive part and must not run twice.
     """
     preds, runtime = detected if detected is not None else detect_all(detector, docs)
-    scored = score_predictions(docs, preds, label_map=label_map, min_score=threshold)
+    scored = score_predictions(docs, preds, label_map=label_map, min_score=threshold, include_generic=include_generic)
     return {
         "n_docs": len(docs),
         "n_gold_spans": sum(len(d["spans"]) for d in docs),
         "n_pred_spans": sum(len(normalize_predictions(v, label_map)) for v in preds.values()),
         "threshold": threshold,
         "runtime": runtime,
-        "metrics_by_source": _metrics_by_source(docs, preds, label_map=label_map, min_score=threshold),
+        "metrics_by_source": _metrics_by_source(docs, preds, label_map=label_map, min_score=threshold,
+                                                include_generic=include_generic),
+        "include_generic": include_generic,
         "predictions": _raw_predictions(preds),
         **scored,
     }

@@ -51,7 +51,14 @@ def parse(doc_id: str, marked: str) -> tuple[str, list[dict]]:
         surface = fields[0]
         label = LABELS[fields[1]]
         cat = CATS[fields[2] if len(fields) > 2 else "ord"]
-        spans.append({"start": out_len, "end": out_len + len(surface), "surface": surface, "label": label, "category": cat})
+        span = {"start": out_len, "end": out_len + len(surface), "surface": surface, "label": label, "category": cat}
+        # Bare lower-case role noun ("the dean", "guild master"): EchoTales keeps generic descriptors out of the graph
+        # (non-negotiable 4), so the benchmark must not charge detectors for skipping them. Capitalised titles
+        # ("the Emperor", "Heavenly Demon") stay ordinary gold. The key is only written when true, so every other
+        # span stays byte-identical.
+        if label == "title_epithet" and re.sub(r"^(the|a|an) ", "", surface, flags=re.I).islower():
+            span["generic_role"] = True
+        spans.append(span)
         text_parts.append(surface)
         out_len += len(surface)
         pos = m.end()
@@ -129,6 +136,14 @@ def main() -> None:
     print(f"{len(pd_records)} public-domain passages, {sum(len(r['spans']) for r in pd_records)} spans")
     for w in warns:
         print("LINT", w)
+    for r in records + pd_records:
+        flagged = [s["surface"] for s in r["spans"] if s.get("generic_role")]
+        if flagged:
+            print("GENERIC", r["source"], r["split"], r["doc_id"], flagged)
+    for src, rs in (("synthetic", records), ("public_domain", pd_records)):
+        for split in ("dev", "test"):
+            n = sum(1 for r in rs if r["split"] == split for s in r["spans"] if s.get("generic_role"))
+            print(f"generic_role {src} {split}: {n}")
     print(f"{len(records)} passages, {sum(len(r['spans']) for r in records)} spans, {len(warns)} lint warnings")
 
 
