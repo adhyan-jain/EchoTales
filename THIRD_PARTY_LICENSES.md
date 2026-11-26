@@ -28,6 +28,11 @@ relicensed (decision D7 in `docs/design/decisions.md`).
 | OpenCV (Telea inpainting) | fallback clean plates when no GPU or weights | Apache-2.0 | **stated here** (`engines/registry.py`) |
 | RapidOCR | reading lettering in comic pages (`comic-ocr`) | Apache-2.0 | **stated here** (`engines/registry.py`) |
 | EasyOCR | alternative reader for comic pages (`comic-ocr`) | Apache-2.0 | **stated here** (`engines/registry.py`) |
+| GLiNER (`urchade/gliner_medium-v2.1`, `urchade/gliner_large-v2.1`, `urchade/gliner_multi-v2.1`) | candidate zero-shot NER for romanized names (`ner` engines; not wired into a stage) | Apache-2.0 | **stated here** (`engines/registry.py`); verify against each model card before a release |
+| RunPod served models `llama70b`, `qwen72b`, `olmo32b` | vLLM aliases in `.env.example`; **not authorised** (above the owner's 9B ceiling, D70), used only in the CHIMERA study | Llama community licence, Qwen licence, OLMo 2 licence | **verify**, not needed while unauthorised |
+| NuNER Zero (numind/NuNER_Zero) | candidate zero-shot NER | MIT per the model card | **verify** (not re-read here) |
+| spaCy `en_core_web_sm`, `en_core_web_trf` | candidate NER pipelines | MIT | **stated here** (`engines/registry.py`) |
+| NameTag 3 English (UFAL; registry name `nametag3-english`) | NER comparison, **eval-only** | CC BY-NC-SA 4.0 (non-commercial, share-alike) | **stated here** (`engines/registry.py`). Never in a shipped path |
 | gemma2:9b (reader) | speaker and appearance reading | Gemma Terms of Use | **verify** |
 | qwen2.5:7b (name finding) | mention detection | Apache-2.0 for this size | **verify** |
 | ollama | local model server | MIT | **verify** |

@@ -16,6 +16,7 @@ from dataclasses import dataclass, field
 
 from echotales.core.store import Store
 from echotales.pipeline.config import ModelBackend, Settings, get_settings
+from echotales.pipeline.engines.registry import check_llm_model
 from echotales.pipeline.llm.base import (
     LLMProvider,
     LLMRequest,
@@ -176,6 +177,7 @@ class ModelClient:
             director = task is Task.PANEL_DIRECTION
             model = self.policy.director_model(profile.ollama_model) if director else profile.ollama_model
             num_ctx = self.policy.director_num_ctx(self.settings.llm_local_num_ctx) if director else self.settings.llm_local_num_ctx
+            check_llm_model(model, provider="ollama")
             key = f"{model}@{num_ctx}"
             existing = self._providers.get(key)
             if existing is None:
@@ -192,6 +194,7 @@ class ModelClient:
 
         if self.backend in (ModelBackend.RUNPOD, ModelBackend.OPENAI, ModelBackend.GEMINI):
             base, key, model = self._hosted(self.backend)
+            check_llm_model(model, provider=self.backend.value)
             existing = self._providers.get(f"{self.backend.value}:{model}")
             if existing is None:
                 from echotales.pipeline.llm.gateway import GatewayProvider
@@ -301,6 +304,7 @@ class ModelClient:
                     detail=f"{backend} needs {', '.join(missing)}",
                 )
             base, key, model = self._hosted(self.backend)
+            check_llm_model(model, provider=self.backend.value)
             from echotales.pipeline.llm.gateway import GatewayProvider
 
             if GatewayProvider(model=model, host=base, api_key=key).available():

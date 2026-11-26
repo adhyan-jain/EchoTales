@@ -13,15 +13,22 @@ what each costs.
 Honesty rules for the fields:
   * `commercial_safe` is True only where the licence was checked and permits commercial use, False where it forbids it
     (THIRD_PARTY_LICENSES.md), and None where it has not been checked. The `--commercial-safe` filter keeps only True.
+  * `version`, `params_b`, `quantization`, `eval_ref` are filled only from something checked (`ollama show`,
+    `ollama list`, a model card, a file under `data/eval/`); None means not looked up, never "probably".
+  * `approval` is the owner's open-weight size policy (decision D70): "policy" up to 8B parameters, "owner_exception"
+    for the named allowlist, "not_authorized" above that. Hosted APIs (Anthropic and friends) are outside it because
+    their parameter counts are unpublished; `check_model_policy` enforces it.
   * `vram_mb`, `ram_mb` and `speed_seconds` are None unless a measurement exists; `speed_source` then names it (an
     EVOLUTION section or the code comment that recorded it). A speed with no source is rejected by the tests.
 """
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
+from typing import Literal
 
-KINDS = ("llm", "image", "tts", "video", "inpaint", "depth", "ocr", "vlm")
+KINDS = ("llm", "image", "tts", "video", "inpaint", "depth", "ocr", "vlm", "ner")
 TIERS = ("local-low", "local-high", "cloud")
 #: `engine` is something a user picks by name; `provider` is a hosting choice for a kind; `model` is a weight set the
 #: code loads under a provider or a compiler (listed so its licence is not lost).
@@ -56,6 +63,14 @@ class EngineSpec:
     #: The text `scripts/setup.sh` prints for this model; a test checks its licence against this entry.
     setup_label: str | None = None
     note: str = ""
+    #: Exact tag, digest or HF revision the figures below were taken on.
+    version: str | None = None
+    #: Parameter count in billions, for the open-weight size policy (D70).
+    params_b: float | None = None
+    quantization: str | None = None
+    approval: Literal["policy", "owner_exception", "not_authorized"] | None = None
+    #: Repo-relative path of the measurement file for this model.
+    eval_ref: str | None = None
 
 
 def _img(name: str, *, licence: str, safe: bool | None, where: str, tier: str = "local-low", http: bool = False,
@@ -107,10 +122,42 @@ ENGINES: tuple[EngineSpec, ...] = (
                where="hosted"),
     EngineSpec("stub", "llm", "local-low", _APACHE_REPO, True, "llm-provider", role="provider",
                note="deterministic canned replies; ECHOTALES_LLM_MODE=stub"),
+    # Digest and quantization are from `ollama list` / `ollama show` on the dev machine, 2026-11-26.
     EngineSpec("gemma2:9b", "llm", "local-low", "Gemma Terms of Use", None, "llm-model", role="model", where="gpu",
-               setup_label="gemma2:9b", note="reader and director"),
+               setup_label="gemma2:9b", note="reader and director; 9.2B is an owner-approved exception (D70)",
+               version="ff02c3702f32", params_b=9.2, quantization="Q4_0", approval="owner_exception",
+               eval_ref="data/eval/reader/bakeoff-gemma2-9b.json"),
     EngineSpec("qwen2.5:7b", "llm", "local-low", "Apache-2.0", True, "llm-model", role="model", where="gpu",
-               setup_label="qwen2.5:7b", note="name finding"),
+               setup_label="qwen2.5:7b", note="name finding",
+               version="845dbda0ea48", params_b=7.6, quantization="Q4_K_M", approval="policy",
+               eval_ref="data/eval/reader/bakeoff-qwen2.5-7b.json"),
+    # Served by vLLM on a RunPod pod (`RUNPOD_SERVED_MODELS` in .env.example). Above the owner's ceiling, so refused
+    # by `check_model_policy`; the entries exist so the refusal names a reason. Parameter counts are the model cards'.
+    EngineSpec("llama70b", "llm", "cloud", "verify (Llama community licence)", None, "llm-model", role="model",
+               where="hosted", params_b=70.6, approval="not_authorized",
+               note="RunPod served-model alias; not authorised (D70); used only in the CHIMERA study"),
+    EngineSpec("qwen72b", "llm", "cloud", "verify (Qwen licence)", None, "llm-model", role="model",
+               where="hosted", params_b=72.7, approval="not_authorized",
+               note="RunPod served-model alias; not authorised (D70)"),
+    EngineSpec("olmo32b", "llm", "cloud", "verify (OLMo 2 32B)", None, "llm-model", role="model",
+               where="hosted", params_b=32.2, approval="not_authorized",
+               note="RunPod served-model alias; not authorised (D70)"),
+    # ---- named-entity recognition (candidates for the romanized-name NER work; none is wired into a stage here) ----
+    EngineSpec("urchade/gliner_medium-v2.1", "ner", "local-low", "Apache-2.0", True, "ner-model", role="model",
+               params_b=0.2, approval="policy", note="GLiNER zero-shot span NER; parameter count approximate"),
+    EngineSpec("urchade/gliner_large-v2.1", "ner", "local-low", "Apache-2.0", True, "ner-model", role="model",
+               params_b=0.5, approval="policy", note="GLiNER zero-shot span NER; parameter count approximate"),
+    EngineSpec("urchade/gliner_multi-v2.1", "ner", "local-low", "Apache-2.0", True, "ner-model", role="model",
+               params_b=0.5, approval="policy", note="GLiNER multilingual; parameter count approximate"),
+    EngineSpec("numind/NuNER_Zero", "ner", "local-low", "verify (MIT per the model card, not re-read here)", None,
+               "ner-model", role="model", params_b=0.4, approval="policy",
+               note="NuNER Zero span NER; parameter count approximate"),
+    EngineSpec("en_core_web_sm", "ner", "local-low", "MIT", True, "ner-model", role="model",
+               params_b=0.00001, approval="policy", note="spaCy English small pipeline, CPU"),
+    EngineSpec("en_core_web_trf", "ner", "local-low", "MIT", True, "ner-model", role="model",
+               params_b=0.125, approval="policy", note="spaCy English transformer pipeline (RoBERTa-base)"),
+    EngineSpec("nametag3-english", "ner", "local-low", "CC BY-NC-SA 4.0", False, "ner-model", role="model",
+               params_b=0.6, approval="policy", note="UFAL NameTag 3 English; eval-only, non-commercial"),
     # ---- speech ----
     EngineSpec("stub", "tts", "local-low", _APACHE_REPO, True, "tts", note="silent placeholder audio"),
     EngineSpec("chatterbox", "tts", "local-low", "MIT", True, "tts", where="gpu", setup_label="Chatterbox TTS",
@@ -228,3 +275,56 @@ def llm_providers() -> tuple[str, ...]:
 def image_providers() -> tuple[str, ...]:
     """`local` plus every hosted image engine plus the stub: what `ECHOTALES_IMAGE_PROVIDER` may say."""
     return ("local", *sorted(hosted_image_engines(), key=names("image", surface="render-image").index), "stub")
+
+
+# ---- the open-weight size policy (decision D70) ----
+
+#: Owner policy 2026-11-26: open-weight models up to 8B parameters; these names are the only larger ones allowed.
+OWNER_APPROVED_EXCEPTIONS = frozenset({"gemma2:9b"})
+MAX_OPEN_WEIGHT_PARAMS_B = 8.0
+
+
+class ModelPolicyError(ValueError):
+    """An open-weight model above the owner's size ceiling (or marked not authorised) was selected."""
+
+
+def check_model_policy(spec: EngineSpec) -> None:
+    """Refuse an open-weight llm/ner spec above 8B unless it is the owner's named exception.
+
+    Why: the owner's ceiling used to live only in prose, and the RunPod served-model list (llama70b, qwen72b,
+    olmo32b) sat in `.env.example` with nothing stopping a run from selecting it. Hosted APIs are exempt: their
+    parameter counts are unpublished, so the policy cannot apply to them (assumption recorded in D70).
+    """
+    if spec.kind not in ("llm", "ner") or spec.role != "model":
+        return
+    if spec.approval == "not_authorized":
+        raise ModelPolicyError(f"model {spec.name!r} is not authorised by the owner's open-weight policy (D70)")
+    excepted = spec.approval == "owner_exception" and spec.name in OWNER_APPROVED_EXCEPTIONS
+    if spec.params_b is not None and spec.params_b > MAX_OPEN_WEIGHT_PARAMS_B and not excepted:
+        raise ModelPolicyError(
+            f"model {spec.name!r} has {spec.params_b:g}B parameters, above the owner's {MAX_OPEN_WEIGHT_PARAMS_B:g}B "
+            f"ceiling, and is not an approved exception ({', '.join(sorted(OWNER_APPROVED_EXCEPTIONS))}); see D70")
+
+
+_SIZE_IN_NAME = re.compile(r"(?<![\d.])(\d+(?:\.\d+)?)b(?![a-z])", re.IGNORECASE)
+
+
+def check_llm_model(name: str, *, provider: str) -> None:
+    """Fail-closed policy check for the model a local (`ollama`) or RunPod provider is about to load.
+
+    A registered name uses its recorded `params_b`. An unregistered name falls back to the size written in the tag
+    (`llama3:70b`, `qwen72b`); a name with no size in it passes, because refusing every unknown tag would also refuse
+    the small models people legitimately pull, and the registry is where such a model gets its size recorded.
+    Stub and hosted-API providers are exempt (D70).
+    """
+    if provider not in ("ollama", "runpod") or not name:
+        return
+    for e in ENGINES:
+        if e.kind == "llm" and e.role == "model" and e.name == name:
+            check_model_policy(e)
+            return
+    sizes = [float(m) for m in _SIZE_IN_NAME.findall(name)]
+    if sizes and max(sizes) > MAX_OPEN_WEIGHT_PARAMS_B and name not in OWNER_APPROVED_EXCEPTIONS:
+        raise ModelPolicyError(
+            f"model {name!r} looks like {max(sizes):g}B parameters, above the owner's {MAX_OPEN_WEIGHT_PARAMS_B:g}B "
+            f"ceiling; register it with its size or choose a smaller model (D70)")

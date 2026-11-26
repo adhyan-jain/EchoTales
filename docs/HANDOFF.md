@@ -42,7 +42,7 @@ Master carries everything below; core+pipeline 3,068 passed, 2 skipped (`-o addo
 - Panel round 8's top-down fix (D68) is unit-tested and was not re-rendered; the black-and-white look (4.188) has no real bw render, no A/B of `render --look bw` against `pages --look bw`, and no Studio control for `look`.
 - Kitty, Lydia and Maria Lucas stay `unknown` in the graph (no pronoun in ch1-3); casting uses the name prior, a reviewer can set the gender (4.192, 4.193). A bible re-lock plus real synthesis was not re-run to confirm voices stay put.
 - A redraw with an edited direction (4.187) was never run on a real engine and its candidates are not vision-checked.
-- Carried from 2026-11-21 and not re-checked: the dead-code / `py.typed` branch is pending; gemma2:9b spills about 21% to CPU at 8192 context on the 8 GB card (owner allowed it for 2026-11-20 only, D62); the RI hardcase gold notes quote RI verbatim (trim before the repository goes public); `npm audit` 0 critical, 16 high in react-scripts build tooling; the local image worker ignores reference images; benchmark references are model drafts (`checked_by_human: false`).
+- Carried from 2026-11-21 and not re-checked: the dead-code / `py.typed` branch is pending; gemma2:9b spills about 21% to CPU at 8192 context on the 8 GB card (its 9.2B size is permanently owner-approved, D70; the CPU spill itself stays open); the RI hardcase gold notes quote RI verbatim (trim before the repository goes public); `npm audit` 0 critical, 16 high in react-scripts build tooling; the local image worker ignores reference images; benchmark references are model drafts (`checked_by_human: false`).
 
 **Needs the owner:**
 1. Listen to and watch the showcase (`data/exports/showcase_20261122/`) and pick or confirm the narrator by ear (`config.json` `voice.narrator`, now `hifitts9136`).
@@ -61,7 +61,7 @@ Master carries everything below; core+pipeline 2,820 passed, 2 skipped (`-o addo
 - No real end-to-end run yet on Pride and Prejudice ch1-3 or RI ch1 with the current code (upload to M4B, panels, video).
 - A redraw with an edited direction is recompiled through the compiler and the worker route (4.187); not run on a real engine, and its candidates are not vision-checked. A redraw with no edit still draws the recorded prompt (4.179).
 - The dead-code / `py.typed` branch is pending, not merged.
-- gemma2:9b spills about 21% to CPU at the reader's 8192 context on the 8 GB card; the owner allowed it for 2026-11-20 only (D62).
+- gemma2:9b spills about 21% to CPU at the reader's 8192 context on the 8 GB card; its 9.2B size is permanently owner-approved (D70); the CPU spill itself stays open (D62).
 - Black-and-white manga look (4.188) is built and unit-tested only: no real bw render, no A/B of `render --look bw` against `pages --look bw` on real panels, no Studio control for `look`.
 - Pride and Prejudice stores the genre label "Victorian gothic" (a data fact, not a code default).
 - The RI hardcase gold notes quote RI verbatim; trim before the repository goes public.

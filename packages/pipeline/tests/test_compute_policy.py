@@ -133,8 +133,8 @@ def test_hosted_providers_share_one_openai_compatible_client_with_their_own_url_
 
     cases = [
         (dict(llm_provider="runpod", runpod_llm_base_url="https://api.runpod.ai/v2/abc/openai/v1/",
-              runpod_api_key="rk", runpod_llm_model="llama-70b"),
-         "https://api.runpod.ai/v2/abc/openai/v1", "rk", "llama-70b"),
+              runpod_api_key="rk", runpod_llm_model="llama-8b"),
+         "https://api.runpod.ai/v2/abc/openai/v1", "rk", "llama-8b"),
         (dict(llm_provider="openai", openai_api_key="ok", openai_model="gpt-x"), "https://api.openai.com/v1", "ok", "gpt-x"),
         (dict(llm_provider="gemini", gemini_api_key="gk", gemini_model="gem-x"),
          "https://generativelanguage.googleapis.com/v1beta/openai", "gk", "gem-x"),
