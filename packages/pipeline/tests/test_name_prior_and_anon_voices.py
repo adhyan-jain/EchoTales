@@ -196,3 +196,18 @@ def test_a_named_character_never_takes_a_voice_an_unknown_speaker_slot_can_take(
     slot = {r["voice"] for r in rows if ":anon:" in r["speaker_id"]}
     named = {r["voice"] for r in rows if r["speaker_label"] in ("Anna", "Ben", "Cora", "Dan")}
     assert named and not slot & named
+
+
+def test_the_prior_never_outranks_text_evidence_either_way(tmp_path: Path) -> None:
+    # A name the table calls male, narrated female, and the reverse: the text wins, and one stray pronoun of the
+    # other kind is enough to take the prior away (owner rule 2026-11-26: names are not proof of gender).
+    assert name_gender_prior("George") == "male"
+    female = _book(tmp_path, "George", ["George laughed, shaking her head.", "George smiled at her sister."])
+    assert gender_lean_basis(female, "t", {"t:self1"}) == {"t:self1": ("female", "pronoun")}
+    (tmp_path / "t.db").unlink()
+    assert name_gender_prior("Lydia") == "female"
+    male = _book(tmp_path, "Lydia", ["Lydia laughed, shaking his head.", "Lydia stroked his chin."])
+    assert gender_lean_basis(male, "t", {"t:self1"}) == {"t:self1": ("male", "pronoun")}
+    (tmp_path / "t.db").unlink()
+    mixed = _book(tmp_path, "George", ["George laughed, shaking her head.", "George sighed, rubbing his eyes."])
+    assert gender_lean_basis(mixed, "t", {"t:self1"}) == {}

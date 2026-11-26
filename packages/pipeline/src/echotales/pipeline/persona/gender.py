@@ -425,6 +425,10 @@ def gender_lean_basis(store: Store, novel_id: str, target_ids: set[str]) -> dict
     """
     if not target_ids:
         return {}
+    # Owner rule 2026-11-26: the first-name table is a weak fallback prior, not proof of gender or identity. Text
+    # evidence (own pronouns here; titles and reader facts upstream, which set `target_ids` to the still-unknown)
+    # always outranks it, and the table is not to be extended with suffix/prefix/culture lists: the general fix for
+    # an unknown name is text evidence, not more syllables (pinned by test_name_prior_and_anon_voices.py).
     votes = _gather(store, novel_id, set(target_ids))[4]
     out = {t: (side, "pronoun") for t, v in votes.items() if (side := lean_from_votes(v))}
     labels = {e.id: e.canonical_label for e in store.all_selves(novel_id) if e.id in target_ids}

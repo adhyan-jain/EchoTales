@@ -29,6 +29,8 @@ from echotales.pipeline.mentions.lexicon import Lexicon
 
 #: Speech verbs. Shared shape with Phase 4 attribution, but used here to
 #: harvest *names* rather than to attribute a specific line.
+# Owner 2026-11-26: deterministic preprocessing over known narrative markers, not the semantic name recogniser.
+# Do not extend this list as a substitute for model-backed NER; unknown names are the NER detectors' job.
 _SPEECH_VERBS = (
     r"said|says|spoke|replied|replies|answered|asked|asks|shouted|shouts|yelled|"
     r"screamed|roared|whispered|whispers|murmured|muttered|mumbled|called|cried|"
