@@ -82,6 +82,7 @@ Finding these patterns from slices 66-182, and from chapters 2-3, is task P0.1.
 | Speaker attribution: RI is at about 95% on unchecked silver refs, and 15 of 29 ch1 lines are unresolved crowd lines | reader; `reader/speakers_pass.py` must not be edited without the owner |
 | Audio applies tempo and pitch post-processing after synthesis, the "sped up" artifact; emotion is an intensity dial | `voice/delivery.py` `_BY_INTENSITY`, `voice/pitch.py` |
 | One look and one palette per chapter; caption style does not encode meaning | `render/compiler.py`, `pages/lettering.py` |
+| **Owner review 2026-11-27 of the RI ch1 sheet draft:** the clan-head ritual scene is never drawn, Fang Yuan is put into it instead, and reborn Fang Yuan still looks old. Likely root cause, not yet verified: abrupt scene changes never reach the director. Web novels cut scenes with a single line ("Southern Border", "Heavenly Court") or with no marker at all. Ch1 has two cuts: the future cliff, then the past (the clan head and elders' ritual), then young Fang Yuan after that talk. So each panel inherits the previous scene's cast and look. The `segment/` stage (markers, LLM boundary pass, `find_time_skips`) exists, but whether its segments reach the director and the persona-state choice is unverified. | `segment/`, `render/direction.py`, `persona/split.py` |
 
 ## 4. The plan
 
@@ -100,7 +101,39 @@ This comes first because it sets the targets.
    - palette segments
    - caption-style taxonomy
 5. Write the result as `docs/results/ADAPTATION_STUDY.md` with numbers only; never commit images or quotes longer than a few words.
-6. Keep 10-20 aligned examples, as block text plus a panel description we write ourselves (never the images), in `data/gold/adaptation_examples.jsonl`. They become few-shot examples for the director and an evaluation set.
+6. Keep 10-20 aligned examples, as block text plus a panel description we write ourselves (never the images), in `data/gold/adaptation/adaptation_examples.jsonl`. They become few-shot examples for the director and an evaluation set.
+
+### P0.5. Per-novel convention induction: scene cuts and time jumps learned from one volume (owner review 2026-11-27)
+Owner rule: **no hand-written patterns for one novel.** Every novel marks scene changes its own way: one-line realm headers, `***` or `◆` separators, "Meanwhile…", POV-name headers, system windows, or no marker at all. EchoTales must learn the novel's own conventions from its first volume, the same way `mentions/induce.py` learns a per-novel lexicon and `segment/markers.py` already treats patterns as per-novel defaults rather than universals.
+
+1. **Discontinuity signal, computed per block boundary across the volume and convention-free:**
+   - the change in the active cast (who is mentioned or speaking in the window before versus after)
+   - location change (NER locations)
+   - a time expression (from the existing time-skip finder)
+   - tense or aspect shift (past perfect for flashbacks)
+   - a POV change
+2. **Candidate marker signatures:** describe each block by its shape rather than its words:
+   - length, whether it stands alone, case pattern
+   - punctuation-only, centred-symbol line
+   - whether it is a single named entity and of what type
+   - its position in the chapter
+   Then cluster blocks with the same signature.
+3. **Induction:** a signature becomes one of this novel's markers when it recurs across the volume and its blocks sit on high-discontinuity boundaries far more often than the base rate. Measure lift and keep the evidence counts.
+   - For example, "a short standalone title-case line that NER tags as a place" would be learned for RI rather than coded.
+   - `***` would be learned for a novel that uses it.
+   - A small model confirms a few examples per signature. The induced set is saved per novel next to the lexicon and shown in the Studio for review (bounded queue, non-negotiable 7).
+4. **Implicit cuts** with no marker, such as ch1's future cliff to past ritual: the highest-discontinuity boundaries go to the LLM boundary pass with their context. The conservative threshold policy applies.
+5. **Evaluation, kept separate:**
+   - Hand-mark scene boundaries for a few chapters each of 4 or more structurally different novels: RI, LotM, ORV, P&P, plus one more.
+   - Report boundary P/R per novel, which conventions were induced per novel, and RI ch1's two cuts as a named check.
+   - Report "learned from volume 1, tested on later chapters" so the induction is shown to generalise within a novel.
+6. **Each segment carries its narrative layer and story time to the director:**
+   - The director stages only that segment's cast, so the clan head and elders get their own scene.
+   - The character's look is chosen by story time (the P1.1 look-by-epoch rule), so reborn Fang Yuan is young.
+   - This is the three-axis temporal model (non-negotiable 2) doing its job.
+7. **Remembered or past scenes** get a visible treatment: their own palette (desaturated or sepia), a vignette, a frame-edge effect, and a caption card.
+   - Volume 1 gives no knowledge of Fang Yuan's future, unlike the manhua's director, who knew the whole story.
+   - So treat the reminiscence as a dramatic effect over what the text shows. Do not invent content.
 
 ### P1. Volume pre-pass: the director's bible
 Built once per volume and stored in the graph.
