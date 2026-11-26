@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import pytest
-
 from echotales.core.enums import AliasType, AssertedBy, Prominence, TargetKind, TruthStatus
 from echotales.core.interval import FuzzyInterval
 from echotales.core.models import (
