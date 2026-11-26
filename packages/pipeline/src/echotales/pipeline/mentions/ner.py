@@ -54,12 +54,31 @@ NER_WINDOW_OVERLAP = 600
 
 
 @dataclass(frozen=True, slots=True)
+class SpanProvenance:
+    """Where a span came from, for detectors that know (the hybrid one); None on legacy spans.
+
+    `evidence_json` is a string rather than a dict so `NerSpan` stays hashable.
+    """
+
+    detector: str
+    model_id: str | None = None
+    model_version: str | None = None
+    #: The best raw score among model votes; None when only rule-based sources (gazetteer, seed) voted.
+    ner_score: float | None = None
+    evidence_json: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
 class NerSpan:
     text: str
     start: int
     end: int
     label: str
     score: float = 1.0
+    provenance: SpanProvenance | None = None
+    #: True when the detector accepted THIS occurrence on its sentence context (a common-word surface such as "Will"):
+    #: the surface must not be propagated to other positions by vocabulary matching. False on every legacy span.
+    positional: bool = False
 
 
 class MentionDetector(ABC):
@@ -102,6 +121,11 @@ _STOPWORDS = frozenset(
 
 class HeuristicDetector(MentionDetector):
     """Capitalisation-based detector for offline runs.
+
+    The stub/offline fallback ONLY, never the default when a model is available (D69): it cannot see a lowercase
+    epithet or a romanized name that is not capitalised like prose ("the Gu Yue clan head"), and it read "I'm" as
+    LotM's second-most-mentioned entity (557 mentions). `mentions.detector = "heuristic"` selects it on purpose;
+    otherwise it is what `get_detector()` returns only when there is no client at all.
 
     Genuinely useful rather than a placeholder — these translations capitalise
     personal names consistently — but it cannot recognise a lowercase epithet
@@ -328,6 +352,18 @@ def _windows(
     return out
 
 
+def _on_word_boundary(text: str, start: int, end: int) -> bool:
+    """False when the hit is a fragment of a longer word.
+
+    `text.find("Ling")` matched inside "Lingering", minting a mention the model
+    never named. Only alphanumerics count as word characters: an apostrophe or
+    hyphen after the name ("Fang Yuan's", "Ling-er") is still a clean edge.
+    """
+    before = text[start - 1] if start > 0 else ""
+    after = text[end] if end < len(text) else ""
+    return not (before.isalnum() or after.isalnum())
+
+
 def _locate(entities: list[NerEntity], text: str, confidence: float) -> list[NerSpan]:
     """Map returned surface forms back onto character offsets.
 
@@ -342,6 +378,9 @@ def _locate(entities: list[NerEntity], text: str, confidence: float) -> list[Ner
             continue
         start = text.find(surface)
         while start >= 0:
+            if not _on_word_boundary(text, start, start + len(surface)):
+                start = text.find(surface, start + 1)
+                continue
             spans.append(
                 NerSpan(
                     text=surface,

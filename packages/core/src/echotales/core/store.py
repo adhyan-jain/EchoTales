@@ -80,6 +80,17 @@ from echotales.core.models import (
 
 SCHEMA_VERSION = 3
 
+#: Added to `mention` after the table first shipped; `_migrate` adds whichever an older database lacks.
+_MENTION_PROVENANCE_COLUMNS: tuple[tuple[str, str], ...] = (
+    ("end_offset", "INTEGER"),
+    ("search_key", "TEXT"),
+    ("detector", "TEXT"),
+    ("model_id", "TEXT"),
+    ("model_version", "TEXT"),
+    ("ner_score", "REAL"),
+    ("evidence_json", "TEXT"),
+)
+
 # Story positions may be +/-inf; SQLite has no infinity literal, so they are
 # stored as REAL and Python's float('inf') round-trips correctly through the
 # driver. Explicit here because it is easy to "fix" this into a bug.
@@ -292,7 +303,14 @@ CREATE TABLE IF NOT EXISTS mention (
     method TEXT,
     provenance TEXT NOT NULL DEFAULT 'MACHINE',
     block_index INTEGER NOT NULL DEFAULT 0,
-    entity_label TEXT
+    entity_label TEXT,
+    end_offset INTEGER,
+    search_key TEXT,
+    detector TEXT,
+    model_id TEXT,
+    model_version TEXT,
+    ner_score REAL,
+    evidence_json TEXT
 );
 CREATE INDEX IF NOT EXISTS ix_mention_chapter ON mention(novel_id, chapter, offset);
 CREATE INDEX IF NOT EXISTS ix_mention_target ON mention(target_kind, target_id);
@@ -679,6 +697,11 @@ class Store:
         existing = {row["name"] for row in self.conn.execute("PRAGMA table_info(mention)")}
         if "entity_label" not in existing:
             self.conn.execute("ALTER TABLE mention ADD COLUMN entity_label TEXT")
+        # Detection provenance (D69). Nullable with no default for the reason `entity_label` is: a row written before
+        # these existed has no recorded detector, and NULL says so.
+        for column, decl in _MENTION_PROVENANCE_COLUMNS:
+            if column not in existing:
+                self.conn.execute(f"ALTER TABLE mention ADD COLUMN {column} {decl}")
 
         # Nullable rather than DEFAULT 'SELF': a pre-existing row genuinely
         # has no recorded kind, and reading NULL back as SELF is a decision
@@ -1758,8 +1781,9 @@ class Store:
         self.conn.executemany(
             "INSERT OR REPLACE INTO mention(id, novel_id, segment_id, chapter, offset, text,"
             " alias_type, span_type, reference_mode, speaker_self_id, target_kind, target_id,"
-            " local_group_id, confidence, method, provenance, block_index, entity_label)"
-            " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            " local_group_id, confidence, method, provenance, block_index, entity_label,"
+            " end_offset, search_key, detector, model_id, model_version, ner_score, evidence_json)"
+            " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
             [
                 (
                     m.id,
@@ -1780,6 +1804,13 @@ class Store:
                     m.provenance.value,
                     m.block_index,
                     m.entity_label,
+                    m.end_offset,
+                    m.search_key,
+                    m.detector,
+                    m.model_id,
+                    m.model_version,
+                    m.ner_score,
+                    m.evidence_json,
                 )
                 for m in mentions
             ],

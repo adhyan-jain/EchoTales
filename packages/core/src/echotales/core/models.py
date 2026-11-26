@@ -392,6 +392,21 @@ class Mention(BaseModel):
     #: clan name or a plot item) -- only to flag a newly-created `Self` for
     #: human review when it was founded mostly on non-character mentions.
     entity_label: str | None = None
+    #: Detection provenance (2026-11-26, D69 hybrid detector). All nullable: a database written before these existed
+    #: reads NULL, which means "not recorded", not "none". `end_offset` is block-relative like `offset`.
+    end_offset: int | None = None
+    #: `comparison_key(text)`, kept for lookup only. Normalisation never merges entities -- identity is the resolver's
+    #: gate -- so two mentions sharing a key are candidates for the same entity, not the same entity.
+    search_key: str | None = None
+    #: Which layer produced the span: "llm:<model>", "heuristic", "hybrid" or "gazetteer".
+    detector: str | None = None
+    model_id: str | None = None
+    model_version: str | None = None
+    #: The detector's own raw score, deliberately separate from `confidence`, which is min(alias-type confidence,
+    #: score) and so cannot be inverted back into what the detector said.
+    ner_score: float | None = None
+    #: JSON of the votes and route that accepted the span (hybrid) so a reviewer can see why it exists.
+    evidence_json: str | None = None
 
     @property
     def position(self) -> DiscoursePosition:

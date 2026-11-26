@@ -24,6 +24,7 @@ dependencies = [
 [project.optional-dependencies]
 ml = [
     "gliner>=0.2.13",
+    "spacy>=3.7",
     "sentence-transformers>=3.0",
     "scikit-learn>=1.5",
 ]

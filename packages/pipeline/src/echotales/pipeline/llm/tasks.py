@@ -45,6 +45,9 @@ class Task(StrEnum):
 
     #: Character and location recognition. Needs xianxia cultural knowledge.
     NER = "ner"
+    #: Hybrid mention detector's tie-breaker (D69): is this one mid-confidence candidate a name, given its sentence?
+    #: Same model and temperature as NER, so it adds no model swap on the 8 GB card.
+    NER_CLASSIFY = "ner_classify"
     #: Layer 3 gap-fill sweep over a chapter. Same knowledge requirement.
     MENTION_SWEEP = "mention_sweep"
     #: Deferred identity decisions. The expensive tier.
@@ -109,6 +112,15 @@ TASK_PROFILES: dict[Task, TaskProfile] = {
     # 8 GB of VRAM -- this is a capability sacrifice made knowingly to keep the
     # model fully resident on the GPU.
     Task.NER: TaskProfile(
+        ollama_model="qwen2.5:7b",
+        anthropic_model="claude-sonnet-5",
+        temperature=0.0,
+        max_tokens=2048,
+    ),
+    # Routed exactly like NER (decisions D69): the candidates it judges are the ones the encoders were unsure of, which
+    # are the unfamiliar romanized names the cultural prior in Qwen2.5 exists for. max_tokens covers 40 verdicts of
+    # {id, is_name, label, reason}; a truncated JSON object fails validation outright, so it is sized for a full batch.
+    Task.NER_CLASSIFY: TaskProfile(
         ollama_model="qwen2.5:7b",
         anthropic_model="claude-sonnet-5",
         temperature=0.0,

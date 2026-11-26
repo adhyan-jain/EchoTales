@@ -64,6 +64,10 @@ def _load_config_json() -> dict[str, object]:
     voice = raw.get("voice", {})
     if "narrator" in voice:
         out["voice_narrator"] = voice["narrator"]
+    mentions = raw.get("mentions", {})
+    for key in ("detector", "gliner_model", "tau_high", "tau_low"):
+        if key in mentions:
+            out[f"mentions_{key}"] = mentions[key]
     return out
 
 
@@ -195,6 +199,17 @@ class Settings(BaseSettings):
     #: most of every chapter (184 of 245 lines on RI), so it is a taste decision, not something to pick by id order.
     #: Empty: `voice/runner.py::_narrator_voice`'s deterministic choice.
     voice_narrator: str = ""
+
+    #: Layer-1 mention detector (`mentions.detector` in config.json). "llm": the Qwen vocabulary pass, today's
+    #: behaviour and the default until the D69 bake-off picks from measured numbers. "hybrid": GLiNER + spaCy +
+    #: gazetteer votes with the LLM only as tie-breaker (`mentions/hybrid.py`). "heuristic": the capitalisation regex,
+    #: even when a model is available. Hybrid needs the `ml` extra and is ignored in stub mode.
+    mentions_detector: str = "llm"
+    mentions_gliner_model: str = "urchade/gliner_medium-v2.1"
+    #: Provisional until the D69 bake-off: a GLiNER score at or above `tau_high` is accepted alone; a single source
+    #: below `tau_low` is rejected; everything between goes to the classifier.
+    mentions_tau_high: float = 0.7
+    mentions_tau_low: float = 0.3
 
     #: Below this confidence a local answer is escalated in hybrid mode.
     escalation_confidence_threshold: float = 0.75

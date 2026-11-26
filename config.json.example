@@ -12,5 +12,11 @@
   },
   "voice": {
     "narrator": "libritts_r2803"
+  },
+  "mentions": {
+    "detector": "llm",
+    "gliner_model": "urchade/gliner_medium-v2.1",
+    "tau_high": 0.7,
+    "tau_low": 0.3
   }
 }

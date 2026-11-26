@@ -25,12 +25,13 @@ from echotales.core.enums import (
 from echotales.core.models import Chapter, Mention
 from echotales.core.store import Store
 from echotales.pipeline.config import Settings, get_settings
-from echotales.pipeline.ingest.normalize import non_name_reason
+from echotales.pipeline.ingest.normalize import comparison_key, non_name_reason
 from echotales.pipeline.llm.tasks import Task
 from echotales.pipeline.mentions.alias_type import classify_alias_type
 from echotales.pipeline.mentions.chapter_ner import (
     NameCache,
     VocabularyDetector,
+    chunk_text,
     extract_chapter_names,
 )
 from echotales.pipeline.mentions.commonness import (
@@ -40,8 +41,15 @@ from echotales.pipeline.mentions.commonness import (
     looks_like_credit,
 )
 from echotales.pipeline.mentions.gazetteer import Gazetteer, seed_from_lexicon
+from echotales.pipeline.mentions.hybrid import HybridDetector, build_hybrid_detector
 from echotales.pipeline.mentions.lexicon import Lexicon
-from echotales.pipeline.mentions.ner import MentionDetector, NerSpan, get_detector
+from echotales.pipeline.mentions.ner import (
+    HeuristicDetector,
+    MentionDetector,
+    NerSpan,
+    get_detector,
+)
+from echotales.pipeline.mentions.ner_classify import ClassifyCache, LlmNameClassifier
 from echotales.pipeline.mentions.parenthetical import (
     find_parentheticals,
 )
@@ -74,6 +82,9 @@ class MentionReport:
     llm_calls: int = 0
     llm_surfaces: int = 0
     llm_rejected: int = 0
+    #: Hybrid detector only: candidates per route (accept, reject, classifier_accept, classifier_reject). Empty on the
+    #: legacy path. The escalation rate (non-negotiable 7) is the classifier share of this.
+    hybrid_routes: dict[str, int] = field(default_factory=dict)
 
     def summary(self) -> str:
         lines = [
@@ -89,6 +100,8 @@ class MentionReport:
             f"llm calls={self.llm_calls:,}  surfaces kept={self.llm_surfaces:,}  "
             f"rejected={self.llm_rejected:,}",
         ]
+        if self.hybrid_routes:
+            lines.append("  hybrid routes: " + ", ".join(f"{k}={v}" for k, v in sorted(self.hybrid_routes.items())))
         if self.parentheticals:
             lines.append(
                 "  parentheticals: "
@@ -138,8 +151,16 @@ def detect_mentions_in_chapter(
     known_entities: frozenset[str] = frozenset(),
     profile: CommonnessProfile | None = None,
     credits: set[str] | None = None,
+    detector_label: str | None = None,
+    model_id: str | None = None,
 ) -> tuple[list[Mention], dict[str, int]]:
-    """Run layers 1 and 2 over one chapter and merge them."""
+    """Run layers 1 and 2 over one chapter and merge them.
+
+    `detector_label` / `model_id` are what a span without its own provenance is recorded under ("llm:<model>" for the
+    vocabulary pass). Left None they are inferred: "heuristic" for the capitalisation fallback, else the detector's
+    name. A span that carries provenance (the hybrid detector's) records that instead.
+    """
+    detector_label = detector_label or ("heuristic" if isinstance(detector, HeuristicDetector) else detector.name)
     mentions: list[Mention] = []
     stats: dict[str, int] = {
         "generic": 0, "gazetteer": 0, "ner": 0, "parenthetical": 0,
@@ -209,6 +230,7 @@ def detect_mentions_in_chapter(
                     confidence=0.95,
                     segment_id=segment_id,
                     index=len(mentions) + superseded,
+                    detector="gazetteer",
                 )
             )
 
@@ -255,6 +277,7 @@ def detect_mentions_in_chapter(
                     segment_id=segment_id,
                     index=len(mentions) + superseded,
                     entity_label=ner_span.label.strip().lower() or None,
+                    **_provenance(ner_span, detector_label, model_id),
                 )
             )
 
@@ -282,6 +305,19 @@ def _blocked_by_gazetteer(span: NerSpan, taken: list[tuple[int, int]]) -> bool:
     return False
 
 
+def _provenance(span: NerSpan, detector_label: str, model_id: str | None) -> dict[str, object]:
+    """The provenance columns for a Layer-1 mention. The legacy score is recorded as the detector's raw score even
+    though it is the vocabulary pass's fixed 0.85: that is what the span carried, and a reader of the column can tell
+    it from a hybrid score by `detector`."""
+    if span.provenance is not None:
+        p = span.provenance
+        return {
+            "detector": p.detector, "model_id": p.model_id, "model_version": p.model_version,
+            "ner_score": p.ner_score, "evidence_json": p.evidence_json,
+        }
+    return {"detector": detector_label, "model_id": model_id, "ner_score": span.score}
+
+
 def _overlaps(span: NerSpan, taken: list[tuple[int, int]]) -> bool:
     return any(s < span.end and span.start < e for s, e in taken)
 
@@ -300,6 +336,11 @@ def _make_mention(
     segment_id: str,
     index: int,
     entity_label: str | None = None,
+    detector: str | None = None,
+    model_id: str | None = None,
+    model_version: str | None = None,
+    ner_score: float | None = None,
+    evidence_json: str | None = None,
 ) -> Mention:
     span_type = getattr(span, "span_type", SpanType.NARRATION_ACTION)
     return Mention(
@@ -317,6 +358,14 @@ def _make_mention(
         confidence=confidence,
         method=method,
         entity_label=entity_label,
+        end_offset=offset + len(surface),
+        # Lookup only: normalisation never merges entities, the resolver's gate does (see `candidate.NameCandidate`).
+        search_key=comparison_key(surface),
+        detector=detector,
+        model_id=model_id,
+        model_version=model_version,
+        ner_score=ner_score,
+        evidence_json=evidence_json,
     )
 
 
@@ -346,19 +395,27 @@ def detect_mentions(
     lex = lexicon or Lexicon()
     report = MentionReport(novel_id=novel_id)
 
+    mode = cfg.mentions_detector
+    if mode not in ("llm", "hybrid", "heuristic"):
+        raise ValueError(f"mentions.detector {mode!r} is not one of llm, hybrid, heuristic")
+    #: "heuristic" is chosen on purpose, so a client does not turn the model back on; absent config is "llm".
+    use_client = client is not None and mode != "heuristic"
+
     #: Explicit detector wins; otherwise the model decides layer 1 per chapter.
-    fixed_detector = detector or (None if client is not None else get_detector())
+    fixed_detector = detector or (None if use_client else get_detector())
     chapter_ner = (
-        get_detector(client, novel_id=novel_id) if client is not None and detector is None
+        get_detector(client, novel_id=novel_id) if use_client and detector is None
         else None
     )
+    llm_model = getattr(client, "model_for", lambda _t: "")(Task.NER) if chapter_ner is not None else ""
+    detector_label = f"llm:{llm_model}" if chapter_ner is not None else None
     report.detector_name = (
         chapter_ner.name if chapter_ner is not None else (fixed_detector or get_detector()).name
     )
     name_cache = (
         NameCache(
             Path(cfg.lexicon_path) / f"{novel_id}-ner-cache.json",
-            model=getattr(client, "model_for", lambda _t: "")(Task.NER),
+            model=llm_model,
         )
         if chapter_ner is not None
         else None
@@ -370,12 +427,41 @@ def detect_mentions(
     # content -- both run ~0% lowercase. Determiner and plural *rates* can, and
     # both are corpus-derived, so this needs no model and no hand-written list.
     profile = None
+    seed_names: list[str] = []
     if use_commonness_filter:
         corpus = "\n".join(c.story_text for c in store.iter_chapters(novel_id))
         seeds, _ = seed_from_volume(novel_id, store, lexicon=lex)
         candidates = [c.surface for c in seeds.values()]
+        seed_names = candidates
         profile = build_profile(corpus, candidates)
         report.credit_surfaces = credit_surfaces(corpus, candidates)
+
+    # Hybrid: built after the grammatical pre-pass because it borrows the Layer-0 seeds and the commonness profile.
+    # Every model voter runs over the whole volume BEFORE the chapter loop, so GLiNER is unloaded before the first
+    # ollama call and is loaded once, not once per chapter.
+    hybrid: HybridDetector | None = None
+    classify_cache: ClassifyCache | None = None
+    classifier: LlmNameClassifier | None = None
+    if mode == "hybrid" and detector is None:
+        if client is not None:
+            classify_cache = ClassifyCache(
+                Path(cfg.lexicon_path) / f"{novel_id}-ner-classify-cache.json",
+                model=getattr(client, "model_for", lambda _t: "")(Task.NER_CLASSIFY),
+            )
+            classifier = LlmNameClassifier(client, novel_id=novel_id, cache=classify_cache)
+        hybrid = build_hybrid_detector(
+            cfg,
+            client=client,
+            classifier=classifier,
+            seed_names=seed_names,
+            is_wordlike=profile.only_capitalised_at_sentence_start if profile is not None else None,
+        )
+        if hybrid is not None:
+            chapter_ner, name_cache, detector_label = hybrid, None, None
+            report.detector_name = hybrid.name
+            hybrid.precompute([t for c in store.iter_chapters(novel_id) for t in chunk_text(c.story_text)])
+        else:
+            classify_cache = classifier = None
 
     gazetteer = Gazetteer()
     seed_from_lexicon(gazetteer, lex)
@@ -406,10 +492,14 @@ def detect_mentions(
                 chapter=chapter.number,
                 cache=name_cache,
             )
-            report.llm_calls += names.calls
+            if hybrid is None:
+                report.llm_calls += names.calls
             report.llm_surfaces += len(names.surfaces)
             report.llm_rejected += names.rejected
-            det = VocabularyDetector(names.surfaces)
+            det = VocabularyDetector(
+                names.surfaces, provenance=names.provenance, scores=names.scores,
+                occurrences=names.occurrences,
+            )
 
         assert det is not None
         mentions, stats = detect_mentions_in_chapter(
@@ -421,6 +511,8 @@ def detect_mentions(
             known_entities=frozenset(known_entities),
             profile=profile,
             credits=report.credit_surfaces,
+            detector_label=detector_label,
+            model_id=llm_model or None,
         )
 
         # Full re-derivation, not an incremental update -- clear this
@@ -455,7 +547,13 @@ def detect_mentions(
         # system the resolver confirms these; here they are provisional, which
         # is why they enter the gazetteer without a target id.
         for mention in mentions:
-            if mention.alias_type is AliasType.RIGID_NAME and mention.confidence >= 0.7:
+            # A common-word surface the hybrid accepted on context alone ("Will", "Hope") is not fed back as a
+            # confirmed alias: next chapter it would be accepted at every "will" with no context check.
+            if (
+                mention.alias_type is AliasType.RIGID_NAME and mention.confidence >= 0.7
+                and (hybrid is None or mention.detector != "hybrid"
+                     or hybrid.may_promote(mention.text, mention.evidence_json))
+            ):
                 lex.learn(mention.text)
                 gazetteer.add(mention.text, AliasType.RIGID_NAME)
                 from echotales.pipeline.ingest.normalize import comparison_key
@@ -481,6 +579,8 @@ def detect_mentions(
             # at the very end happened once already during this project.
             if name_cache is not None:
                 name_cache.flush()
+            if classify_cache is not None:
+                classify_cache.flush()
 
     if pending:
         store.add_mentions(pending)
@@ -493,6 +593,11 @@ def detect_mentions(
         )
     if name_cache is not None:
         name_cache.flush()
+    if classify_cache is not None:
+        classify_cache.flush()
+    if hybrid is not None:
+        report.hybrid_routes = dict(hybrid.route_counts)
+        report.llm_calls = classifier.calls if classifier is not None else 0
     report.gazetteer_size = len(gazetteer)
 
     # Persist the detection half of the compounding curve. It was computed on

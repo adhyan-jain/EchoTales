@@ -33,6 +33,7 @@ from echotales.pipeline.mentions.gazetteer import Gazetteer
 from echotales.pipeline.mentions.ner import (
     MentionDetector,
     NerSpan,
+    SpanProvenance,
     ner_pass_fingerprint,
 )
 
@@ -79,6 +80,15 @@ class ChapterNames:
     calls: int = 0
     rejected: int = 0
     cached: bool = False
+    #: Per-surface detector provenance, filled only by detectors that report it (the hybrid one). Empty on the legacy
+    #: path, where `VocabularyDetector` keeps its fixed score.
+    provenance: dict[str, SpanProvenance] = field(default_factory=dict)
+    #: Best span score per surface, same condition as `provenance`.
+    scores: dict[str, float] = field(default_factory=dict)
+    #: Surfaces accepted per occurrence only (common words: "Will", "Hope"), each with the contexts of the accepted
+    #: occurrences. Vocabulary matching must not carry these to other positions: one "Will Han said" acceptance
+    #: would otherwise turn every "Will it hold?" into a mention.
+    occurrences: dict[str, list[tuple[str, str]]] = field(default_factory=dict)
 
     def characters(self) -> list[str]:
         return [s for s, label in self.surfaces.items() if label == "character"]
@@ -232,6 +242,13 @@ def extract_chapter_names(
             # worse than carrying an extra location.
             if result.surfaces.get(surface) != "character":
                 result.surfaces[surface] = label
+            if span.provenance is not None:
+                _keep_better(result.provenance, surface, span.provenance)
+                result.scores[surface] = max(result.scores.get(surface, 0.0), span.score)
+            if span.positional:
+                result.occurrences.setdefault(surface, []).append(
+                    occurrence_context(chunk, span.start, span.end)
+                )
             # A proper-noun-qualified title ("Gu Yue clan head") earns its
             # bare form ("the clan head") a place in the same chapter's
             # vocabulary too -- the deterministic sweep below only matches
@@ -240,9 +257,40 @@ def extract_chapter_names(
             if label == "character" and (variant := bare_title_variant(surface)):
                 if result.surfaces.get(variant) != "character":
                     result.surfaces[variant] = "character"
+                if span.provenance is not None:
+                    _keep_better(result.provenance, variant, span.provenance)
+                    result.scores[variant] = max(result.scores.get(variant, 0.0), span.score)
     if cache is not None and result.calls:
         cache.put(text, result.surfaces)
     return result
+
+
+_CONTEXT_CHARS = 16
+
+
+def occurrence_context(text: str, start: int, end: int) -> tuple[str, str]:
+    """Text either side of an occurrence, clipped at line breaks.
+
+    Position-independent on purpose: the detector sees a multi-paragraph chunk and `VocabularyDetector` later sees
+    one span of it, so offsets do not transfer but the neighbouring characters do.
+    """
+    left = text[max(0, start - _CONTEXT_CHARS):start].rsplit("\n", 1)[-1]
+    right = text[end:end + _CONTEXT_CHARS].split("\n", 1)[0]
+    return left, right
+
+
+def _same_occurrence(a: tuple[str, str], b: tuple[str, str]) -> bool:
+    """Contexts match when one is a suffix/prefix of the other: a span edge clips the context to less than the chunk
+    saw, and a clipped side must not make the same occurrence look different."""
+    return (a[0].endswith(b[0]) or b[0].endswith(a[0])) and (a[1].startswith(b[1]) or b[1].startswith(a[1]))
+
+
+def _keep_better(store: dict[str, SpanProvenance], surface: str, new: SpanProvenance) -> None:
+    """One provenance per surface: the one with the higher model score (a surface seen in two chunks keeps its best
+    evidence; rule-only provenance, whose score is None, loses to any model-backed one)."""
+    old = store.get(surface)
+    if old is None or (new.ner_score or -1.0) > (old.ner_score or -1.0):
+        store[surface] = new
 
 
 class VocabularyDetector(MentionDetector):
@@ -253,9 +301,23 @@ class VocabularyDetector(MentionDetector):
     per chapter by the model instead of by a capitalisation regex.
     """
 
-    def __init__(self, surfaces: dict[str, str], *, score: float = 0.85) -> None:
+    def __init__(
+        self,
+        surfaces: dict[str, str],
+        *,
+        score: float = 0.85,
+        provenance: dict[str, SpanProvenance] | None = None,
+        scores: dict[str, float] | None = None,
+        occurrences: dict[str, list[tuple[str, str]]] | None = None,
+    ) -> None:
         self.labels = surfaces
+        #: The fixed score stays for the legacy path: a surface the model named has no per-surface score to carry.
+        #: A hybrid run passes `provenance` (and `scores`, the best vote per surface) so the span keeps what voted.
         self.score = score
+        self.provenance = provenance or {}
+        self.scores = scores or {}
+        #: Surfaces here match only at the recorded occurrences (see `ChapterNames.occurrences`).
+        self.occurrences = occurrences or {}
         self._gazetteer = Gazetteer()
         for surface in surfaces:
             self._gazetteer.add(surface, AliasType.RIGID_NAME)
@@ -268,7 +330,14 @@ class VocabularyDetector(MentionDetector):
                 start=hit.start,
                 end=hit.end,
                 label=self.labels.get(hit.alias, "character"),
-                score=self.score,
+                score=self.scores.get(hit.alias, self.score),
+                provenance=self.provenance.get(hit.alias),
+                positional=hit.alias in self.occurrences,
             )
             for hit in self._gazetteer.find(text)
+            if hit.alias not in self.occurrences
+            or any(
+                _same_occurrence(ctx, occurrence_context(text, hit.start, hit.end))
+                for ctx in self.occurrences[hit.alias]
+            )
         ]
