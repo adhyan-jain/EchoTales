@@ -33,6 +33,8 @@ from echotales.core.store import Store
 # Honorifics and rank prefixes that attach to names in these genres. Stripped
 # only when building a *comparison* key -- the resolver still scores the full
 # surface form, because "Elder Wang" and "Wang" carry different evidence.
+# Owner 2026-11-26: known narrative markers used for a comparison key only, not the semantic name recogniser.
+# Do not extend the honorific lists as a substitute for model-backed NER.
 _HONORIFIC_PREFIXES = (
     "elder",
     "senior",
@@ -419,6 +421,52 @@ def _name_tokens(name: str) -> tuple[str, ...]:
         for raw in strip_morphology(strip_honorifics(name)).split()
         if (token := normalize_romanization(raw))
     )
+
+
+@lru_cache(maxsize=65536)
+def token_set_key(name: str) -> str:
+    """Order-insensitive name key: "Gojo Satoru" and "Satoru Gojo" meet.
+
+    **A retrieval feature, never an identity test.** Equal keys only mean "worth scoring
+    against each other": two different people can share a token set ("Wang Li" / "Li Wang"
+    are both ordinary names), so no code may link, merge or assign on this equality; the
+    evidence gate decides (non-negotiables #1 and #9). Honorifics and inflection are
+    stripped as in `comparison_key`; per-token folding is `normalize_romanization`."""
+    return " ".join(sorted(_name_tokens(name)))
+
+
+#: Vowel digraphs and consonant clusters that differ between romanisation schemes of one sound,
+#: applied in order. Deliberately tiny: each rule is a generic alternation seen between Hangul
+#: (RR / McCune-Reischauer / ad hoc: "Yoo"/"Yu", "Joong"/"Jung", "hyeok"/"hyuk") or Chinese
+#: (pinyin / Wade-Giles: "Xiao Yan"/"Hsiao Yen") romanisations, not a name list.
+_SKELETON_RULES: tuple[tuple[str, str], ...] = (
+    ("hs", "x"),
+    ("ch", "j"),
+    ("eo", "u"),
+    ("oo", "u"),
+    ("ou", "u"),
+    ("ee", "i"),
+)
+_VOWELS = re.compile(r"[aeiou]+")
+_REPEAT = re.compile(r"(.)\1+")
+#: Under this length the skeleton is too lossy to retrieve on ("Li" -> "l" would pull in every L-name).
+_MIN_SKELETON = 3
+
+
+@lru_cache(maxsize=65536)
+def romanization_skeleton(name: str) -> str:
+    """Lossy consonant skeleton for alternate romanisations; "" when too short to be useful.
+
+    Yoo Joonghyuk / Yu Jung-hyeok -> "yjnghyk" and Xiao Yan / Hsiao Yen -> "xyn" on both
+    sides. It also equates distinct names that differ only in vowels ("Wen"/"Wan"), so it is a
+    **recall-only retrieval signal**: it may add a candidate for scoring, never a link, and
+    `comparison_key` is untouched. Spacing is dropped (as in `comparison_key`), so unlike
+    `token_set_key` it is name-order sensitive."""
+    text = normalize_romanization(strip_morphology(strip_honorifics(name, strip_articles=True)))
+    for old, new in _SKELETON_RULES:
+        text = text.replace(old, new)
+    text = _REPEAT.sub(r"\1", _VOWELS.sub("", text))
+    return text if len(text) >= _MIN_SKELETON else ""
 
 
 def are_variants(a: str, b: str) -> bool:

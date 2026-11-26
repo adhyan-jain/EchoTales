@@ -1,0 +1,347 @@
+{
+  "caveat": "Gold files are model-drafted silver (provenance=model, confirmed=false); not human-verified.",
+  "ner_romanized": "skipped: those spans carry no identity field, so key sharing across identities is undefined.",
+  "files": {
+    "lord-of-the-mysteries.jsonl": {
+      "mentions": 6756,
+      "distinct_keys": 10,
+      "keys_shared_by_multiple_identities": 0,
+      "of_which_role_or_epithet_alias_types": 0,
+      "mentions_under_shared_keys": 0,
+      "examples": [],
+      "token_set_key_shared_identity_keys": 0,
+      "token_set_key_examples": {}
+    },
+    "omniscient-readers-viewpoint.jsonl": {
+      "mentions": 4836,
+      "distinct_keys": 8,
+      "keys_shared_by_multiple_identities": 0,
+      "of_which_role_or_epithet_alias_types": 0,
+      "mentions_under_shared_keys": 0,
+      "examples": [],
+      "token_set_key_shared_identity_keys": 0,
+      "token_set_key_examples": {}
+    },
+    "reverend-insanity-c1-c5.jsonl": {
+      "mentions": 203,
+      "distinct_keys": 22,
+      "keys_shared_by_multiple_identities": 0,
+      "of_which_role_or_epithet_alias_types": 0,
+      "mentions_under_shared_keys": 0,
+      "examples": [],
+      "token_set_key_shared_identity_keys": 0,
+      "token_set_key_examples": {}
+    },
+    "reverend-insanity-hardcases.jsonl": {
+      "mentions": 84,
+      "distinct_keys": 38,
+      "keys_shared_by_multiple_identities": 9,
+      "of_which_role_or_epithet_alias_types": 6,
+      "mentions_under_shared_keys": 41,
+      "examples": [
+        {
+          "key": "fangyuan",
+          "identities": {
+            "Fang Yuan": {
+              "surfaces": [
+                "Fang Yuan"
+              ],
+              "alias_types": [
+                "RIGID_NAME"
+              ],
+              "mentions": 7
+            },
+            "Fang Yuan (500-year-old consciousness now occupying his 5-year-old body)": {
+              "surfaces": [
+                "Fang Yuan"
+              ],
+              "alias_types": [
+                "RIGID_NAME"
+              ],
+              "mentions": 1
+            },
+            "Fang Yuan (same consciousness, previous-life body)": {
+              "surfaces": [
+                "Fang Yuan"
+              ],
+              "alias_types": [
+                "RIGID_NAME"
+              ],
+              "mentions": 1
+            }
+          }
+        },
+        {
+          "key": "brother",
+          "identities": {
+            "First gen Gu Yue": {
+              "surfaces": [
+                "Senior brother",
+                "senior brother"
+              ],
+              "alias_types": [
+                "RELATIONAL_DEICTIC"
+              ],
+              "mentions": 5
+            },
+            "Fang Yuan": {
+              "surfaces": [
+                "a junior brother",
+                "junior brother"
+              ],
+              "alias_types": [
+                "RELATIONAL_DEICTIC"
+              ],
+              "mentions": 2
+            },
+            "Lord Sky Crane": {
+              "surfaces": [
+                "Junior brother"
+              ],
+              "alias_types": [
+                "RELATIONAL_DEICTIC"
+              ],
+              "mentions": 2
+            }
+          }
+        },
+        {
+          "key": "he",
+          "identities": {
+            "Fang Yuan": {
+              "surfaces": [
+                "He",
+                "he"
+              ],
+              "alias_types": [
+                "RIGID_NAME"
+              ],
+              "mentions": 3
+            },
+            "Fang Zheng": {
+              "surfaces": [
+                "he"
+              ],
+              "alias_types": [
+                "TRANSFERABLE_TITLE"
+              ],
+              "mentions": 1
+            },
+            "Gu Yue Jiao San": {
+              "surfaces": [
+                "he"
+              ],
+              "alias_types": [
+                "RIGID_NAME"
+              ],
+              "mentions": 1
+            },
+            "First gen Gu Yue": {
+              "surfaces": [
+                "He"
+              ],
+              "alias_types": [
+                "RIGID_NAME"
+              ],
+              "mentions": 1
+            }
+          }
+        },
+        {
+          "key": "fangzheng",
+          "identities": {
+            "Fang Zheng": {
+              "surfaces": [
+                "Fang Zheng"
+              ],
+              "alias_types": [
+                "RIGID_NAME"
+              ],
+              "mentions": 3
+            },
+            "Fang Yuan (the servants' guess is wrong)": {
+              "surfaces": [
+                "Fang Zheng"
+              ],
+              "alias_types": [
+                "RIGID_NAME"
+              ],
+              "mentions": 1
+            },
+            "Fang Yuan (hypothetical misidentification)": {
+              "surfaces": [
+                "Fang Zheng"
+              ],
+              "alias_types": [
+                "RIGID_NAME"
+              ],
+              "mentions": 1
+            }
+          }
+        },
+        {
+          "key": "clanleader",
+          "identities": {
+            "Gu Yue Bo": {
+              "surfaces": [
+                "clan leader",
+                "the clan leader"
+              ],
+              "alias_types": [
+                "TRANSFERABLE_TITLE"
+              ],
+              "mentions": 3
+            },
+            "Fang Zheng": {
+              "surfaces": [
+                "a clan leader"
+              ],
+              "alias_types": [
+                "TRANSFERABLE_TITLE"
+              ],
+              "mentions": 1
+            }
+          }
+        },
+        {
+          "key": "i",
+          "identities": {
+            "Fang Yuan": {
+              "surfaces": [
+                "I"
+              ],
+              "alias_types": [
+                "RIGID_NAME"
+              ],
+              "mentions": 1
+            },
+            "Bai Ning Bing": {
+              "surfaces": [
+                "I"
+              ],
+              "alias_types": [
+                "RIGID_NAME"
+              ],
+              "mentions": 1
+            }
+          }
+        },
+        {
+          "key": "hisuncleandaunt",
+          "identities": {
+            "Gu Yue Dong Tu (and his wife)": {
+              "surfaces": [
+                "his uncle and aunt"
+              ],
+              "alias_types": [
+                "RELATIONAL_DEICTIC"
+              ],
+              "mentions": 1
+            },
+            "Gu Yue Dong Tu and his wife": {
+              "surfaces": [
+                "his uncle and aunt"
+              ],
+              "alias_types": [
+                "RELATIONAL_DEICTIC"
+              ],
+              "mentions": 1
+            }
+          }
+        },
+        {
+          "key": "hismaster",
+          "identities": {
+            "Fang Yuan": {
+              "surfaces": [
+                "his master"
+              ],
+              "alias_types": [
+                "RELATIONAL_DEICTIC"
+              ],
+              "mentions": 1
+            },
+            "Jiang Fan's master (never named in the surrounding narration)": {
+              "surfaces": [
+                "his master"
+              ],
+              "alias_types": [
+                "RELATIONAL_DEICTIC"
+              ],
+              "mentions": 1
+            }
+          }
+        },
+        {
+          "key": "landlord",
+          "identities": {
+            "Fang Yuan (newly installed as the wine tavern's landlord)": {
+              "surfaces": [
+                "the landlord"
+              ],
+              "alias_types": [
+                "TRANSFERABLE_TITLE"
+              ],
+              "mentions": 1
+            },
+            "Gu Yue Dong Tu": {
+              "surfaces": [
+                "the old landlord"
+              ],
+              "alias_types": [
+                "TRANSFERABLE_TITLE"
+              ],
+              "mentions": 1
+            }
+          }
+        }
+      ],
+      "token_set_key_shared_identity_keys": 7,
+      "token_set_key_examples": {
+        "and aunt his uncle": [
+          "Gu Yue Dong Tu (and his wife)",
+          "Gu Yue Dong Tu and his wife"
+        ],
+        "brother": [
+          "Fang Yuan",
+          "First gen Gu Yue",
+          "Lord Sky Crane"
+        ],
+        "fang yuan": [
+          "Fang Yuan",
+          "Fang Yuan (500-year-old consciousness now occupying his 5-year-old body)",
+          "Fang Yuan (same consciousness, previous-life body)"
+        ],
+        "fang zheng": [
+          "Fang Yuan (hypothetical misidentification)",
+          "Fang Yuan (the servants' guess is wrong)",
+          "Fang Zheng"
+        ],
+        "he": [
+          "Fang Yuan",
+          "Fang Zheng",
+          "First gen Gu Yue",
+          "Gu Yue Jiao San"
+        ],
+        "his master": [
+          "Fang Yuan",
+          "Jiang Fan's master (never named in the surrounding narration)"
+        ],
+        "i": [
+          "Bai Ning Bing",
+          "Fang Yuan"
+        ]
+      }
+    },
+    "reverend-insanity.jsonl": {
+      "mentions": 6202,
+      "distinct_keys": 16,
+      "keys_shared_by_multiple_identities": 0,
+      "of_which_role_or_epithet_alias_types": 0,
+      "mentions_under_shared_keys": 0,
+      "examples": [],
+      "token_set_key_shared_identity_keys": 0,
+      "token_set_key_examples": {}
+    }
+  }
+}

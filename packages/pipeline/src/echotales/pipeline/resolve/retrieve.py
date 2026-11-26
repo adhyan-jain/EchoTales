@@ -29,9 +29,19 @@ from dataclasses import dataclass, field
 
 from echotales.core.enums import TargetKind
 from echotales.core.models import Candidate
-from echotales.pipeline.ingest.normalize import comparison_key, name_tokens, strip_honorifics
+from echotales.pipeline.ingest.normalize import (
+    comparison_key,
+    name_tokens,
+    romanization_skeleton,
+    strip_honorifics,
+    token_set_key,
+)
 
 DEFAULT_K = 10
+
+#: Retrieval score given to a candidate reached only through a name-variant key. Set low and not
+#: tuned: weight set after measurement (see CandidateRetriever.last_variant_features).
+VARIANT_RETRIEVAL_FLOOR = 0.05
 
 
 @dataclass(slots=True)
@@ -207,6 +217,17 @@ class CandidateRetriever:
         #: name token -> entities whose aliases contain it; see `ambiguous_tokens`.
         self._token_owners: dict[str, set[str]] = {}
         self._ambiguous: frozenset[str] | None = None
+        #: comparison_key / token_set_key / romanization_skeleton -> entities holding an alias with it.
+        #: `_key_owners` backs `shared_alias_keys` (the exact-match pre-filter's uniqueness check); the
+        #: other two only widen retrieval and never decide anything.
+        self._key_owners: dict[str, set[str]] = {}
+        self._order_owners: dict[str, set[str]] = {}
+        self._skeleton_owners: dict[str, set[str]] = {}
+        #: Per `retrieve()` call: candidate id -> retrieval-only name-variant signals that reached it
+        #: ("name_order_match", "romanization_variant_match"). Weight in scoring is zero: they are
+        #: not in `EvidenceVector`/`SCORED_FEATURES`, so they cannot move a probability until a
+        #: weight is set after measurement.
+        self.last_variant_features: dict[str, frozenset[str]] = {}
 
     def add_entity(self, profile: EntityProfile) -> None:
         replaced = profile.target_id in self.profiles
@@ -219,6 +240,12 @@ class CandidateRetriever:
         self._reindex(profile)
 
     def _own_tokens(self, alias: str, target_id: str) -> None:
+        if key := comparison_key(alias):
+            self._key_owners.setdefault(key, set()).add(target_id)
+        if order := token_set_key(alias):
+            self._order_owners.setdefault(order, set()).add(target_id)
+        if skeleton := romanization_skeleton(alias):
+            self._skeleton_owners.setdefault(skeleton, set()).add(target_id)
         for token in name_tokens(alias):
             owners = self._token_owners.setdefault(token, set())
             if target_id not in owners:
@@ -229,9 +256,18 @@ class CandidateRetriever:
     def _rebuild_token_owners(self) -> None:
         self._token_owners = {}
         self._ambiguous = None
+        self._key_owners, self._order_owners, self._skeleton_owners = {}, {}, {}
         for profile in self.profiles.values():
             for alias in profile.aliases:
                 self._own_tokens(alias, profile.target_id)
+
+    def shared_alias_keys(self) -> frozenset[str]:
+        """Comparison keys held by two or more entities' aliases.
+
+        An exact key hit on one of these is not an identity: two clans' "the clan head", or a surface
+        two earlier links already merged. The exact-match pre-filter ignores them so the scored gate
+        (which defers a near-tie) decides."""
+        return frozenset(k for k, ids in self._key_owners.items() if len(ids) > 1)
 
     def ambiguous_tokens(self) -> frozenset[str]:
         """Name components shared by two or more entities' aliases.
@@ -359,6 +395,21 @@ class CandidateRetriever:
             for profile in self._prominent(limit * 3):
                 considered.setdefault(profile.target_id, profile)
 
+        # Name-variant recall: an entity whose alias has the same token set (Satoru Gojo / Gojo Satoru)
+        # or consonant skeleton (Yoo Joonghyuk / Yu Jung-hyeok) joins the pool so it gets *scored*.
+        # Equality here is never a link; the gate decides on the evidence vector.
+        variant: dict[str, set[str]] = {}
+        for feature, owners, vkey in (
+            ("name_order_match", self._order_owners, token_set_key(surface)),
+            ("romanization_variant_match", self._skeleton_owners, romanization_skeleton(surface)),
+        ):
+            for tid in owners.get(vkey, ()) if vkey else ():
+                if tid in self.profiles and tid not in self._key_owners.get(key, ()):
+                    variant.setdefault(tid, set()).add(feature)
+        self.last_variant_features = {t: frozenset(f) for t, f in variant.items()}
+        for tid in variant:
+            considered.setdefault(tid, self.profiles[tid])
+
         scored: list[Candidate] = []
         for target_id, profile in considered.items():
             lex = lexical.get(target_id, 0.0) / max_lexical if max_lexical else 0.0
@@ -370,6 +421,10 @@ class CandidateRetriever:
             # identities entirely, contextual alone confuses everyone who
             # shares a setting.
             blended = 0.65 * lex + 0.35 * ctx
+            if target_id in variant:
+                # Floor only so a variant-only candidate is not dropped as zero; ranking among
+                # variants is by context. Value is a recall knob, not a measured weight.
+                blended = max(blended, VARIANT_RETRIEVAL_FLOOR)
             if blended <= 0.0:
                 continue
             scored.append(

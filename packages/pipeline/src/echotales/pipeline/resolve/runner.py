@@ -528,6 +528,7 @@ class GlobalResolver:
             lexicon=self.lexicon,
             ambiguous_tokens=self._ambiguous_tokens(),
                 given_name_first=self.given_name_first,
+                shared_alias_keys=self.retriever.shared_alias_keys(),
         )
         for candidate in candidates:
             candidate.evidence = score_evidence(
@@ -687,6 +688,7 @@ class GlobalResolver:
                 lexicon=self.lexicon,
                 ambiguous_tokens=self._ambiguous_tokens(),
                 given_name_first=self.given_name_first,
+                shared_alias_keys=self.retriever.shared_alias_keys(),
             )
             for candidate in candidates:
                 candidate.evidence = score_evidence(

@@ -132,6 +132,9 @@ class EvidenceContext:
     #: `name_containment`'s old strictly-2-token behaviour; a real (possibly
     #: empty) frozenset opts into the single-token dropped-given-name case.
     ambiguous_tokens: frozenset[str] | None = None
+    #: Comparison keys held by two or more entities (`CandidateRetriever.shared_alias_keys`). An exact
+    #: key hit on one is not identity evidence. `None` = caller has no opinion (old behaviour).
+    shared_alias_keys: frozenset[str] | None = None
     #: The novel's name order (`sources.toml`'s `name_order`); see
     #: `normalize.name_containment`.
     given_name_first: bool = False
@@ -315,6 +318,14 @@ def _audience_scope(
     return 0.25
 
 
+#: EPITHET is deliberately absent: an epithet held by one entity is how an unnamed recurring character
+#: persists ("Guard Captain" across chapters, test_unnamed_recurring_character_persistence). A shared
+#: epithet is still caught by `shared_alias_keys`.
+_ROLE_ALIAS_TYPES = frozenset({
+    AliasType.TRANSFERABLE_TITLE, AliasType.RELATIONAL_DEICTIC, AliasType.PATHWAY_TITLE, AliasType.TAROT_TITLE,
+})
+
+
 def score_evidence(
     mention: Mention,
     candidate: Candidate,
@@ -333,7 +344,18 @@ def score_evidence(
     vector.declaration_match = max(declaration, continuity)
 
     surface_key = comparison_key(mention.text)
-    if profile is not None and surface_key and surface_key in profile.alias_keys:
+    # The exact-match pre-filter force-links past the scorer, so it must not fire where key equality is
+    # not identity: a title/epithet/deictic surface ("the clan head" of two clans) names a role that
+    # moves between holders, and a key two entities already share would link to whichever was
+    # retrieved first. Both go to the scored gate instead, which defers a near-tie. RIGID_NAME with a
+    # single owner is unchanged (the gazetteer compounds, non-negotiable #8).
+    if (
+        profile is not None
+        and surface_key
+        and surface_key in profile.alias_keys
+        and mention.alias_type not in _ROLE_ALIAS_TYPES
+        and surface_key not in (ctx.shared_alias_keys or ())
+    ):
         vector.gazetteer_exact_match = 1.0
 
     # Compare honorific-stripped forms so "Elder Wang" and "Wang" score high
