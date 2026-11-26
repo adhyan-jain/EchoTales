@@ -245,6 +245,7 @@ _AGE_BAND_WORDS = (
     ("child", ("child", "infant", "toddler", "little boy", "little girl")),
     ("youth", ("teenager", "teenage", "adolescent", "youth", "young man",
                "young woman", "boy", "girl", "lad")),
+    ("middle_aged", ("middle-aged", "middle aged", "mature gentleman", "mature lady", "father of", "mother of")),
     ("elder", ("elderly", "old man", "old woman", "aged man", "greybeard",
                "grey-haired", "white-haired old")),
 )
@@ -293,8 +294,10 @@ def age_band_from_text(passages: list[str]) -> tuple[str | None, str]:
             band = "child"
         elif age < 20:
             band = "youth"
-        elif age < 60:
+        elif age < 42:
             band = "adult"
+        elif age < 62:
+            band = "middle_aged"
         else:
             band = "elder"
         return band, f"stated age {age}"

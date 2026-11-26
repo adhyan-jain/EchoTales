@@ -16,11 +16,6 @@ from __future__ import annotations
 
 import re
 
-
-
-
-
-
 _DEFAULT_STYLE = "web-novel illustration, no further style data seeded for this novel"
 
 
@@ -279,7 +274,7 @@ _FALLBACK_APPEARANCE = {
 }
 
 
-def resolve_appearance(novel_id: str, stated: dict[str, str]) -> dict[str, str]:
+def resolve_appearance(novel_id: str, stated: dict[str, str], *, age_band: str = "") -> dict[str, str]:
     """Fill unstated appearance fields with this novel's defaults.
 
     Anything the text stated wins outright -- this only ever adds keys, and
@@ -290,6 +285,8 @@ def resolve_appearance(novel_id: str, stated: dict[str, str]) -> dict[str, str]:
     defaults = prof.appearance if prof.appearance or prof is not _genre_named("generic") else _FALLBACK_APPEARANCE
     out = dict(defaults)
     out.update({k: v for k, v in stated.items() if v})
+    if age_band in ("middle_aged", "middle-aged", "middle aged") and "maturity" not in out:
+        out["maturity"] = "middle-aged, distinguished maturity, subtle laugh lines"
     return out
 
 

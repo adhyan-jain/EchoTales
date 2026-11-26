@@ -48,12 +48,10 @@ _TITLE_IN_MENTION = re.compile(rf"^({_TITLES})\.?\s+[A-Z]")
 _MIN_TITLE_MENTIONS = 2
 
 _MALE_WORDS = frozenset(
-    "he him his himself man men gentleman boy father son brother husband king prince uncle nephew mr mister sir lord"
-    .split()
+    ["he", "him", "his", "himself", "man", "men", "gentleman", "boy", "father", "son", "brother", "husband", "king", "prince", "uncle", "nephew", "mr", "mister", "sir", "lord"]
 )
 _FEMALE_WORDS = frozenset(
-    "she her hers herself woman women lady girl mother daughter sister wife queen princess aunt niece miss mrs ms"
-    " madam madame dame".split()
+    ["she", "her", "hers", "herself", "woman", "women", "lady", "girl", "mother", "daughter", "sister", "wife", "queen", "princess", "aunt", "niece", "miss", "mrs", "ms", "madam", "madame", "dame"]
 )
 _WORD = re.compile(r"[A-Za-z]+")
 
@@ -415,13 +413,45 @@ def gender_lean(store: Store, novel_id: str, target_ids: set[str]) -> dict[str, 
     return {t: side for t, (side, _) in gender_lean_basis(store, novel_id, target_ids).items()}
 
 
+_XIANXIA_MALE_MORPHEMES = ("yan", "yuan", "bo", "qing", "feng", "tian", "hao", "zheng", "chen", "lian", "shu")
+_XIANXIA_FEMALE_MORPHEMES = ("er", "xue", "hua", "lan", "ting", "rou", "cui", "ling", "mei")
+
+
+def xianxia_name_gender_prior(label: str) -> str | None:
+    """Gender prior based on Xianxia / Chinese name romanization morphemes.
+
+    -yan, -bo, -qing, -feng, -tian, -hao -> male
+    -er, -xue, -hua, -lan, -ting, -rou -> female
+    """
+    tokens = [re.sub(r"[^a-z]", "", t) for t in re.split(r"[\s\-_']+", label.lower()) if t]
+    if not tokens or tokens[0] in _TITLE_GENDER or tokens[0] in ("elder", "master", "senior", "lord"):
+        return None
+    given = tokens[1:] if len(tokens) > 1 else tokens
+    last = given[-1]
+    for sfx in _XIANXIA_FEMALE_MORPHEMES:
+        if last == sfx or (len(last) > len(sfx) and last.endswith(sfx)):
+            return "female"
+    for sfx in _XIANXIA_MALE_MORPHEMES:
+        if last == sfx or (len(last) > len(sfx) and last.endswith(sfx)):
+            return "male"
+    for tok in given:
+        for sfx in _XIANXIA_FEMALE_MORPHEMES:
+            if tok == sfx:
+                return "female"
+        for sfx in _XIANXIA_MALE_MORPHEMES:
+            if tok == sfx:
+                return "male"
+    return None
+
+
 def gender_lean_basis(store: Store, novel_id: str, target_ids: set[str]) -> dict[str, tuple[str, str]]:
-    """`gender_lean` with the reason: `(side, "pronoun")` or `(side, "name prior")`.
+    """`gender_lean` with the reason: `(side, "pronoun")`, `(side, "name prior")`, or `(side, "xianxia prior")`.
 
     The name prior (`first_names.py`, US public birth records) is used only for a character in `target_ids` (no
     recorded gender) with no own-pronoun vote at all: P&P ch1-3 Kitty, Lydia and Maria Lucas have no pronoun after
     their names, and Lydia was cast a male voice. Any pronoun vote, even a conflicting pair, keeps the prior out:
-    mixed evidence means the text is the better witness than a name.
+    mixed evidence means the text is the better witness than a name. Xianxia morphemes provide a secondary prior for
+    translated East Asian web fiction.
     """
     if not target_ids:
         return {}
@@ -433,6 +463,9 @@ def gender_lean_basis(store: Store, novel_id: str, target_ids: set[str]) -> dict
     out = {t: (side, "pronoun") for t, v in votes.items() if (side := lean_from_votes(v))}
     labels = {e.id: e.canonical_label for e in store.all_selves(novel_id) if e.id in target_ids}
     for t, label in labels.items():
-        if t not in out and not votes.get(t) and (side := name_gender_prior(label)):
-            out[t] = (side, "name prior")
+        if t not in out and not votes.get(t):
+            if side := name_gender_prior(label):
+                out[t] = (side, "name prior")
+            elif side := xianxia_name_gender_prior(label):
+                out[t] = (side, "xianxia prior")
     return out

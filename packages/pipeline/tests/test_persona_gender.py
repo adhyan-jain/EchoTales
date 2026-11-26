@@ -14,7 +14,6 @@ from echotales.core.enums import AliasType, BlockType, ReferenceMode, SpanType, 
 from echotales.core.models import Block, Chapter, DiscoursePosition, Mention, Self, Span
 from echotales.core.store import Store
 from echotales.pipeline.persona.gender import GenderResponse, infer_missing_genders
-from echotales.pipeline.persona.traits import TraitProfile
 
 
 class ScriptedClient:
@@ -228,3 +227,22 @@ def test_reader_gender_check_reads_past_a_superseded_unknown_row():
     store = SimpleNamespace(get_attributes=lambda target, tid: rows if tid == "s1" else [])
     assert _recorded_gender(store, "s1") == "male"
     assert _recorded_gender(SimpleNamespace(get_attributes=lambda t, i: [rows[0]]), "s1") == ""
+
+
+def test_xianxia_name_gender_prior() -> None:
+    from echotales.pipeline.persona.gender import xianxia_name_gender_prior
+
+    # Male morphemes: -yan, -bo, -qing, -feng, -tian, -hao
+    assert xianxia_name_gender_prior("Fang Yuan") == "male"
+    assert xianxia_name_gender_prior("Gu Yue Bo") == "male"
+    assert xianxia_name_gender_prior("Gu Yue Qing Shu") == "male"
+    assert xianxia_name_gender_prior("Xiao Yan") == "male"
+    assert xianxia_name_gender_prior("Lin Feng") == "male"
+
+    # Female morphemes: -er, -xue, -hua, -lan, -ting, -rou
+    assert xianxia_name_gender_prior("Bai Ning Xue") == "female"
+    assert xianxia_name_gender_prior("Mei Hua") == "female"
+    assert xianxia_name_gender_prior("Yue Er") == "female"
+    assert xianxia_name_gender_prior("Cui Lan") == "female"
+    assert xianxia_name_gender_prior("Wen Ting") == "female"
+
