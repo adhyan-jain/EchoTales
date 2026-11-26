@@ -23,7 +23,17 @@ conflated.
 | `docs/design/consistency_plan.md` | Approved-reference identity and location consistency plan (2026-10-18). Superseded 2026-11-19 by `community_roadmap.md` M1. |
 | `docs/archive/COMPLETION_PLAN.md` | *What to build next and why*, across research/patent/product. The old multi-track plan (2026-09-23). Superseded 2026-11-19 by `community_roadmap.md`; history only. |
 
-**Last updated:** 2026-11-22 (EVOLUTION 4.195).
+**Last updated:** 2026-11-27 (EVOLUTION 4.201).
+
+## Pick up here - 2026-11-27 (branch claude/romanized-ner, not merged; EVOLUTION 4.201, decisions D69, D70 addendum)
+
+**Landed:** model-backed mention detection. Pick a detector with `mentions.detector` in config or `echotales run --ner {fast,hybrid,llm,heuristic}`; absent, it follows `ECHOTALES_COMPUTE` (local-low fast, local-high and cloud hybrid); showcase runs use hybrid. Hybrid boundary F1 .903 vs legacy .783 on the romanized-name gold (silver, not owner-checked). Titles and shared alias keys now go through the resolve gate (RI: 52 mentions unlinked from Fang Yuan, all deictics). Details in EVOLUTION 4.201 and `docs/results/NER_ROMANIZED.md`.
+
+**Open:**
+- No full-volume render or resolve with hybrid yet (only RI/LotM/ORV prefixes and the bake-off).
+- Next per owner: scene-cut induction (P0.5 in `docs/design/adaptation_director_plan.md`).
+- GLiNER larger checkpoints, NuNER Zero and spaCy trf are unmeasured (network about 50 KB/s, install timeout).
+- The xianxia morpheme prior exists only as uncommitted edits in the main checkout and still needs its freeze note.
 
 ## Pick up here - 2026-11-22 (state of master at 7265fcd; EVOLUTION 4.187-4.195, decisions D67-D68)
 

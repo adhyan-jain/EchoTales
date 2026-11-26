@@ -88,7 +88,7 @@ source .venv/bin/activate      # uv-managed venv already present at repo root
 python3 -m pytest packages/core/tests packages/pipeline/tests   # no GPU needed
 ```
 
-core+pipeline suite: 3,068 passed, 2 skipped (2026-11-22, run with `-o addopts=""`); webview jest: 258 (29 suites); research: 29 is as of 2026-10-19 and was not re-run). Root `pyproject` testpaths lists only
+core+pipeline suite: 3,197 passed, 28 skipped (2026-11-27, branch claude/romanized-ner, run with `-o addopts=""`); webview jest: 258 (29 suites); research: 29 is as of 2026-10-19 and was not re-run). Root `pyproject` testpaths lists only
 core and pipeline; pass `packages/research/tests` explicitly (and `-o addopts=""`) to include research.
 
 Everything is stub-first: `ECHOTALES_LLM_MODE=stub` and `--image-engine
@@ -173,6 +173,8 @@ real data without touching the canonical `data/db/<novel-id>.db`.
 ## Current known issues
 
 Product track (2026-11-22, EVOLUTION 4.168-4.195, decisions D60-D68): reviewer speaker decisions are stored as attribution method `HUMAN` and final everywhere (D29-D32); `voice` defaults to engine `chatterbox`, narrator `hifitts9136` (`config.json` `voice.narrator`); `render --density beat|dense`; one locked identity per character body plus a local vision check (D61); reader stays on `gemma2:9b` (D62: LotM 96.5, RI 96.4, ORV 89.7 on model-drafted silver references); colour webtoon look by default, `--look bw` black-and-white manga look on `render` and `pages` (4.188, unit-tested only); heavy work GPU-first with NVENC video encodes (4.189); `echotales comic fetch <url>` and the Studio's "Paste a chapter link" (4.191); P&P casting fixes: gender, merges, stable voices, first-name prior (4.190, 4.192, 4.193); panel round 8 (4.194, D68); `echotales pages` defaults to `--format webtoon`; single-panel redraw and candidates (4.179); cloud (RunPod worker packages, spend ledger) is mock-tested only and has never run for real (D65); `LICENSE` (Apache-2.0) exists. OPEN and owner-dependent items are in HANDOFF "Pick up here - 2026-11-22": the owner's listen/watch of the showcase in `data/exports/showcase_20261122/`, benchmark references not human-checked, gemma2:9b CPU spill, the RunPod run and deploy need the owner. CI exists (`.github/workflows/ci.yml`) but has never run on GitHub.
+
+Name extraction (2026-11-27, branch claude/romanized-ner): mention detection is model-backed (`fast` GLiNER or `hybrid` GLiNER + spaCy + qwen3:8b classifier, chosen by `ECHOTALES_COMPUTE`, `run --ner`), D69; size-class model ceiling, D70 addendum; resolve gate no longer force-links titles; EVOLUTION 4.201.
 
 Research track: `docs/research/DECISION_LOG.md` is the state of record (EVOLUTION 4.101).
 

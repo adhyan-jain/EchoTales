@@ -250,6 +250,22 @@ The event log and `state_of` are not a phase — they are written by every
 phase that makes a decision, and replayable at any point. Prominence tiering
 is computed in Phase 7, where the mention counts it depends on are final.
 
+### Stage interfaces from detection to identity (D69)
+
+Each stage hands the next a typed object, so a detector can be swapped without touching resolution:
+
+```
+mention detection   -> NameCandidate (surface, offsets, votes from each detector)      mentions/candidate.py
+entity classification -> ClassifiedCandidate (person / place / group / generic ...)    mentions/ner_classify.py
+alias typing        -> alias type per surface (name, title, relational deictic, ...)   mentions/alias_type.py
+local coreference   -> within one chapter and layer
+global resolution   -> retrieve -> evidence -> score -> gate: LINK / NEW / DEFER
+persona             -> visual identity
+```
+
+Global resolution never reads raw NER labels or detector votes; it sees alias types and evidence only
+(enforced by `test_import_direction`). Which detector ran is recorded in nullable provenance columns on `mention`.
+
 **Volume-first.** The whole volume is processed before anything is generated.
 That is what makes prominence tiering, complete title-transfer tracking and
 correct reveal handling possible at all.
