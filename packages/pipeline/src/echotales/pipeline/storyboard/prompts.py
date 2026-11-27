@@ -15,22 +15,21 @@ from pathlib import Path
 from echotales.pipeline.storyboard.inputs import ChapterInput, Line, RosterEntry
 from echotales.pipeline.storyboard.plan_schema import LWindow
 
-PROMPT_VERSION = "sb-1"
+PROMPT_VERSION = "sb-4"
 MAX_NARRATION_CHARS = 300
 
 SYSTEM = """You are the storyboard artist adapting a web-novel chapter into a manhwa (vertical-scroll comic). You decide
 the list of panels for the passage you are given, the way a professional adapter would: by drama, not by paragraph.
 
-Answer with one JSON object: scenes, panels, cut_lines. Refer to source text only by its tag (s12), never retype it.
+Answer with one JSON object: panels, cut_lines. Refer to source text only by its tag (s12), never retype it.
 
 GRAMMAR (follow every rule):
 1. HOOK. If the passage starts the chapter, the first panel is purpose cold_open: a striking image or a sound-effect
    spread, before any explanation.
 2. LAYER. Set each panel's layer: present, past (flashback shown straight), memory (a character remembering),
    lore (narrated history), imagined (someone pictured or talked about), dream. One scene, one layer.
-3. CUTS. Whenever the place or time changes, make a new scene (new_scene true, with place, story_time, cut_signal) and
-   open it with a time_place_card, a transition (a graphic match) or an establishing wide panel, then a detail insert,
-   then people. Text often changes scene with no marker: look for a sudden new place, time of day, or cast.
+3. CUTS. When the passage opens with a cut into a new scene (it will say so), its first panel is a time_place_card, a
+   transition (a graphic match) or an establishing wide panel, then a detail insert, then people.
 4. PRESENCE. Only people physically in the scene go in a panel's cast. A person who is only talked about, remembered
    or planned for goes in a referenced_inset panel (layer imagined or memory), never standing in the room.
 5. DENSITY. Drama decides panel count, not text length. A peak beat (a shout, a reveal, an attack, a decision) gets
@@ -39,9 +38,10 @@ GRAMMAR (follow every rule):
 6. CROWDS. A crowd that speaks is shown as individuals: one crowd_individual panel per speaking face (cast: a short
    description such as "a bearded elder"), carrying that crowd line. Never give a crowd member a name.
 7. INSERTS. Punctuate peaks with insert panels (hand, object, blood, lantern, weather) and extreme_close panels (eyes).
-8. LETTERING. Choose each line's kind: speech, shout (loud, spiky), whisper, dread (menacing), thought, memory, narration,
-   poem. Add sfx (a drawn sound word, at most 3 words) where the text implies a sound, and time_place or name_card
-   letters for cards. SFX and cards are the ONLY text you may write; they must come from the passage.
+8. LETTERING. letters lists source lines by tag only (ref s12), never their text. Choose each line's kind: speech, shout
+   (loud, spiky), whisper, dread (menacing), thought, memory, narration, poem. Put drawn sound words in sfx (at most 3
+   words each) where the text implies a sound, and a card's caption in card. SFX and cards are the ONLY text you may
+   write; they must come from the passage.
 9. SHAPES. Vary panel shape with the beat: wide for places and crowds, tall for heroes and falls, diagonal for
    confrontations, inset for asides and referenced people, bleed for the peak, text_only for cards, standard otherwise.
 10. NEVER ADD PLOT. Invented panels (inserts, reactions, cards, establishing views) show only what the text states or
@@ -99,6 +99,49 @@ def _people(present: list[tuple[str, str]], referenced: list[str], fixed: bool) 
     return "\n".join(lines)
 
 
+SCENE_SYSTEM = """You split one novel chapter into scenes. A scene is one place at one time with one set of people.
+Answer with JSON: scenes, a list of {from_block, place, story_time, layer, cut_signal}, in order, the first at the first block.
+Start a NEW scene only when something changes: a new place is named or reached, time jumps (hours later, that night, years
+ago), the story moves to different people somewhere else (often with no marker: "at the same moment", a new character
+introduced in a new setting), or a memory or dream begins. A chapter is usually 2 to 6 scenes. Do not start a scene at
+every paragraph, and do not start one where the same people continue in the same place.
+place is the specific spot where the action is (the temple hall, a third-floor window), not just the town or mountain.
+story_time says when (that night, 500 years earlier); give each scene its own value, same as before only if nothing changed.
+layer is present, past (flashback shown straight), memory, lore (narrated history), imagined or dream.
+cut_signal is how the cut INTO the scene is best shown: card (a place or time caption), match (a graphic match between two
+similar images) or establishing (a wide view of the new place); leave it empty for the first scene."""
+
+PRESENCE_SYSTEM = """You read one scene of a novel and say who is physically IN the scene and who is only talked about.
+Answer with JSON: present, referenced.
+present: every person (or group such as "elders", "besiegers", "servants") whose body is in the place of the scene.
+referenced: people who are only named, discussed, remembered, thought about or planned for, and are not in the room.
+A person who is spoken about by those present is referenced, not present, even if they are the topic of the whole scene.
+Scenery, weather, objects and places are not people: if nobody is in the scene yet, answer with empty lists.
+A person whose name appears only inside other people's speech or thoughts, or who is described by report, is referenced.
+The person whose own thoughts or memories the scene shows is present.
+Use names as the text gives them. Name a group of people in lower case ("elders"). Do not invent people the text does not mention."""
+
+
+def build_scene_prompt(inp: ChapterInput) -> str:
+    rows = []
+    for b in inp.block_ids:
+        t = inp.blocks[b].strip().replace("\n", " ")
+        rows.append(f"[b{b}] {t[:110]}{' ...' if len(t) > 110 else ''}")
+    return "CHAPTER BLOCKS (each line is the start of one block):\n" + "\n".join(rows) + "\nOUTPUT:"
+
+
+def build_presence_prompt(inp: ChapterInput, sc) -> str:  # type: ignore[no-untyped-def]
+    rows = []
+    for b in inp.block_ids:
+        if sc.block_from <= b <= sc.block_to:
+            t = inp.blocks[b].strip().replace("\n", " ")
+            rows.append(t[:220] + (" ..." if len(t) > 220 else ""))
+    return (
+        f"SCENE: {sc.place or 'place not stated'}; {sc.story_time or 'time not stated'}.\n"
+        "SCENE TEXT:\n" + "\n".join(rows) + "\nOUTPUT:"
+    )
+
+
 def render_example(ex: dict) -> str:
     inp = [
         "PASSAGE STARTS THE CHAPTER." if ex.get("chapter_start") else "PASSAGE CONTINUES THE CHAPTER.",
@@ -106,7 +149,7 @@ def render_example(ex: dict) -> str:
         "TEXT:",
         render_lines([Line(x["id"], x["block"], x["kind"], x["text"], None, x.get("speaker", "")) for x in ex["lines"]]),
     ]
-    return "INPUT:\n" + "\n".join(inp) + "\nOUTPUT:\n" + json.dumps(ex["output"], ensure_ascii=False, separators=(",", ":"))
+    return "INPUT:\n" + "\n".join(inp) + "\nOUTPUT:\n" + json.dumps({k: v for k, v in ex["output"].items() if k != "scenes"}, ensure_ascii=False, separators=(",", ":"))
 
 
 def build_prompt(
@@ -119,6 +162,7 @@ def build_prompt(
     chapter_start: bool,
     fixed_presence: bool,
     carry: str,
+    scene_line: str = "",
     n_examples: int | None = None,
 ) -> str:
     parts: list[str] = []
@@ -137,6 +181,8 @@ def build_prompt(
         people = [(r.name, r.look) for r in roster_in_play]
     parts.append("INPUT:")
     parts.append("PASSAGE STARTS THE CHAPTER." if chapter_start else "PASSAGE CONTINUES THE CHAPTER.")
+    if scene_line:
+        parts.append(scene_line)
     if carry:
         parts.append(f"BEFORE THIS PASSAGE: {carry}")
     parts.append(_people(people, referenced_names, fixed=fixed_presence))

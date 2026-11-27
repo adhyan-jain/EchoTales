@@ -13,9 +13,8 @@ from pydantic import BaseModel, Field
 
 
 class LLetter(BaseModel):
-    ref: str = Field("", description="REQUIRED for any text that exists in the passage: its line tag such as s12 (never retype the text); empty only for an invented SFX or card")
+    ref: str = Field(description="the line tag such as s12, copied from the passage; never the text itself")
     kind: LetterKind
-    text: str = Field("", description="only for an invented sfx / time_place / name_card letter, at most 6 words")
 
 
 class LPanel(BaseModel):
@@ -25,22 +24,32 @@ class LPanel(BaseModel):
     layer: Layer
     cast: list[str] = Field(default_factory=list, description="names of people physically in the panel")
     visual: str = Field("", description="what is drawn, plain words, no style words, nothing the text does not state")
-    letters: list[LLetter] = Field(default_factory=list)
+    letters: list[LLetter] = Field(default_factory=list, description="source lines this panel carries, by tag")
+    sfx: list[str] = Field(default_factory=list, description="drawn sound words, each at most 3 words, e.g. THUD")
+    card: str = Field("", description="caption text for a time_place_card or name_card panel, at most 6 words")
     blocks: list[int] = Field(default_factory=list, description="source block numbers this panel draws from")
     peak: bool = Field(False, description="true on the climax panel of a beat")
     invented: bool = Field(False, description="true when no source text covers the panel (an insert, a card)")
     reason: str = Field("", description="why an invented panel exists, one short phrase")
 
 
-class LScene(BaseModel):
+class LSceneMark(BaseModel):
+    """One scene start found by the chapter-level scene pass (`director._detect_scenes`)."""
+
     from_block: int
-    new_scene: bool = Field(False, description="true when a new place or time begins at from_block")
     place: str = ""
     story_time: str = ""
     layer: Layer = Layer.PRESENT
-    cut_signal: str = Field("", description="card, match or establishing: how the cut into this scene is shown")
-    present: list[str] = Field(default_factory=list, description="people physically in the scene")
-    referenced: list[str] = Field(default_factory=list, description="people only talked about, not in the scene")
+    cut_signal: str = Field("", description="card, match or establishing: how the cut into this scene is best shown")
+
+
+class LSceneList(BaseModel):
+    scenes: list[LSceneMark]
+
+
+class LPresence(BaseModel):
+    present: list[str] = Field(default_factory=list, description="people (or groups such as 'elders') physically in the scene")
+    referenced: list[str] = Field(default_factory=list, description="people only talked about, remembered or planned for")
 
 
 class LCutLine(BaseModel):
@@ -49,6 +58,5 @@ class LCutLine(BaseModel):
 
 
 class LWindow(BaseModel):
-    scenes: list[LScene]
     panels: list[LPanel]
     cut_lines: list[LCutLine] = Field(default_factory=list, description="spoken lines deliberately left out, with why")

@@ -12,6 +12,7 @@ from __future__ import annotations
 import re
 from collections import Counter
 from dataclasses import dataclass, field
+from itertools import pairwise
 
 from echotales.pipeline.storyboard.inputs import ChapterInput
 from echotales.pipeline.storyboard.schema import (
@@ -35,6 +36,9 @@ _NO_HOST = {Purpose.CROWD_INDIVIDUAL, Purpose.REFERENCED_INSET, Purpose.TIME_PLA
 #: Panels per story block outside this band are reported, not repaired: the reference RI ch1 is ~1 panel per block, and a
 #: chapter far below it is flat while far above it is a slideshow of single lines.
 DENSITY_BAND = (0.45, 1.6)
+#: One panel can carry about this many source blocks before it is a text slab, not a beat: qwen3:8b put 14 blocks and 11
+#: speech lines of the RI ch1 elders' corridor talk in one dialogue panel (measured).
+MAX_BLOCKS_PER_PANEL = 4
 MIN_SHAPES = 4
 MIN_PANELS_FOR_VARIETY = 14
 _STOP = {"the", "and", "of", "a", "an", "in", "on", "at", "to", "for", "later", "after", "before", "same", "time"}
@@ -153,6 +157,8 @@ def audit(
             c["inset_layer"] += 1
         if p.invented and not p.invented_reason:
             c["invented_no_reason"] += 1
+        if p.purpose is Purpose.TIME_PLACE_CARD and not any(lt.kind is LetterKind.TIME_PLACE for lt in p.letters):
+            c["card_empty"] += 1
         for lt in p.letters:
             if lt.source_span_id is None and lt.kind not in INVENTED_OK:
                 c["invented_speech"] += 1
@@ -162,6 +168,15 @@ def audit(
             any(lt.speaker_id for lt in p.letters) or any(not _is_crowd(m) for m in p.cast)
         ):
             c["crowd_named"] += 1
+        speech_n = sum(1 for lt in p.letters if lt.source_span_id and lt.kind in SPEECH_KINDS | {LetterKind.THOUGHT})
+        if len(p.source_blocks) >= MAX_BLOCKS_PER_PANEL or speech_n >= 3 or len(p.letters) >= 6:
+            c["panel_overstuffed"] += 1
+        if (
+            p.purpose is not Purpose.CROWD_INDIVIDUAL
+            and any(m.entity_id.startswith("crowd:") for m in seg.present_cast)
+            and any(lt.source_span_id and lt.kind in SPEECH_KINDS and not lt.speaker_id for lt in p.letters)
+        ):
+            c["crowd_line_not_individualised"] += 1
         # a referenced person's name in the picture text while they are not in the panel's cast
         if p.purpose is not Purpose.REFERENCED_INSET:
             for eid in refd - present:
@@ -169,6 +184,10 @@ def audit(
                 if nm and re.search(re.escape(nm), p.visual, re.I) and eid not in _ids(p.cast):
                     c["visual_names_absent"] += 1
 
+    # the same picture text twice in a row cannot be told apart by the image model; reported, not repairable here
+    for a, b in pairwise(panels):
+        if a.visual and a.visual == b.visual:
+            c["visual_repeat"] += 1
     # scene cuts
     for si, seg in enumerate(segments):
         if si == 0:
@@ -286,6 +305,19 @@ def repair(
             wps.insert(at, WPanel(np_))
             report.note("speech_lost", "dialogue panel created", f"{ln.id} b{ln.block}")
 
+    # --- a card with no caption is a blank panel: caption it from the scene's place, else make it an establishing view ---
+    for w in wps:
+        p = w.panel
+        if p.purpose is Purpose.TIME_PLACE_CARD and not any(lt.kind is LetterKind.TIME_PLACE for lt in p.letters):
+            seg = _panel_segment(p, segments)
+            cap = " ".join(seg.place.upper().split()[:6])
+            if cap:
+                p.letters.append(Letter(kind=LetterKind.TIME_PLACE, text=cap))
+                report.note("card_empty", "caption taken from the scene place", cap)
+            else:
+                p.purpose, p.shape = Purpose.ESTABLISHING, Shape.WIDE
+                report.note("card_empty", "made an establishing panel", p.panel_id)
+
     # --- speakers who are not in the scene ----------------------------------------------------------------------------
     for w in wps:
         seg = _panel_segment(w.panel, segments)
@@ -297,6 +329,18 @@ def repair(
                     f"{roster_names.get(lt.speaker_id, lt.speaker_id)} is only talked about here; the reader attributed the line to them",
                 )
                 lt.speaker_id = None
+
+    # --- overstuffed panels are split by speaker turn; unattributed lines in a crowd scene get their own face ---------------
+    out_split: list[WPanel] = []
+    line_block = {ln.span_id: ln.block for ln in inp.lines}
+    crowd_count: dict[str, int] = {}
+    for w in wps:
+        seg = _panel_segment(w.panel, segments)
+        parts = _split_panel(w, seg, line_block, report)
+        for part in parts:
+            _individualise_crowd(part, seg, crowd_count, report)
+        out_split.extend(parts)
+    wps = out_split
 
     # --- scene cuts -----------------------------------------------------------------------------------------------------
     out: list[WPanel] = []
@@ -332,10 +376,13 @@ def repair(
         seg = _panel_segment(first, segments)
         # the hook is the chapter's first striking image: reuse the first picture the model already drew rather than
         # invent one, so the repair adds a repeat of an existing image and no new fact
+        lead = seg.present_cast[0] if seg.present_cast and not seg.present_cast[0].entity_id.startswith("crowd:") else None
         src = next((w.panel for w in wps if w.panel.visual), first)
+        where = f" in {seg.place}" if seg.place else ""
         cp = _new_panel(
             seg, Purpose.COLD_OPEN, shape=Shape.BLEED, shot=Shot.EXTREME_WIDE,
-            visual=src.visual, cast=list(src.cast), source_blocks=list(src.source_blocks[:1]),
+            visual=f"{lead.name}{where}, alone in a striking wide frame" if lead else src.visual,
+            cast=[lead] if lead else list(src.cast), source_blocks=list(src.source_blocks[:1]),
             invented=True, invented_reason="hook before exposition: chapter opened without one",
         )
         wps.insert(0, WPanel(cp))
@@ -384,3 +431,81 @@ def repair(
     if changed:
         report.note("shape_variety", "shape set from purpose", f"{changed} panels")
     return wps
+
+
+_ORDINAL = ["", "another ", "a third ", "a fourth ", "a fifth ", "a sixth ", "a seventh ", "an eighth ", "a ninth ", "a tenth "]
+
+
+def _singular(name: str) -> str:
+    n = name.strip().lower()
+    n = n[:-1] if n.endswith("s") and len(n) > 3 else n
+    return n
+
+
+def _split_panel(w: WPanel, seg: Segment, line_block: dict, report: Report) -> list[WPanel]:
+    p = w.panel
+    lets = p.letters
+    speechish = SPEECH_KINDS | {LetterKind.THOUGHT}
+    speech_n = sum(1 for lt in lets if lt.source_span_id and lt.kind in speechish)
+    if not (len(p.source_blocks) >= MAX_BLOCKS_PER_PANEL or speech_n >= 3 or len(lets) >= 6):
+        return [w]
+    groups: list[list[Letter]] = []
+    cur: list[Letter] = []
+    narr = 0
+    for lt in lets:
+        if lt.kind in speechish and lt.source_span_id:
+            if cur:
+                groups.append(cur)
+            groups.append([lt])
+            cur, narr = [], 0
+        elif lt.kind is LetterKind.SFX:
+            (cur if cur else groups[-1] if groups else cur).append(lt)
+        else:
+            if narr >= 2:
+                groups.append(cur)
+                cur, narr = [], 0
+            cur.append(lt)
+            narr += 1
+    if cur:
+        groups.append(cur)
+    if len(groups) <= 1:
+        return [w]
+    out: list[WPanel] = []
+    for gi, g in enumerate(groups):
+        blocks = sorted({line_block[lt.source_span_id] for lt in g if lt.source_span_id in line_block}) or list(p.source_blocks[:1])
+        spoken = next((lt for lt in g if lt.kind in speechish and lt.source_span_id), None)
+        if gi == 0:
+            np_ = p.model_copy(update={"letters": g, "source_blocks": blocks})
+        else:
+            who = next((m for m in seg.present_cast if spoken and m.entity_id == spoken.speaker_id), None)
+            np_ = Panel(
+                panel_id="", segment_id=p.segment_id, layer=p.layer,
+                purpose=Purpose.DIALOGUE if spoken else Purpose.BEAT, shape=Shape.STANDARD,
+                shot=Shot.MEDIUM_CLOSE if spoken else p.shot, cast=[who] if who else list(p.cast),
+                visual=f"{who.name} speaks" if who else p.visual, letters=g, source_blocks=blocks,
+                invented=False, invented_reason="",
+            )
+        out.append(WPanel(np_, peak=w.peak and gi == 0, window=w.window))
+    report.note("panel_overstuffed", "panel split by speaker turn", f"blocks {p.source_blocks[:3]}... into {len(out)} panels")
+    return out
+
+
+def _individualise_crowd(w: WPanel, seg: Segment, count: dict[str, int], report: Report) -> None:
+    """An unattributed spoken line in a scene with a crowd gets one distinct invented face (grammar rule 6)."""
+    p = w.panel
+    crowd = next((m for m in seg.present_cast if m.entity_id.startswith("crowd:")), None)
+    if crowd is None or p.purpose is Purpose.CROWD_INDIVIDUAL:
+        return
+    lines = [lt for lt in p.letters if lt.source_span_id and lt.kind in SPEECH_KINDS]
+    if len(lines) != 1 or lines[0].speaker_id or len(p.letters) > 2:
+        return
+    base = _singular(crowd.name)
+    k = count.get(crowd.entity_id, 0)
+    count[crowd.entity_id] = k + 1
+    art = "an" if base[:1] in "aeiou" else "a"
+    name = f"{art} {base}" if k == 0 else f"{_ORDINAL[k]}{base}" if k < len(_ORDINAL) else f"{base} number {k + 1}"
+    p.purpose, p.shape, p.shot = Purpose.CROWD_INDIVIDUAL, Shape.STANDARD, Shot.CLOSE
+    p.cast = [CastMember(entity_id=f"{crowd.entity_id}-{k + 1}", name=name, invented=True)]
+    p.visual = f"{name} calls out"
+    p.invented, p.invented_reason = True, "one face from the crowd carrying an existing unattributed line"
+    report.note("crowd_line_not_individualised", "crowd individual made", f"{name} b{p.source_blocks}")

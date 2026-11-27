@@ -3,8 +3,13 @@
 Replaces "one 3:4 panel per text block" (DENSITY_BLOCKS_PER_PANEL) with the 11-rule grammar of
 docs/results/MANHWA_DIRECTING_PATTERNS.md. Flow per chapter:
 
-  load (blocks, spans, graph segments, roster, presence)  ->  one model call per window of <= 14 blocks
-  ->  stitch windows into scenes (the model may find cuts the graph does not mark; RI ch1 has two unmarked)
+  load (blocks, spans, graph segments, roster, presence)
+  ->  scene pass: one model call over the whole chapter marks place/time changes the graph does not (RI ch1 has two
+      unmarked cuts); a window-level "new scene" flag was tried first and fired at every window start (measured: 4 false
+      cuts, the real one at block 80 missed)
+  ->  presence pass: one call per scene says who is in the room and who is only talked about, reading the raw text with
+      no speaker labels (the reader's wrong labels on RI ch1 blocks 61/62/71 put Fang Yuan in the ritual otherwise)
+  ->  one panel-plan call per window of <= 14 blocks, bisected on a bad answer
   ->  turn the plans into `Panel`s (source text copied by tag, never retyped)  ->  audit  ->  repair  ->  audit.
 
 The model only chooses structure; every spoken line, every name and every speaker comes from the graph, so the validators
@@ -17,14 +22,14 @@ import hashlib
 import json
 import re
 import time
-from collections import Counter
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 from echotales.core.store import Store
 from echotales.pipeline.llm.base import LLMError, LLMParseError
 from echotales.pipeline.llm.tasks import Task
 from echotales.pipeline.paths import DATA_ROOT, storyboard_path
+from echotales.pipeline.storyboard import prompts as sbp
 from echotales.pipeline.storyboard.inputs import (
     ChapterInput,
     Line,
@@ -36,13 +41,14 @@ from echotales.pipeline.storyboard.inputs import (
     presence_for,
     windows,
 )
-from echotales.pipeline.storyboard.plan_schema import LLetter, LPanel, LScene, LWindow
-from echotales.pipeline.storyboard.prompts import (
-    PROMPT_VERSION,
-    SYSTEM,
-    build_prompt,
-    fewshot_digest,
+from echotales.pipeline.storyboard.plan_schema import (
+    LLetter,
+    LPanel,
+    LPresence,
+    LSceneList,
+    LWindow,
 )
+from echotales.pipeline.storyboard.prompts import PROMPT_VERSION, fewshot_digest
 from echotales.pipeline.storyboard.schema import (
     CastMember,
     Layer,
@@ -57,7 +63,6 @@ from echotales.pipeline.storyboard.schema import (
 )
 from echotales.pipeline.storyboard.validators import (
     CUT_SIGNAL_PURPOSES,
-    INVENTED_OK,
     SPEECH_KINDS,
     Report,
     WPanel,
@@ -67,7 +72,8 @@ from echotales.pipeline.storyboard.validators import (
 
 #: A cut the model proposes inside a scene is trusted only when both halves are at least this long: one flagged block in
 #: a noisy window would otherwise shred a scene into single-block "scenes", each demanding its own cut panel.
-MIN_SPLIT_BLOCKS = 3
+MIN_SPLIT_BLOCKS = 6
+_SFX_OK = re.compile(r"^[A-Za-z!?'\- ]{1,24}$")  # qwen3 once wrote `LETTERS [{...` into an sfx slot
 _CARD_STOP = {"the", "and", "later", "after", "before", "same", "time", "that", "with", "from", "this"}
 
 
@@ -82,8 +88,6 @@ class _Raw:
 
 def set_model(model: str) -> None:
     """Point the storyboard task at another ollama model (the CLI's --model, and the model bake-off)."""
-    from dataclasses import replace
-
     from echotales.pipeline.llm import tasks
 
     tasks.TASK_PROFILES[Task.STORYBOARD] = replace(tasks.TASK_PROFILES[Task.STORYBOARD], ollama_model=model)
@@ -110,9 +114,9 @@ def cache_key(inp: ChapterInput, model: str) -> str:
 # ---------------------------------------------------------------------------------------------------------------------
 
 
-def _fallback_plan(lines: list[Line], first: bool) -> LWindow:
-    """Last resort when the model gives nothing parseable twice: every spoken line gets a dialogue panel and narration
-    is carried by one caption panel per four blocks. Plain, but no spoken line is lost and the run completes."""
+def _fallback_plan(lines: list[Line]) -> LWindow:
+    """Last resort when the model gives nothing parseable for a few blocks: every spoken line gets a dialogue panel and
+    narration is carried by one caption panel per four blocks. Plain, but no spoken line is lost and the run completes."""
     panels: list[LPanel] = []
     narr: list[Line] = []
 
@@ -141,45 +145,68 @@ def _fallback_plan(lines: list[Line], first: bool) -> LWindow:
                 )
             )
     flush()
-    return LWindow(scenes=[LScene(from_block=lines[0].block, new_scene=False)], panels=panels)
+    return LWindow(panels=panels)
 
 
-def _call_window(client, inp: ChapterInput, scene: Scene, rng: tuple[int, int], carry: str, first: bool, report: Report) -> LWindow:
+def _ask(client, inp: ChapterInput, prompt: str, schema, system: str, report: Report):  # type: ignore[no-untyped-def]
+    res = client.complete(Task.STORYBOARD, prompt, schema, system=system, novel_id=inp.novel_id, chapter=inp.chapter)
+    report.llm_calls += 1
+    report.latency_ms += res.latency_ms
+    report.prompt_tokens += res.prompt_tokens
+    report.completion_tokens += res.completion_tokens
+    return res.value
+
+
+def _plan_range(
+    client, inp: ChapterInput, sc: Scene, rng: tuple[int, int], carry: str, first: bool, opens_cut: bool, report: Report
+) -> LWindow:
+    """One window's panel plan. On an unparseable answer the window is bisected and each half re-planned: qwen3:8b on RI
+    ch1 blocks 31-44 ran to its token cap inside one string twice (186 s, no plan), where a half-size window answers."""
     b0, b1 = rng
     lines = [ln for ln in inp.lines if b0 <= ln.block <= b1]
+    # a reader label naming someone the scene only talks about is a reader error (RI ch1 blocks 61/62/71 label the clan
+    # head's lines "Fang Yuan"); showing it makes the model cast that person in the room
+    away = set(sc.referenced_ids) - set(sc.present_ids)
+    lines = [replace(ln, speaker_name="") if ln.speaker_id in away else ln for ln in lines]
     text = "\n".join(ln.text for ln in lines).lower()
     in_play = [
         r for r in inp.roster
-        if r.entity_id in scene.present_ids or r.entity_id in scene.referenced_ids
-        or any(ln.speaker_id == r.entity_id for ln in lines)
-        or _name_in(r.name, text)
+        if r.entity_id in sc.present_ids or r.entity_id in sc.referenced_ids
+        or any(ln.speaker_id == r.entity_id for ln in lines) or _name_in(r.name, text)
     ]
     by_id = {r.entity_id: r for r in inp.roster}
-    present_names = [by_id[i].name for i in scene.present_ids if i in by_id]
-    ref_names = [by_id[i].name for i in scene.referenced_ids if i in by_id]
-    prompt = build_prompt(
-        inp, lines, in_play, present_names, ref_names, chapter_start=first, fixed_presence=inp.presence_contract, carry=carry,
+    present_names = [by_id[i].name if i in by_id else inp.labels.get(i, i.split(":", 1)[-1]) for i in sc.present_ids]
+    ref_names = [by_id[i].name if i in by_id else inp.labels.get(i, i.split(":", 1)[-1]) for i in sc.referenced_ids]
+    scene_line = f"THIS SCENE: {sc.place or 'place not stated'}; {sc.story_time or 'time not stated'}; layer {sc.layer.value}."
+    if opens_cut:
+        scene_line += (
+            " THE PASSAGE OPENS WITH A CUT into this scene: begin with a time_place_card, a transition or an establishing panel."
+        )
+    prompt = sbp.build_prompt(
+        inp, lines, in_play, present_names, ref_names, chapter_start=first, fixed_presence=True, carry=carry, scene_line=scene_line,
     )
-    last: Exception | None = None
-    for _attempt in range(2):
-        try:
-            res = client.complete(Task.STORYBOARD, prompt, LWindow, system=SYSTEM, novel_id=inp.novel_id, chapter=inp.chapter)
-            report.llm_calls += 1
-            report.latency_ms += res.latency_ms
-            report.prompt_tokens += res.prompt_tokens
-            report.completion_tokens += res.completion_tokens
-            if res.value.panels:
-                return res.value
-            last = LLMParseError("model returned no panels")
-        except LLMParseError as exc:
-            report.llm_calls += 1
-            last = exc
-        except LLMError as exc:  # unavailable: do not retry into a dead backend
-            last = exc
-            break
+    try:
+        plan = _ask(client, inp, prompt, LWindow, sbp.SYSTEM, report)
+        if plan.panels:
+            return plan
+        err: Exception = LLMParseError("model returned no panels")
+    except LLMParseError as exc:
+        report.llm_calls += 1
+        err = exc
+    except LLMError as exc:  # unavailable: do not retry into a dead backend
+        report.llm_failures += 1
+        report.note("llm_failure", "fallback plan used", f"blocks {b0}-{b1}: {str(exc)[:120]}")
+        return _fallback_plan(lines)
+    story = [b for b in inp.block_ids if b0 <= b <= b1]
+    if len(story) >= 6:
+        mid = story[len(story) // 2]
+        report.note("llm_bisect", "window re-planned in halves", f"blocks {b0}-{b1}: {str(err)[:80]}")
+        left = _plan_range(client, inp, sc, (b0, story[story.index(mid) - 1]), carry, first, opens_cut, report)
+        right = _plan_range(client, inp, sc, (mid, b1), _carry(left, 0), False, False, report)
+        return LWindow(panels=[*left.panels, *right.panels], cut_lines=[*left.cut_lines, *right.cut_lines])
     report.llm_failures += 1
-    report.note("llm_failure", "fallback plan used", f"blocks {b0}-{b1}: {str(last)[:120]}")
-    return _fallback_plan(lines, first)
+    report.note("llm_failure", "fallback plan used", f"blocks {b0}-{b1}: {str(err)[:120]}")
+    return _fallback_plan(lines)
 
 
 def _name_in(name: str, text_lower: str) -> bool:
@@ -187,98 +214,107 @@ def _name_in(name: str, text_lower: str) -> bool:
 
 
 def _carry(lw: LWindow, n_panels: int) -> str:
-    sc = lw.scenes[-1] if lw.scenes else None
     last = lw.panels[-1] if lw.panels else None
-    bits = [f"{n_panels} panels so far"]
-    if sc and (sc.place or sc.story_time):
-        bits.append(f"current scene: {sc.place or '?'} ({sc.story_time or 'same time'}), layer {sc.layer.value}")
+    bits = [f"{n_panels} panels so far"] if n_panels else []
     if last:
         bits.append(f"last panel: {last.purpose.value}, {last.visual[:70]}")
     return "; ".join(bits)
 
 
 # ---------------------------------------------------------------------------------------------------------------------
-# stitching windows into scenes
+# scene pass and presence pass
 # ---------------------------------------------------------------------------------------------------------------------
 
 
-def _scene_votes(raws: list[_Raw]) -> list[tuple[int, int, LScene, int]]:
-    """Every LScene with the block range it covers: (from, to, lscene, window idx)."""
-    out = []
-    for r in raws:
-        ls = sorted(r.plan.scenes, key=lambda s: s.from_block) or [LScene(from_block=r.rng[0])]
-        for i, s in enumerate(ls):
-            start = max(r.rng[0], s.from_block) if i else r.rng[0]
-            end = (ls[i + 1].from_block - 1) if i + 1 < len(ls) else r.rng[1]
-            out.append((start, max(start, min(end, r.rng[1])), s, r.idx))
-    return out
-
-
-def _final_scenes(inp: ChapterInput, raws: list[_Raw], report: Report) -> list[Scene]:
-    votes = _scene_votes(raws)
+def _detect_scenes(client, inp: ChapterInput, report: Report) -> list[Scene]:
+    """Final scenes: the graph's and the separator splits, plus the cuts one whole-chapter model read finds."""
+    base = inp.scenes
+    marks = []
+    try:
+        marks = _ask(client, inp, sbp.build_scene_prompt(inp), LSceneList, sbp.SCENE_SYSTEM, report).scenes
+    except LLMError as exc:
+        report.llm_calls += 1
+        report.llm_failures += 1
+        report.note("llm_failure", "scene pass failed; graph scenes only", str(exc)[:120])
     story = inp.block_ids
+    pos = {b: i for i, b in enumerate(story)}
+    forced = {sc.block_from for sc in base}
+    cand = sorted(forced | {m.from_block for m in marks if m.from_block in pos})
+    keep: list[int] = []
+    for b in cand:
+        if not keep:
+            keep.append(b)
+            continue
+        far_prev = pos[b] - pos[keep[-1]] >= MIN_SPLIT_BLOCKS
+        far_end = len(story) - pos[b] >= MIN_SPLIT_BLOCKS
+        later_forced = [f for f in forced if f > b and pos[f] - pos[b] < MIN_SPLIT_BLOCKS]
+        if b in forced:
+            if not far_prev and keep[-1] not in forced:
+                keep.pop()
+            keep.append(b)
+        elif far_prev and far_end and not later_forced and _differs(marks, keep[-1], b):
+            keep.append(b)
     out: list[Scene] = []
-    for sc in inp.scenes:
-        ids = [b for b in story if sc.block_from <= b <= sc.block_to]
-        cuts: list[tuple[int, LScene]] = []
-        for start, _end, ls, _w in votes:
-            if ls.new_scene and start in ids and start != ids[0]:
-                cuts.append((start, ls))
-        cuts.sort(key=lambda c: c[0])
-        accepted: list[tuple[int, LScene]] = []
-        prev = ids[0]
-        for b, ls in cuts:
-            before = [x for x in ids if prev <= x < b]
-            after = [x for x in ids if x >= b]
-            if len(before) >= MIN_SPLIT_BLOCKS and len(after) >= MIN_SPLIT_BLOCKS:
-                accepted.append((b, ls))
-                prev = b
-        bounds = [(ids[0], None), *accepted]
-        for i, (b, ls) in enumerate(bounds):
-            end = (bounds[i + 1][0] - 1) if i + 1 < len(bounds) else sc.block_to
-            first_votes = [v for v in votes if v[0] <= b <= v[1]]
-            src = ls or (first_votes[0][2] if first_votes else None)
-            ns = Scene(
-                b, end,
-                layer=(src.layer if src else sc.layer) if sc.layer is Layer.PRESENT else sc.layer,
-                story_time=(src.story_time if src else "") or sc.story_time,
-                place=(src.place if src else "") or sc.place,
-                cut_signal=(src.cut_signal if src else "") or sc.cut_signal,
-                from_graph=sc.from_graph and i == 0,
-            )
-            if i > 0:
-                report.note("scene_cut_found", "scene split by the director", f"block {b}: {ns.place or '?'}")
-            out.append(ns)
-    out.sort(key=lambda s: s.block_from)
+    for i, b in enumerate(keep):
+        end = (story[pos[keep[i + 1]] - 1]) if i + 1 < len(keep) else story[-1]
+        graph = next((sc for sc in base if sc.block_from <= b <= sc.block_to), base[0])
+        mark = next((m for m in marks if m.from_block == b), None) or next(
+            (m for m in sorted(marks, key=lambda m: m.from_block, reverse=True) if m.from_block <= b), None
+        )
+        sc = Scene(
+            b, end,
+            layer=graph.layer if graph.layer is not Layer.PRESENT else (mark.layer if mark else Layer.PRESENT),
+            story_time=(mark.story_time if mark else "") or graph.story_time,
+            place=(mark.place if mark else "") or graph.place,
+            cut_signal=(next((m.cut_signal for m in marks if m.from_block == b), "")) or graph.cut_signal,
+            from_graph=b in forced,
+        )
+        if b not in forced:
+            report.note("scene_cut_found", "scene split by the director's scene pass", f"block {b}: {sc.place or '?'}")
+        out.append(sc)
     return out
 
 
-def _presence_for_scenes(store: Store, inp: ChapterInput, scenes: list[Scene], raws: list[_Raw]) -> None:
-    votes = _scene_votes(raws)
-    story_text = {}
-    for sc in scenes:
-        story_text[id(sc)] = " ".join(inp.blocks[b] for b in inp.block_ids if sc.block_from <= b <= sc.block_to).lower()
-        if inp.presence_contract:
-            present, refd, _ = presence_for(store, inp.novel_id, inp.chapter, sc.block_from, sc.block_to, inp.lines, inp.roster)
-            sc.present_ids = _to_ids(present, inp.roster)
-            sc.referenced_ids = [i for i in _to_ids(refd, inp.roster) if i not in sc.present_ids]
-            continue
-        cover = [v for v in votes if v[0] <= sc.block_to and v[1] >= sc.block_from]
-        pres: Counter = Counter()
-        refc: Counter = Counter()
-        label: dict[str, str] = {}
-        for _s, _e, ls, _w in cover:
-            for n in ls.present:
-                eid = _entity_for(n, inp.roster, story_text[id(sc)], "extra", label)
-                if eid:
-                    pres[eid] += 1
-            for n in ls.referenced:
-                eid = _entity_for(n, inp.roster, story_text[id(sc)], "ref", label)
-                if eid:
-                    refc[eid] += 1
-        sc.present_ids = [e for e in pres if pres[e] > refc.get(e, 0)]
-        sc.referenced_ids = [e for e in set(refc) | set(pres) if e not in sc.present_ids]
-        inp.labels.update(label)
+def _mark_at(marks, b: int):  # type: ignore[no-untyped-def]
+    return next((m for m in sorted(marks, key=lambda m: m.from_block, reverse=True) if m.from_block <= b), None)
+
+
+def _differs(marks, prev: int, b: int) -> bool:  # type: ignore[no-untyped-def]
+    """A scene the model marked counts only if its place or story time differs from the scene before it. qwen3:8b on RI
+    ch1 marked 15 starts (one per ~5 blocks) with the same place string; real cuts change where or when."""
+    m, pm = _mark_at(marks, b), _mark_at(marks, prev)
+    if m is None or pm is None:
+        return True
+    norm = lambda t: re.sub(r"\b(the|a|an)\b|[^a-z0-9 ]", "", t.lower()).split()  # noqa: E731
+    return set(norm(m.place)) != set(norm(pm.place)) or set(norm(m.story_time)) != set(norm(pm.story_time)) or m.layer is not pm.layer
+
+
+def _scene_presence(store: Store, client, inp: ChapterInput, sc: Scene, report: Report) -> None:
+    """Who is in this scene and who is only talked about: the contract when it exists, else one model read of the raw text."""
+    if inp.presence_contract:
+        present, refd, _ = presence_for(store, inp.novel_id, inp.chapter, sc.block_from, sc.block_to, inp.lines, inp.roster)
+        sc.present_ids = _to_ids(present, inp.roster)
+        sc.referenced_ids = [i for i in _to_ids(refd, inp.roster) if i not in sc.present_ids]
+        return
+    text = " ".join(inp.blocks[b] for b in inp.block_ids if sc.block_from <= b <= sc.block_to).lower()
+    try:
+        res = _ask(client, inp, sbp.build_presence_prompt(inp, sc), LPresence, sbp.PRESENCE_SYSTEM, report)
+    except LLMError as exc:
+        report.llm_calls += 1
+        report.llm_failures += 1
+        report.note("llm_failure", "presence pass failed; fallback presence kept", f"{sc.block_from}-{sc.block_to}: {str(exc)[:100]}")
+        return
+    present: list[str] = []
+    refd: list[str] = []
+    for n in res.present:
+        eid = _entity_for(n, inp.roster, text, "extra", inp.labels)
+        if eid and eid not in present:
+            present.append(eid)
+    for n in res.referenced:
+        eid = _entity_for(n, inp.roster, text, "ref", inp.labels)
+        if eid and eid not in present and eid not in refd and not eid.startswith("crowd:"):
+            refd.append(eid)
+    sc.present_ids, sc.referenced_ids = present, refd
 
 
 def _to_ids(ids: list[str], roster: list[RosterEntry]) -> list[str]:
@@ -290,16 +326,35 @@ def _to_ids(ids: list[str], roster: list[RosterEntry]) -> list[str]:
 
 
 def _entity_for(name: str, roster: list[RosterEntry], scene_text: str, prefix: str, label: dict[str, str]) -> str | None:
+    name = name.strip()
     hit = match_entry(name, roster)
     if hit:
         return hit.entity_id
     toks = [t for t in re.findall(r"[a-z]{3,}", name.lower()) if t not in _CARD_STOP]
     # a name that appears nowhere in the scene's text is the model's invention, not a person the text mentions
-    if not toks or not any(t in scene_text for t in toks):
+    if not name or not toks or not any(t.rstrip("s") in scene_text for t in toks):
         return None
-    eid = f"{prefix}:{_slug(name)}"
+    group = name[0].islower()  # "elders", "besiegers": a crowd, never a named person
+    if group:
+        name = _clean_group(name)
+        if not name:
+            return None
+    eid = f"{'crowd' if group else prefix}:{_slug(name)}"
     label[eid] = name
     return eid
+
+
+_GROUP_LEAD = re.compile(r"^(the|a|an|some|many|several|over \d+|\d+)\s+|^(group|number|crowd|members?|rest) of\s+")
+
+
+def _clean_group(name: str) -> str:
+    """"the group of warlords" -> "warlords"; "major factions of justice" -> "major factions". The model's raw group labels
+    went straight into drawn cast names on RI ch1 ("a the group of warlord"), so a group keeps only its plural head."""
+    n = name.strip().lower()
+    for _ in range(3):
+        n = _GROUP_LEAD.sub("", n)
+    n = n.split(" of ")[0].strip()
+    return n if n and len(n.split()) <= 3 else ""
 
 
 def _segment_for(store: Store, inp: ChapterInput, sc: Scene, seg_id: str) -> Segment:
@@ -309,7 +364,10 @@ def _segment_for(store: Store, inp: ChapterInput, sc: Scene, seg_id: str) -> Seg
     def member(eid: str) -> CastMember:
         r = by_id.get(eid)
         if r is None:
-            return CastMember(entity_id=eid, name=labels.get(eid, eid.split(":", 1)[-1].replace("-", " ").title()))
+            return CastMember(
+                entity_id=eid, name=labels.get(eid, eid.split(":", 1)[-1].replace("-", " ").title()),
+                invented=eid.startswith("crowd:"),
+            )
         _d, look_id, _ok = look_for(store, inp.novel_id, r, inp.chapter, sc.block_from)
         return CastMember(entity_id=eid, name=r.name, look_id=look_id)
 
@@ -351,7 +409,7 @@ def _grounded(text: str, window_text: str, place: str, story_time: str) -> bool:
     return any(t in hay or t.rstrip("s") in hay for t in toks)
 
 
-def _resolve_cast(names: list[str], seg: Segment, inp: ChapterInput, store: Store) -> list[CastMember]:
+def _resolve_cast(names: list[str], seg: Segment, inp: ChapterInput, store: Store, *, crowd_ok: bool = False) -> list[CastMember]:
     out: list[CastMember] = []
     pool = [*seg.present_cast, *seg.referenced_cast]
     pool_roster = [RosterEntry(m.entity_id, m.name) for m in pool]
@@ -370,7 +428,18 @@ def _resolve_cast(names: list[str], seg: Segment, inp: ChapterInput, store: Stor
             out.append(CastMember(entity_id=r.entity_id, name=r.name, look_id=look_id))
             continue
         if n[0].islower() or n.lower().startswith(("a ", "an ", "the ")) or "crowd" in n.lower():
-            out.append(CastMember(entity_id=f"crowd:{_slug(n)}", name=n, invented=True))
+            stems = {t.rstrip("s") for t in re.findall(r"[a-z]{3,}", n.lower()) if t not in _CARD_STOP}
+            grp = next(
+                (m for m in seg.present_cast if m.entity_id.startswith("crowd:")
+                 and stems & {t.rstrip("s") for t in re.findall(r"[a-z]{3,}", m.name.lower())}), None,
+            )
+            if grp is not None:
+                out.append(grp)
+            elif crowd_ok:
+                out.append(CastMember(entity_id=f"crowd:{_slug(n)}", name=n, invented=True))
+            else:
+                # "a slight breeze", "tall buildings": scenery the model listed as people; flagged and removed by repair
+                out.append(CastMember(entity_id=f"unknown:{_slug(n)}", name=n))
         else:
             out.append(CastMember(entity_id=f"unknown:{_slug(n)}", name=n))
     uniq: dict[str, CastMember] = {}
@@ -416,33 +485,22 @@ def _convert(
                     if ln.block not in blocks:
                         blocks.append(ln.block)
                 else:
-                    text = ll.text.strip()
-                    # qwen3:8b on RI ch1 retyped the quoted lines into `text` and left `ref` empty (measured: 0 refs in a
-                    # 13-block window). Retyped source text is recovered to its line, never trusted as invented speech.
-                    rec = _recover_ref(text, lines_in_window(inp, b0, b1)) if ll.kind not in INVENTED_OK or len(text) > 40 else None
-                    if rec is not None and rec.id not in used:
-                        used.add(rec.id)
-                        report.conversion["ref_recovered_from_text"] += 1
-                        letters.append(
-                            Letter(kind=_fix_kind(rec, ll.kind, report), text=rec.text,
-                                   speaker_id=rec.speaker_id if rec.kind != "narration" else None, source_span_id=rec.span_id)
-                        )
-                        if rec.block not in blocks:
-                            blocks.append(rec.block)
-                        continue
-                    if rec is not None:
-                        report.conversion["line_used_twice"] += 1
-                        continue
-                    if ll.kind not in INVENTED_OK:
-                        report.conversion["invented_speech_dropped"] += 1
-                        continue
-                    if not text or len(text.split()) > 6:
-                        report.conversion["invented_letter_malformed"] += 1
-                        continue
-                    if ll.kind in (LetterKind.TIME_PLACE, LetterKind.NAME_CARD) and not _grounded(text, win_text, "", ""):
-                        report.conversion["card_not_grounded"] += 1
-                        continue
-                    letters.append(Letter(kind=ll.kind, text=text))
+                    report.conversion["letter_without_ref"] += 1
+            for raw in lp.sfx:
+                word = raw.strip()
+                if word and len(word.split()) <= 3 and _SFX_OK.match(word):
+                    letters.append(Letter(kind=LetterKind.SFX, text=word.upper()))
+                elif word:
+                    report.conversion["sfx_malformed"] += 1
+            card = lp.card.strip()
+            if card:
+                if len(card.split()) > 6:
+                    report.conversion["card_malformed"] += 1
+                elif not _grounded(card, win_text, "", ""):
+                    report.conversion["card_not_grounded"] += 1
+                else:
+                    kind = LetterKind.TIME_PLACE if lp.purpose in (Purpose.TIME_PLACE_CARD, Purpose.TRANSITION) else LetterKind.NAME_CARD
+                    letters.append(Letter(kind=kind, text=card))
             pending.append((lp, sorted(set(blocks)), letters))
 
         # scene for each panel: by first source block; sourceless cut panels go with the scene that follows
@@ -460,7 +518,7 @@ def _convert(
                 scene_of[i] = scene_of[i - 1] if i and scene_of[i - 1] is not None else _seg_index(segments, b0)
         for (lp, blocks, letters), si in zip(pending, scene_of, strict=True):
             seg = segments[si if si is not None else 0]
-            cast = _resolve_cast(lp.cast, seg, inp, store)
+            cast = _resolve_cast(lp.cast, seg, inp, store, crowd_ok=lp.purpose is Purpose.CROWD_INDIVIDUAL)
             if not cast:
                 # the same model left `cast` empty while naming people in `visual`: a name in the picture text means the
                 # person is in the picture
@@ -487,23 +545,6 @@ def lines_in_window(inp: ChapterInput, b0: int, b1: int) -> list[Line]:
     return [ln for ln in inp.lines if b0 <= ln.block <= b1]
 
 
-def _norm_text(t: str) -> str:
-    return re.sub(r"[^a-z0-9]+", " ", t.lower()).strip()
-
-
-def _recover_ref(text: str, lines: list[Line]) -> Line | None:
-    """The source line a model retyped (or abbreviated), by normalised containment of its first 40 characters."""
-    n = _norm_text(text)
-    if len(n) < 12:
-        return None
-    head = n[:40]
-    for ln in lines:
-        ln_n = _norm_text(ln.text)
-        if head in ln_n or (len(ln_n) >= 12 and ln_n[:40] in n):
-            return ln
-    return None
-
-
 def _seg_index(segments: list[Segment], block: int) -> int:
     for i, s in enumerate(segments):
         if s.block_from <= block <= s.block_to:
@@ -519,24 +560,23 @@ def _seg_index(segments: list[Segment], block: int) -> int:
 def build_storyboard(store: Store, client, novel_id: str, chapter: float, *, say=print) -> tuple[Storyboard, Report, ChapterInput]:
     inp = load_chapter(store, novel_id, chapter)
     report = Report()
+    scenes = _detect_scenes(client, inp, report)
+    for sc in scenes:
+        _scene_presence(store, client, inp, sc, report)
+    say(f"  {len(scenes)} scenes: " + ", ".join(f"b{sc.block_from}-{sc.block_to}" for sc in scenes))
     raws: list[_Raw] = []
-    carry, n_panels, first = "", 0, True
-    for sc in inp.scenes:
-        for rng in windows(inp, sc):
+    carry, n_panels = "", 0
+    for si, sc in enumerate(scenes):
+        for wi, rng in enumerate(windows(inp, sc)):
             t0 = time.perf_counter()
-            plan = _call_window(client, inp, sc, rng, carry, first, report)
+            plan = _plan_range(client, inp, sc, rng, carry, not raws, si > 0 and wi == 0, report)
             say(f"  window b{rng[0]}-{rng[1]}: {len(plan.panels)} panels ({time.perf_counter() - t0:.0f}s)")
-            cut_ok = {c.ref for c in plan.cut_lines if c.reason.strip()}
-            raws.append(_Raw(len(raws), rng, sc, plan, cut_ok))
+            raws.append(_Raw(len(raws), rng, sc, plan, {c.ref for c in plan.cut_lines if c.reason.strip()}))
             n_panels += len(plan.panels)
             carry = _carry(plan, n_panels)
-            first = False
 
-    scenes = _final_scenes(inp, raws, report)
-    _presence_for_scenes(store, inp, scenes, raws)
     segments = [_segment_for(store, inp, sc, f"{novel_id}:{chapter:g}:seg{i}") for i, sc in enumerate(scenes)]
     wps, cut_ok = _convert(store, inp, raws, segments, report)
-    # a sub-scene's first source block may sit in a window that began earlier: sourceless cut panels already follow it
 
     report.before = audit(wps, segments, inp, cut_ok)
     wps = repair(wps, segments, inp, cut_ok, report)
