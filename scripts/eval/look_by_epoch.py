@@ -72,7 +72,8 @@ def main() -> None:
             "name": store.get_self(eid).canonical_label, "names": names, "present_blocks": present,
             "looks": [lk_.model_dump() for lk_ in looks],
         }
-        for w in lk._cut_windows(chap.blocks, present):
+        cuts, _src = lk.scene_cut_blocks(store, novel_id, chapter, chap.blocks)
+        for w in lk._windows(chap.blocks, cuts, present):
             if w.present:
                 present_by_window.setdefault((w.first, w.last), []).append(eid)
     before = {e: before_lock(store, novel_id, e, chapter, manhua) for e in per_look}
