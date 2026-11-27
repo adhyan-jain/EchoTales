@@ -1,0 +1,38 @@
+{
+  "ri:all_detected": {
+    "entities": 3,
+    "pairs": 3,
+    "before_distinct": 2,
+    "after_distinct": 3
+  },
+  "ri:min0_blocks": {
+    "entities": 3,
+    "pairs": 3,
+    "before_distinct": 2,
+    "after_distinct": 3
+  },
+  "lotm:all_detected": {
+    "entities": 22,
+    "pairs": 127,
+    "before_distinct": 97,
+    "after_distinct": 127
+  },
+  "lotm:min3_blocks": {
+    "entities": 3,
+    "pairs": 5,
+    "before_distinct": 5,
+    "after_distinct": 5
+  },
+  "pnp:all_detected": {
+    "entities": 3,
+    "pairs": 3,
+    "before_distinct": 3,
+    "after_distinct": 3
+  },
+  "pnp:min0_blocks": {
+    "entities": 3,
+    "pairs": 3,
+    "before_distinct": 3,
+    "after_distinct": 3
+  }
+}

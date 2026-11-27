@@ -35,6 +35,7 @@ the persona's Big Five and register decide, damped by scene tension, so a ruthle
 from __future__ import annotations
 
 import logging
+import os
 import re
 from dataclasses import dataclass, field
 from enum import StrEnum
@@ -1134,6 +1135,24 @@ def character_brief(
         name=entity.canonical_label, manhua=genre_direction(novel_id)[2], scene=scene,
         genre={k: v for k, v in appearance.items() if k in ("hair_color", "eye_color") and v and not graph_facts.get(k)},
     )
+    # Look-by-epoch (`persona/looks.py`): what the text says this person looks like at THIS story time, with every gap filled
+    # per person. The lock above gave every character the same genre-default sentence (RI v57: three people, one topknot) and
+    # one set of robes for the whole chapter. An approved reference sheet is the approved description and still wins.
+    if locked.source.get("hair") != "sheet" and os.environ.get("ECHOTALES_LOOK_BY_EPOCH", "1") != "0":
+        from echotales.pipeline.persona import looks as _looks
+
+        at = _looks.position_to_block(store, novel_id, position)
+        if at is not None:
+            look = _looks.look_at(
+                store, novel_id, self_id, chapter=at[0], block=at[1], client=getattr(scene, "client", None),
+            )
+            locked = _looks.locked_from_look(look, locked.persona_id)
+            if look.fact("age_band") is not None and not look.fact("age_band").invented:  # type: ignore[union-attr]
+                age = _looks.COMPILER_BAND.get(look.age_band, age)
+                years = years if body_is_young(age, years) else 0
+            if final_gender not in ("male", "female") and look.gender:
+                final_gender = look.gender
+            condition = look.condition or ""
     return CharacterBrief(
         name=entity.canonical_label, gender=final_gender,
         age_band=age, age_years=years, appearance=appearance, attire=attire, condition=condition,
