@@ -98,7 +98,7 @@ def contrast_df(other_dbs: Sequence[str], per_novel: int = 40) -> tuple[Counter[
 
 
 def candidates(
-    store: Store, novel_id: str, other_dbs: Sequence[str] = (), *, max_chapters: int = 150, top: int = 80,
+    store: Store, novel_id: str, other_dbs: Sequence[str] = (), *, max_chapters: int = 150, top: int = 150,
 ) -> list[dict[str, Any]]:
     """Recurring noun phrases ranked by spread across chapters times rarity elsewhere."""
     import spacy
@@ -120,6 +120,10 @@ def candidates(
                 continue
             counts[phrase] += 1
             chapters_of[phrase].add(number)
+    # "gu masters" and "gu master" are one term: fold a plural into its singular when both occur (RI top-80 held both).
+    for phrase in [p for p in counts if p.endswith("s") and p[:-1] in counts]:
+        counts[phrase[:-1]] += counts.pop(phrase)
+        chapters_of[phrase[:-1]] |= chapters_of.pop(phrase)
     other_df, other_docs = contrast_df(other_dbs) if other_dbs else (Counter(), 0)
     n_docs = max(len(texts), 1)
     floor = max(5, int(0.03 * n_docs))
