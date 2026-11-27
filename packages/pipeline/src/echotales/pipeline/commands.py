@@ -1554,6 +1554,39 @@ def cmd_reader(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_knowledge(args: argparse.Namespace) -> int:
+    """`knowledge build`: dossiers (model, GPU), glossary (model), briefs (deterministic, spaCy)."""
+    from echotales.pipeline.knowledge.common import parse_range
+
+    store = _open_store(args)
+    stages = {s.strip() for s in args.stages.split(",") if s.strip()}
+    chapters = parse_range(getattr(args, "chapters", None), store.chapter_numbers(args.novel))
+    client = None
+    if stages & {"dossier", "glossary"}:
+        client = _build_client(store)
+        if client is None:
+            print("error: the knowledge build needs a model backend (set ECHOTALES_MODEL_BACKEND=ollama).", file=sys.stderr)
+            return 2
+    if "dossier" in stages:
+        from echotales.pipeline.knowledge import build_dossiers
+
+        r = build_dossiers(store, client, args.novel, chapters, only_entities=args.only_entities)
+        print(f"dossier: {r.chapters} chapters ({r.skipped} already done), {r.accepted} facts accepted of {r.proposed} proposed, "
+              f"rejected {r.rejected_quote} quote, {r.rejected_subject} subject, {r.rejected_not_present} not present; {r.seconds:.0f}s")
+    if "glossary" in stages:
+        from echotales.pipeline.knowledge import build_glossary
+
+        g = build_glossary(store, client, args.novel, args.contrast_db)
+        print(f"glossary: {len(g['terms'])} terms")
+    if "brief" in stages:
+        from echotales.pipeline.knowledge import build_briefs
+
+        wanted = parse_range(getattr(args, "brief_chapters", None) or getattr(args, "chapters", None), store.chapter_numbers(args.novel))
+        build_briefs(store, args.novel, wanted)
+    store.close()
+    return 0
+
+
 def render_panels_directed(  # type: ignore[no-untyped-def]
     novel_id: str,
     store,
@@ -2149,6 +2182,7 @@ _DISPATCH = {
     "run": cmd_run,
     "appearance": cmd_appearance,
     "reader": cmd_reader,
+    "knowledge": cmd_knowledge,
     "persona": cmd_persona,
     "voice": cmd_voice,
     "render": cmd_render,

@@ -738,6 +738,16 @@ def build_parser() -> argparse.ArgumentParser:
         "emotions on a book already read without re-running speaker attribution",
     )
 
+    p_know = sub.add_parser("knowledge", help="per-novel knowledge base: character dossiers, world glossary, chapter briefs")
+    k_sub = p_know.add_subparsers(dest="knowledge_command", required=True)
+    k_build = k_sub.add_parser("build", help="build (resumable; chapters already done for this model are skipped)")
+    k_build.add_argument("--novel", required=True)
+    k_build.add_argument("--chapters", help="range for the dossier map, e.g. 1-5 or 1,4,7-9; default: all")
+    k_build.add_argument("--only-entities", nargs="+", help="entity ids or label fragments; limits the dossier map to them")
+    k_build.add_argument("--stages", default="dossier,glossary,brief", help="comma-separated subset of dossier,glossary,brief")
+    k_build.add_argument("--brief-chapters", help="range for briefs (default: --chapters)")
+    k_build.add_argument("--contrast-db", nargs="*", default=[], help="other novels' databases: a term rare there is world-specific")
+
     p_persona = sub.add_parser("persona", help="persona-level operations")
     pe_sub = p_persona.add_subparsers(dest="persona_command", required=True)
     pe_gender = pe_sub.add_parser(

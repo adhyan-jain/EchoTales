@@ -1718,6 +1718,19 @@ class Store:
             for r in cur
         ]
 
+    def set_attribute_interval(self, attr_id: int, interval: FuzzyInterval) -> None:
+        """Replace one attribute row's story interval (a later, different value closes it; a re-sighting extends it).
+
+        `add_attribute` is insert-only, so the knowledge-base reducer (pipeline/knowledge/dossier.py) had no way to end
+        "black hair" when "grey hair" arrives out of reading order: chapters are built in any order (targeted run first,
+        sweep second), and the chain of intervals per key can only be fixed after the fact. Closing is an interval end,
+        not a retraction (non-negotiable 5): the row stays true of its own period."""
+        lb, ub, tlb, tub = _interval_cols(interval)
+        self.conn.execute(
+            "UPDATE attribute SET story_from_lb=?, story_from_ub=?, story_to_lb=?, story_to_ub=? WHERE id=?",
+            (lb, ub, tlb, tub, attr_id),
+        )
+
     def retract_attribute(self, attr_id: int, at: DiscoursePosition) -> None:
         """The attribute was never true (e.g. deceptive claim unmasked)."""
         self.conn.execute(
