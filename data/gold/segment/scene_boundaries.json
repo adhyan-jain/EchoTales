@@ -1,5 +1,5 @@
 {
- "_note": "SILVER gold: scene boundaries drafted by reading the text (Claude, 2026-11-27), not human-verified. cut = index of the first block of the new scene; ambiguous = a defensible cut that is neither rewarded nor penalised. Anchors are the first <=5 words of the block; source texts are not stored. Pride and Prejudice is public domain. RI chapter 1 is OWNER gold (data/gold/segment/ri_ch1_owner.json, 2026-11-28): cuts at 31 and 79 only.",
+ "_note": "SILVER gold: scene boundaries drafted by reading the text (Claude, 2026-11-27), not human-verified. cut = index of the first block of the new scene; ambiguous = a defensible cut that is neither rewarded nor penalised. Anchors are the first <=5 words of the block; source texts are not stored. Pride and Prejudice is public domain. RI chapter 1 is OWNER gold (data/gold/segment/ri_ch1_owner.json, 2026-11-28): cuts at 31 and 79 only. A Study in Scarlet (Gutenberg) added 2026-11-28: all 14 chapters read in full; learned on chapters 1-7 (learn_max), held-out 8-14 (Part II, a different place and time).",
  "novels": {
   "reverend-insanity": {
    "1": {
@@ -741,6 +741,372 @@
      25
     ],
     "n_blocks": 36
+   },
+   "10": {
+    "cuts": [],
+    "ambiguous": [],
+    "negatives": [
+     {
+      "block": 67,
+      "anchor": "She then ran gaily off,"
+     }
+    ],
+    "n_blocks": 68,
+    "coverage": "candidates"
+   },
+   "13": {
+    "cuts": [],
+    "ambiguous": [],
+    "negatives": [
+     {
+      "block": 12,
+      "anchor": "“Hunsford, near Westerham, Kent, 15th"
+     }
+    ],
+    "n_blocks": 30,
+    "coverage": "candidates"
+   },
+   "15": {
+    "cuts": [
+     {
+      "block": 10,
+      "anchor": "Mrs. Philips was always glad",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "SAME"
+     }
+    ],
+    "ambiguous": [],
+    "negatives": [],
+    "n_blocks": 13,
+    "coverage": "candidates"
+   },
+   "20": {
+    "cuts": [],
+    "ambiguous": [],
+    "negatives": [
+     {
+      "block": 26,
+      "anchor": "While the family were in"
+     }
+    ],
+    "n_blocks": 36,
+    "coverage": "candidates"
+   },
+   "23": {
+    "cuts": [
+     {
+      "block": 14,
+      "anchor": "Mr. Collins returned most punctually",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "LATER"
+     }
+    ],
+    "ambiguous": [],
+    "negatives": [],
+    "n_blocks": 26,
+    "coverage": "candidates"
+   }
+  },
+  "a-study-in-scarlet": {
+   "1": {
+    "cuts": [
+     {
+      "block": 33,
+      "anchor": "This was a lofty chamber,",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "LATER"
+     }
+    ],
+    "ambiguous": [
+     4,
+     23,
+     63
+    ],
+    "negatives": [],
+    "n_blocks": 69,
+    "coverage": "full"
+   },
+   "2": {
+    "cuts": [
+     {
+      "block": 17,
+      "anchor": "It was upon the 4th",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "LATER"
+     }
+    ],
+    "ambiguous": [
+     16
+    ],
+    "negatives": [
+     {
+      "block": 41,
+      "anchor": "“I wonder what that fellow"
+     }
+    ],
+    "n_blocks": 51,
+    "coverage": "full"
+   },
+   "3": {
+    "cuts": [
+     {
+      "block": 26,
+      "anchor": "It was a foggy, cloudy",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "LATER"
+     },
+     {
+      "block": 31,
+      "anchor": "Number 3, Lauriston Gardens wore",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "LATER"
+     }
+    ],
+    "ambiguous": [
+     43,
+     44
+    ],
+    "negatives": [
+     {
+      "block": 11,
+      "anchor": "This is the letter which"
+     },
+     {
+      "block": 83,
+      "anchor": "I have remarked that the"
+     }
+    ],
+    "n_blocks": 101,
+    "coverage": "full"
+   },
+   "4": {
+    "cuts": [
+     {
+      "block": 18,
+      "anchor": "This conversation had occurred while",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "LATER"
+     }
+    ],
+    "ambiguous": [
+     19,
+     52,
+     56
+    ],
+    "negatives": [],
+    "n_blocks": 57,
+    "coverage": "full"
+   },
+   "5": {
+    "cuts": [
+     {
+      "block": 2,
+      "anchor": "He was very late in",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "LATER"
+     }
+    ],
+    "ambiguous": [
+     24,
+     47
+    ],
+    "negatives": [
+     {
+      "block": 32,
+      "anchor": "As he spoke there was"
+     }
+    ],
+    "n_blocks": 54,
+    "coverage": "full"
+   },
+   "6": {
+    "cuts": [],
+    "ambiguous": [
+     40,
+     42
+    ],
+    "negatives": [
+     {
+      "block": 18,
+      "anchor": "There was a violent peal"
+     },
+     {
+      "block": 85,
+      "anchor": "It was indeed Lestrade, who"
+     }
+    ],
+    "n_blocks": 88,
+    "coverage": "full"
+   },
+   "7": {
+    "cuts": [],
+    "ambiguous": [
+     32
+    ],
+    "negatives": [
+     {
+      "block": 8,
+      "anchor": "“So it proved. I spent"
+     },
+     {
+      "block": 48,
+      "anchor": "“Please, sir,” he said, touching"
+     }
+    ],
+    "n_blocks": 58,
+    "coverage": "full"
+   },
+   "8": {
+    "cuts": [
+     {
+      "block": 39,
+      "anchor": "At the head of the",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "LATER"
+     }
+    ],
+    "ambiguous": [
+     5,
+     37
+    ],
+    "negatives": [],
+    "n_blocks": 68,
+    "coverage": "full"
+   },
+   "9": {
+    "cuts": [
+     {
+      "block": 7,
+      "anchor": "It was a warm June",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "LATER"
+     },
+     {
+      "block": 22,
+      "anchor": "It was a summer evening",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "LATER"
+     }
+    ],
+    "ambiguous": [
+     21
+    ],
+    "negatives": [],
+    "n_blocks": 31,
+    "coverage": "full"
+   },
+   "10": {
+    "cuts": [
+     {
+      "block": 5,
+      "anchor": "One fine morning, John Ferrier",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "LATER"
+     }
+    ],
+    "ambiguous": [
+     23
+    ],
+    "negatives": [
+     {
+      "block": 17,
+      "anchor": "[1] Heber C. Kemball, in"
+     }
+    ],
+    "n_blocks": 38,
+    "coverage": "full"
+   },
+   "11": {
+    "cuts": [
+     {
+      "block": 28,
+      "anchor": "He was sitting alone one",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "LATER"
+     },
+     {
+      "block": 54,
+      "anchor": "Once on the high road",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "SAME"
+     }
+    ],
+    "ambiguous": [
+     21,
+     26,
+     46
+    ],
+    "negatives": [
+     {
+      "block": 42,
+      "anchor": "While Ferrier was absent, preparing"
+     }
+    ],
+    "n_blocks": 64,
+    "coverage": "full"
+   },
+   "12": {
+    "cuts": [
+     {
+      "block": 4,
+      "anchor": "He walked for a couple",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "SAME"
+     },
+     {
+      "block": 12,
+      "anchor": "For five days he toiled",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "LATER"
+     },
+     {
+      "block": 25,
+      "anchor": "The prediction of the Mormon",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "LATER"
+     }
+    ],
+    "ambiguous": [
+     3,
+     13,
+     26
+    ],
+    "negatives": [],
+    "n_blocks": 31,
+    "coverage": "full"
+   },
+   "13": {
+    "cuts": [],
+    "ambiguous": [
+     6,
+     15,
+     21
+    ],
+    "negatives": [
+     {
+      "block": 27,
+      "anchor": "“At last, one evening I"
+     },
+     {
+      "block": 34,
+      "anchor": "“It was nearer one than"
+     },
+     {
+      "block": 47,
+      "anchor": "“He cowered away with wild"
+     }
+    ],
+    "n_blocks": 56,
+    "coverage": "full"
+   },
+   "14": {
+    "cuts": [],
+    "ambiguous": [
+     21
+    ],
+    "negatives": [],
+    "n_blocks": 26,
+    "coverage": "full"
    }
   }
  },
@@ -748,6 +1114,10 @@
   "reverend-insanity": "data/scratch/segment/reverend-insanity.db",
   "lord-of-the-mysteries": "data/scratch/segment/lord-of-the-mysteries.db",
   "omniscient-readers-viewpoint": "data/scratch/segment/omniscient-readers-viewpoint.db",
-  "pride-and-prejudice": "data/scratch/segment/pp.db"
+  "pride-and-prejudice": "data/scratch/segment/pp.db",
+  "a-study-in-scarlet": "data/scratch/segment/a-study-in-scarlet.db"
+ },
+ "learn_max": {
+  "a-study-in-scarlet": 7
  }
 }

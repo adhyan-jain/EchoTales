@@ -94,6 +94,9 @@ def segment_novel(
                 nlp=scene_ctx["nlp"],
                 topic=scene_ctx["topic"],
                 max_implicit=scene_cuts.max_implicit_per_chapter,
+                method=scene_cuts.method,
+                embedder=scene_cuts.embedder,
+                place_params=scene_cuts.place_params,
             )
             segments = apply_cuts_to_segments(chapter, segments, analysis)
             save_scene_cuts(store, novel_id, analysis)

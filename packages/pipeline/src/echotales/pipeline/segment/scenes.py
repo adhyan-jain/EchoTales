@@ -26,6 +26,7 @@ from echotales.pipeline.segment.discontinuity import (
 from echotales.pipeline.segment.implicit import propose_implicit_cuts, resolve_story_order
 from echotales.pipeline.segment.induce import ConventionSet, find_induced_cuts
 from echotales.pipeline.segment.llm_segment import LLMScene, cut_type_for, segment_chapter_llm
+from echotales.pipeline.segment.place_tags import PlaceCutParams, scenes_from_tags, tag_chapter
 
 _ARTIFACT_PREFIX = "scene_cuts"
 
@@ -41,8 +42,11 @@ class SceneCutConfig:
     #: Small local model for the implicit-cut and story-order passes. None means conventions only.
     llm: Any | None = None
     max_implicit_per_chapter: int = 4
-    #: "whole_chapter" (v2: the model lists the chapter's scenes) or "per_boundary" (v1 judge, kept for ablation).
-    method: str = "whole_chapter"
+    #: "place_tags" (v2.1: the model tags each block with place and time, code decides the cuts),
+    #: "whole_chapter" (v2: the model lists the chapter's scenes; over-segments) or "per_boundary" (v1 judge).
+    method: str = "place_tags"
+    #: Tuned thresholds for "place_tags" (see place_tags.PlaceCutParams); None means the defaults.
+    place_params: Any | None = None
     #: Embedding model for the topic feature; None keeps TF-IDF.
     embedder: Any | None = None
 
@@ -124,8 +128,9 @@ def analyse_chapter_scenes(
     nlp: Any | None = None,
     topic: TopicModel | None = None,
     max_implicit: int = 4,
-    method: str = "whole_chapter",
+    method: str = "place_tags",
     embedder: Any | None = None,
+    place_params: Any | None = None,
     llm_scenes: list[LLMScene] | None = None,
     accept_score: float | None = None,
 ) -> SceneAnalysis:
@@ -142,7 +147,18 @@ def analyse_chapter_scenes(
             else:
                 weak.add(c.block)
     prior: set[int] = set()
-    if method == "whole_chapter" and (llm is not None or llm_scenes is not None):
+    if method == "place_tags" and (llm is not None or llm_scenes is not None):
+        scenes = llm_scenes
+        if scenes is None:
+            scenes = scenes_from_tags(chapter, tag_chapter(chapter, llm), place_params or PlaceCutParams(), embedder)
+        have = {c.block for c in cuts}
+        # The place/time rule already chose the cuts; the discontinuity score is recorded, not used as a veto.
+        cuts += [c for c in combine_llm_cuts(chapter, scenes, boundaries, accept_score=-1.0) if c.block not in have]
+        cuts.sort(key=lambda c: c.block)
+        prior = prior_loops_from_scenes(chapter, cuts, scenes)
+        if llm is not None and len(scenes) > 1 and (len(chapter.blocks) > 60 or not prior):
+            prior |= resolve_story_order(chapter, cuts, llm, nlp=nlp)
+    elif method == "whole_chapter" and (llm is not None or llm_scenes is not None):
         scenes = llm_scenes if llm_scenes is not None else segment_chapter_llm(chapter, llm)
         thr = accept_score if accept_score is not None else (conventions.candidate_threshold if conventions else 0.0)
         have = {c.block for c in cuts}
