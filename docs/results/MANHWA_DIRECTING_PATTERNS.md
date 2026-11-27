@@ -13,18 +13,25 @@ Images and long quotes are never committed. Quotes below are a few words at most
 
 | # | Slices | Layer | What the adapter did |
 |---|---|---|---|
-| S1 | 1-5 | present | **Cold open.** A title card, then a 4-slice brush-SFX spread of the crowd shouting the hero's name, before any narration. Crimson and magenta. |
-| S2 | 6-37 | present | **Cliff siege.** The anonymous besiegers become five or more individual accusers, each with their own close-up and grudge line. A tall full-body hero shot. Inserts: a blood drop ("Splot"), whipping hair, an extreme close-up of an eye. Diagonal panel cuts and black gutters. A time-skip box ("6 HOURS PASS") over an overhead shot of the encirclement. The poem lines sit as soft round balloons on a pale wash. |
+| S1 | 1-5 | past (prior loop) | **Cold open.** A title card, then a 4-slice brush-SFX spread of the crowd shouting the hero's name, before any narration. Crimson and magenta. |
+| S2 | 6-37 | past (prior loop) | **Cliff siege.** The anonymous besiegers become five or more individual accusers, each with their own close-up and grudge line. A tall full-body hero shot. Inserts: a blood drop ("Splot"), whipping hair, an extreme close-up of an eye. Diagonal panel cuts and black gutters. A time-skip box ("6 HOURS PASS") over an overhead shot of the encirclement. The poem lines sit as soft round balloons on a pale wash. |
 | S3 | 38-70 | memory | **Reminiscence montage.** Glowing gold-ring captions over past-life imagery: a scholar on Earth, a grave, falling leaves, under water, past selves. A gold and deep-blue palette. The imagery comes from volume knowledge that is not in ch1's text. |
-| S4 | 71-89 | present | **Defiance and self-detonation.** A fist insert, a giant red "HA HA HA" SFX, spiky shout balloons, crowd reactions. Then a full-height explosion SFX whose light streak falls onto a night mountain village. **The scene cut is carried by a graphic match, not a caption.** |
-| S5 | 90-157 | past | **Rain-night ritual.** Exterior establishing shot with rain SFX ("tak tak"), a lantern insert, the clan head praying, the elders kneeling in rows in white, an altar wide shot, a kowtow ("THUD"). In the elders' talk, talking heads alternate with chatter SFX. **Characters who are only talked about appear as inset "imagined" panels with a glow treatment, never standing in the room.** The clan head's thoughts are in rectangular narration boxes. Exit: the elders leave in the rain, seen from high; the clan head at a round window. |
-| S6 | 158-179 | present (past timeline) | **Reveal.** A village wide shot with a thunder SFX, then a burst caption naming the village. Young Fang Yuan, black hair and blue robe, at a window in the rain. Rectangular boxes explain the artefact. Inserts: an open palm in the rain, a clenched fist ("THUD"), a closing eye. It ends on a thunder SFX. |
+| S4 | 71-89 | past (prior loop) | **Defiance and self-detonation.** A fist insert, a giant red "HA HA HA" SFX, spiky shout balloons, crowd reactions. Then a full-height explosion SFX whose light streak falls onto a night mountain village. **The scene cut is carried by a graphic match, not a caption.** |
+| S5 | 90-157 | present (main timeline, 500 years before the cliff) | **Rain-night ritual.** Exterior establishing shot with rain SFX ("tak tak"), a lantern insert, the clan head praying, the elders kneeling in rows in white, an altar wide shot, a kowtow ("THUD"). In the elders' talk, talking heads alternate with chatter SFX. **Characters who are only talked about appear as inset "imagined" panels with a glow treatment, never standing in the room.** The clan head's thoughts are in rectangular narration boxes. Exit: the elders leave in the rain, seen from high; the clan head at a round window. |
+| S6 | 158-179 | present (main timeline) | **Reveal.** A village wide shot with a thunder SFX, then a burst caption naming the village. Young Fang Yuan, black hair and blue robe, at a window in the rain. Rectangular boxes explain the artefact. Inserts: an open palm in the rain, a clenched fist ("THUD"), a closing eye. It ends on a thunder SFX. |
 
 Text facts our v57 got wrong, though ch1 states each one:
 - The clan head is "middle-aged" (block 37).
 - The elders kneel "in loose white ceremonial garments" (block 39).
 - Reborn Fang Yuan has "young and soft, pale palms" (block 83).
-- Blocks 31 and 80 are unmarked scene cuts.
+- Blocks 31 and 79 are unmarked scene cuts. Block 79 ("At the very same moment, a pair of clear eyes...") is a match cut from the clan head's window to Fang Yuan's. The eyes are his, and block 80 names him.
+
+Owner reading (2026-11-28; gold in `data/gold/segment/ri_ch1_owner.json`):
+- The cliff is the prior loop.
+- The ritual and the window are the main timeline.
+- Only the clan head and the elders are at the ritual.
+- Bai Ning Bing, the young genius from Fang Zhi's side, Fang Yuan and Fang Zhi are only talked about there. Bai Ning Bing has no lines.
+- The manhua's adapters could draw these mentioned people well because they knew every volume. We must direct with whole-novel knowledge too: looks at each story time, future significance, and genre institutions learned from the novel, not ruled.
 
 ## 2. LotNB ch1: same grammar, different conventions
 
@@ -71,6 +78,10 @@ These hold for both adapters. Each work chooses its own **look** for each item, 
 | Referenced-character insets | 2 or more | 0 | storyboard |
 | Panel shapes used | 5 or more (wide, tall, diagonal, inset, bleed) | 1 (3:4) | composer |
 | Art quality and consistency (rated by Opus side by side) | professional | below | side-by-side sheet, honest verdict |
+| Scenes and presence match the owner gold (`ri_ch1_owner.json`) | 3 scenes, exact cast | 0 of 3 | storyboard segments and cast vs gold |
+| Referenced people drawn with their whole-novel dossier look | yes (Bai Ning Bing silhouette) | no | inset cast look_id has quote-verified facts from any chapter |
+| Withheld reveal kept (clear eyes before the name) | yes | no | storyboard: eye extreme close-up before the Fang Yuan reveal |
+| Foreshadowing or curiosity beat from future knowledge | yes | no | storyboard panel citing the future brief |
 | Speaker attribution on hand-checked lines | n/a (human) | about 95% on silver | reader eval |
 
 Faithfulness rule: invented panels may add texture (faces, inserts, reactions, the look of a memory) but never plot facts. Every invented panel is flagged with a reason.
