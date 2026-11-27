@@ -1,0 +1,65 @@
+{
+  "source": "owner, 2026-11-28 (described in chat; block indices mapped by Opus against the RI ch1 block dump)",
+  "status": "owner gold",
+  "novel_id": "reverend-insanity",
+  "chapter": 1.0,
+  "block_indexing": "0-based block index within the chapter, as stored in chapter.blocks_json",
+  "scenes": [
+    {
+      "scene": 1,
+      "block_from": 0,
+      "block_to": 30,
+      "anchor": "Fang Yuan, quietly hand over",
+      "layer": "past",
+      "time_relation": "prior loop: the life that ends here; the rest of the chapter is 500 years earlier",
+      "place": "a cliff, surrounded by the righteous factions",
+      "present": ["Fang Yuan", "the besieging crowd (anonymous; may be individualised)"],
+      "referenced_only": [],
+      "beats": [
+        "Fang Yuan cornered, all bloody, a pool of blood beneath him",
+        "the crowd is eager to kill him but wary of his last attack",
+        "he uses the Spring Autumn Cicada and self-detonates (block 29); block 30 is a pause line"
+      ]
+    },
+    {
+      "scene": 2,
+      "block_from": 31,
+      "block_to": 78,
+      "anchor": "The spring rain quietly rained",
+      "cut_type": "unmarked place and time cut (prior-loop death to the reborn timeline's present)",
+      "layer": "present",
+      "time_relation": "main timeline; UNKNOWN until block 80 reveals it is 500 years before scene 1",
+      "place": "Gu Yue Village on Qing Mao Mountain: ancestral temple at night in spring rain, then the clan head's garret",
+      "present": ["Gu Yue clan head (old per owner; text block 37 area says middle-aged)", "the clan elders (over 10, loose white ceremonial garments, block 39)"],
+      "referenced_only": ["Bai Ning Bing (rival Bai clan talent)", "Fang Zhi's side's young genius", "Fang Yuan (talked about, block 67)", "Fang Zhi"],
+      "beats": [
+        "establishing: rain on the mountain village lights",
+        "clan head prays to the ancestors' tablets, elders kneel behind (blocks 37-40)",
+        "elders discuss rival talents, Bai Ning Bing above all, and a young genius on their own side (blocks 49-67)",
+        "elders disperse (block 72); the clan head walks to his garret window and looks out over the village lights (blocks 73-78)"
+      ],
+      "creative_licence": "owner: Bai Ning Bing may appear as a dramatic white-clad imagined inset during the talent discussion, using his look from whole-novel extraction at this story time"
+    },
+    {
+      "scene": 3,
+      "block_from": 79,
+      "block_to": 89,
+      "anchor": "At the very same moment",
+      "cut_type": "match cut: the clan head's window to Fang Yuan's window, both looking at the same lights",
+      "layer": "present",
+      "time_relation": "same moment as the end of scene 2",
+      "place": "Fang Yuan's room, at the window in the rain",
+      "present": ["Fang Yuan (reborn, young; block 83 young soft pale palms)"],
+      "referenced_only": [],
+      "beats": [
+        "block 79 withholds identity: 'a pair of clear eyes'; the panel should withhold it too (eyes close-up), the reveal follows in block 80",
+        "Fang Yuan realises he is 500 years in the past; his lines at the window"
+      ]
+    }
+  ],
+  "not_scenes": [
+    {"block": 30, "why": "pause line inside scene 1, not a cut by itself"},
+    {"block": 90, "why": "chapter-end separator"},
+    {"block": 91, "why": "translator footnote, not story text"}
+  ]
+}
