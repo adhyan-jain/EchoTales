@@ -90,6 +90,9 @@ class Task(StrEnum):
     #: vocabulary in `world/schema.py` -- the stage that stops locations
     #: and factions being names with nothing attached.
     WORLD_FACTS = "world_facts"
+    #: One call per scene window (~12-16 blocks): the storyboard director's panel list for that window
+    #: (`storyboard/director.py`). Replaces one-panel-per-block with the grammar of a real adaptation.
+    STORYBOARD = "storyboard"
 
 
 @dataclass(frozen=True, slots=True)
@@ -255,6 +258,16 @@ TASK_PROFILES: dict[Task, TaskProfile] = {
         anthropic_model="claude-sonnet-5",
         temperature=0.0,
         max_tokens=900,
+    ),
+    # Storyboard director (MANHWA_DIRECTING_PATTERNS.md grammar). Model picked by measurement on RI ch1
+    # (docs/results/STORYBOARD_DIRECTOR.md); overridable so the bake-off needs no code edit. Temperature low: the
+    # validators reject rule breaks, so variety is not worth the extra malformed panels. 3000 tokens covers ~14
+    # panels of the compact schema; a truncated JSON object fails validation outright.
+    Task.STORYBOARD: TaskProfile(
+        ollama_model=os.environ.get("ECHOTALES_STORYBOARD_MODEL", "gemma2:9b"),
+        anthropic_model="claude-sonnet-5",
+        temperature=0.2,
+        max_tokens=3000,
     ),
     # A narrow yes/no read over one passage the regexes already flagged --
     # "is this the moment, or a reference back to it" -- so the cheap API

@@ -1,0 +1,246 @@
+{
+ "cache_key": "ebb0a7f728d55b5a",
+ "model": "qwen3:8b",
+ "prompt_version": "sb-4",
+ "presence_contract": false,
+ "look_contract": false,
+ "before": {
+  "speech_lost": 5,
+  "panel_overstuffed": 3,
+  "crowd_line_not_individualised": 3,
+  "speaker_not_present": 3,
+  "card_empty": 2,
+  "visual_names_absent": 1,
+  "peak_no_relief": 2
+ },
+ "after": {
+  "visual_repeat": 4
+ },
+ "conversion": {
+  "cast_from_visual": 21,
+  "block_out_of_window": 4,
+  "letter_kind_fixed": 3,
+  "line_used_twice": 2,
+  "card_not_grounded": 2,
+  "bad_line_ref": 7
+ },
+ "repairs": {
+  "scene_cut_found": 6,
+  "visual_names_absent": 1,
+  "speech_lost": 5,
+  "card_empty": 2,
+  "speaker_not_present": 4,
+  "panel_overstuffed": 3,
+  "crowd_line_not_individualised": 14,
+  "no_cold_open": 1,
+  "peak_no_relief": 3,
+  "shape_variety": 1
+ },
+ "llm_calls": 19,
+ "llm_failures": 0,
+ "latency_ms": 241852,
+ "prompt_tokens": 68066,
+ "completion_tokens": 8009,
+ "log": [
+  {
+   "rule": "scene_cut_found",
+   "action": "scene split by the director's scene pass",
+   "detail": "block 19: mountain battlefield"
+  },
+  {
+   "rule": "scene_cut_found",
+   "action": "scene split by the director's scene pass",
+   "detail": "block 25: mountain battlefield"
+  },
+  {
+   "rule": "scene_cut_found",
+   "action": "scene split by the director's scene pass",
+   "detail": "block 38: Gu Yue Village pavilion"
+  },
+  {
+   "rule": "scene_cut_found",
+   "action": "scene split by the director's scene pass",
+   "detail": "block 45: Gu Yue Village"
+  },
+  {
+   "rule": "scene_cut_found",
+   "action": "scene split by the director's scene pass",
+   "detail": "block 73: Gu Yue Village corridor"
+  },
+  {
+   "rule": "scene_cut_found",
+   "action": "scene split by the director's scene pass",
+   "detail": "block 79: Gu Yue Village"
+  },
+  {
+   "rule": "visual_names_absent",
+   "action": "name replaced in picture text",
+   "detail": "Spring Autumn Cicada"
+  },
+  {
+   "rule": "speech_lost",
+   "action": "line added to the panel drawing its block",
+   "detail": "s40 b37"
+  },
+  {
+   "rule": "speech_lost",
+   "action": "dialogue panel created",
+   "detail": "s76 b69"
+  },
+  {
+   "rule": "speech_lost",
+   "action": "dialogue panel created",
+   "detail": "s77 b70"
+  },
+  {
+   "rule": "speech_lost",
+   "action": "dialogue panel created",
+   "detail": "s78 b71"
+  },
+  {
+   "rule": "speech_lost",
+   "action": "line added to the panel drawing its block",
+   "detail": "s85 b78"
+  },
+  {
+   "rule": "card_empty",
+   "action": "caption taken from the scene place",
+   "detail": "GU YUE VILLAGE PAVILION"
+  },
+  {
+   "rule": "card_empty",
+   "action": "caption taken from the scene place",
+   "detail": "GU YUE VILLAGE"
+  },
+  {
+   "rule": "speaker_not_present",
+   "action": "speaker cleared",
+   "detail": "Fang Yuan is only talked about here; the reader attributed the line to them"
+  },
+  {
+   "rule": "speaker_not_present",
+   "action": "speaker cleared",
+   "detail": "Fang Yuan is only talked about here; the reader attributed the line to them"
+  },
+  {
+   "rule": "speaker_not_present",
+   "action": "speaker cleared",
+   "detail": "Fang Yuan is only talked about here; the reader attributed the line to them"
+  },
+  {
+   "rule": "speaker_not_present",
+   "action": "speaker cleared",
+   "detail": "Fang Yuan is only talked about here; the reader attributed the line to them"
+  },
+  {
+   "rule": "panel_overstuffed",
+   "action": "panel split by speaker turn",
+   "detail": "blocks [0, 1, 2]... into 3 panels"
+  },
+  {
+   "rule": "crowd_line_not_individualised",
+   "action": "crowd individual made",
+   "detail": "an elder b[0]"
+  },
+  {
+   "rule": "crowd_line_not_individualised",
+   "action": "crowd individual made",
+   "detail": "another elder b[1]"
+  },
+  {
+   "rule": "crowd_line_not_individualised",
+   "action": "crowd individual made",
+   "detail": "a third elder b[2]"
+  },
+  {
+   "rule": "panel_overstuffed",
+   "action": "panel split by speaker turn",
+   "detail": "blocks [4, 5, 6]... into 4 panels"
+  },
+  {
+   "rule": "crowd_line_not_individualised",
+   "action": "crowd individual made",
+   "detail": "a fourth elder b[45]"
+  },
+  {
+   "rule": "panel_overstuffed",
+   "action": "panel split by speaker turn",
+   "detail": "blocks [45, 46, 47]... into 10 panels"
+  },
+  {
+   "rule": "crowd_line_not_individualised",
+   "action": "crowd individual made",
+   "detail": "a fifth elder b[46]"
+  },
+  {
+   "rule": "crowd_line_not_individualised",
+   "action": "crowd individual made",
+   "detail": "a sixth elder b[47]"
+  },
+  {
+   "rule": "crowd_line_not_individualised",
+   "action": "crowd individual made",
+   "detail": "a seventh elder b[48]"
+  },
+  {
+   "rule": "crowd_line_not_individualised",
+   "action": "crowd individual made",
+   "detail": "an eighth elder b[49]"
+  },
+  {
+   "rule": "crowd_line_not_individualised",
+   "action": "crowd individual made",
+   "detail": "a ninth elder b[54]"
+  },
+  {
+   "rule": "crowd_line_not_individualised",
+   "action": "crowd individual made",
+   "detail": "a tenth elder b[56]"
+  },
+  {
+   "rule": "crowd_line_not_individualised",
+   "action": "crowd individual made",
+   "detail": "elder number 11 b[62]"
+  },
+  {
+   "rule": "crowd_line_not_individualised",
+   "action": "crowd individual made",
+   "detail": "elder number 12 b[69]"
+  },
+  {
+   "rule": "crowd_line_not_individualised",
+   "action": "crowd individual made",
+   "detail": "elder number 13 b[70]"
+  },
+  {
+   "rule": "crowd_line_not_individualised",
+   "action": "crowd individual made",
+   "detail": "elder number 14 b[71]"
+  },
+  {
+   "rule": "no_cold_open",
+   "action": "cold open inserted",
+   "detail": "an elder calls out"
+  },
+  {
+   "rule": "peak_no_relief",
+   "action": "reaction/ECU inserted",
+   "detail": "[0]"
+  },
+  {
+   "rule": "peak_no_relief",
+   "action": "reaction/ECU inserted",
+   "detail": "[26, 27]"
+  },
+  {
+   "rule": "peak_no_relief",
+   "action": "reaction/ECU inserted",
+   "detail": "[29]"
+  },
+  {
+   "rule": "shape_variety",
+   "action": "shape set from purpose",
+   "detail": "2 panels"
+  }
+ ]
+}

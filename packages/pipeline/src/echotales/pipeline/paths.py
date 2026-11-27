@@ -106,3 +106,9 @@ def next_version(base: Path) -> str:
             if child.is_dir() and name.startswith("v") and name[1:].split("_")[0].isdigit():
                 highest = max(highest, int(name[1:].split("_")[0]))
     return f"v{highest + 1}"
+
+
+def storyboard_path(novel_id: str, chapter: float, *, data_root: Path | str = DATA_ROOT) -> Path:
+    """`data/novels/<CODE>/storyboard/ch<N>.json` -- the director's panel plan for one chapter (cached by input hash)."""
+    n = int(chapter) if float(chapter).is_integer() else chapter
+    return asset_dir(novel_id, "storyboard", data_root=data_root) / f"ch{n}.json"

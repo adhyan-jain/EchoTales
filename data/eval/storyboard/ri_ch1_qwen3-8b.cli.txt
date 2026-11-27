@@ -1,0 +1,31 @@
+model backend: ollama
+=== storyboard reverend-insanity chapter 1 ===
+  8 scenes: b0-18, b19-24, b25-30, b31-37, b38-44, b45-72, b73-78, b79-85
+  window b0-13: 9 panels (24s)
+  window b14-18: 6 panels (14s)
+  window b19-24: 11 panels (23s)
+  window b25-30: 9 panels (20s)
+  window b31-37: 8 panels (19s)
+  window b38-44: 10 panels (22s)
+  window b45-58: 5 panels (18s)
+  window b59-72: 13 panels (28s)
+  window b73-78: 9 panels (20s)
+  window b79-85: 11 panels (24s)
+112 panels, 8 scenes, model qwen3:8b
+| Row | Ours | Reference |
+|---|---|---|
+| Panels | 112 | 84 |
+| Cold open | True | True |
+| Layers used | 4 | 4 |
+| Letter kinds | 6 | 8 |
+| SFX letters | 8 | 10 |
+| Inserts + extreme close-ups | 15 | 10 |
+| Crowd individuals | 17 | 5 |
+| Referenced insets | 5 | 2 |
+| Panel shapes used | 7 | 5 |
+| Scene cuts signalled (director's own segments) | 7 of 7 | 3 of 3 |
+| Hand-marked cuts found / found and signalled | 2 / 2 of 2 | all |
+| Presence recall vs hand list | 1.0 | 1.0 |
+| Referenced people drawn in the room | 0 | 0 |
+rule violations before repair: 19 {'speech_lost': 5, 'panel_overstuffed': 3, 'crowd_line_not_individualised': 3, 'speaker_not_present': 3, 'card_empty': 2, 'visual_names_absent': 1, 'peak_no_relief': 2}
+rule violations after repair:  4 {'visual_repeat': 4}

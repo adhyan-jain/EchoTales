@@ -52,6 +52,8 @@ def _load_config_json() -> dict[str, object]:
     render = raw.get("render", {})
     if "direction_first" in render:
         out["render_direction_first"] = render["direction_first"]
+    if "storyboard" in render:
+        out["render_storyboard"] = bool(render["storyboard"])
     for key in ("image_model", "panel_mode", "prompt_compiler", "director_model", "candidates", "vision_model"):
         if key in render:
             out[f"render_{key}"] = render[key]
@@ -164,6 +166,10 @@ class Settings(BaseSettings):
     #: the local GPU (gateway/API backends), never with `ollama` alongside
     #: a local image engine (`docs/EVOLUTION.md` section 9's measured OOM).
     render_direction_first: bool = True
+
+    #: `render.storyboard` (config.json): when on, the render stages read `storyboard/` output instead of one panel per
+    #: text block. Off by default: the page composer that consumes it is built separately, so this only gates wiring.
+    render_storyboard: bool = False
 
     #: Stage A panel rework (2026-11-15). `render.image_model` (config.json) / `ECHOTALES_RENDER_IMAGE_MODEL` picks a
     #: profile in `render/compiler.py::PROFILES` (`noobai-xl-1.1`, `anima`, `z-image-turbo`), so two checkpoints compare on the same panels.
