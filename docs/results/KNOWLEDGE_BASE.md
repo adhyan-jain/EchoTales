@@ -33,8 +33,8 @@ Package `packages/pipeline/src/echotales/pipeline/knowledge/`:
 
 - Scratch DBs: `data/scratch/kb/reverend-insanity.db`, `data/scratch/kb/lord-of-the-mysteries.db` (copies; `data/db/` untouched).
   Always pass ABSOLUTE `--db` paths (a relative path inside a worktree silently creates an empty DB).
-- Model: `gemma2:9b` (Task.READER), `num_ctx` 4096 via `ECHOTALES_LLM_LOCAL_NUM_CTX=4096` (coordinator rule: no CPU
-  spill; the first run at 8192 showed 21% CPU / 79% GPU). Verify `ollama ps` shows 100% GPU while a batch runs.
+- Real-model check: the RI ch1 gemma2:9b run is recorded in `llm_call` (10 reader calls, model gemma2:9b), so it was real, not stub. Worktrees have no `.env`: runs need `ECHOTALES_MODEL_BACKEND=ollama ECHOTALES_LLM_MODE=local ECHOTALES_LLM_LOCAL_HOST=http://localhost:11434` (set in `scratchpad/kb.sh`).
+- Model for the sweep: `qwen3:8b` (`ECHOTALES_READER_MODEL=qwen3:8b`), `num_ctx` 4096 (`ECHOTALES_LLM_LOCAL_NUM_CTX=4096`): gemma2:9b still spilled to CPU at 4096 while others share the GPU (coordinator finding). The 13 ch1 facts are from gemma2:9b (a 21% CPU spill at num_ctx 8192 on that run, a rule violation, disclosed); everything else is qwen3:8b. Verify `ollama ps` shows 100% GPU during a batch.
 - Measured on RI ch1: 4 windows, 20 facts proposed, 13 accepted, 1 dropped as not present, 123 s (includes model load).
   At about 2 minutes per chapter the 199-chapter sweep is about 7 hours of GPU time plus lock waits.
 - qwen3:8b versus gemma2:9b benchmark on 20 chapters: NOT DONE. gemma2:9b was used without it.
