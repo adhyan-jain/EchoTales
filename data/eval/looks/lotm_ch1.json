@@ -1,0 +1,4104 @@
+{
+  "novel": "lord-of-the-mysteries",
+  "chapter": 1.0,
+  "characters": {
+    "lord-of-the-mysteries:self:8a02b75841": {
+      "name": "Ouch",
+      "names": [
+        "Ouch"
+      ],
+      "present_blocks": [
+        4
+      ],
+      "looks": [
+        {
+          "look_id": "lord-of-the-mysteries:self:8a02b75841:1:e0",
+          "entity_id": "lord-of-the-mysteries:self:8a02b75841",
+          "epoch_label": "adult",
+          "age_band": "adult",
+          "gender": "male",
+          "description": "dark brown hair, long, tied up in a topknot, a slight build and a narrow face with high cheekbones, wearing a dark maroon frock coat and waistcoat over a white shirt",
+          "facts": [
+            {
+              "field": "age_band",
+              "value": "adult",
+              "source_block": null,
+              "invented": true,
+              "reason": "no age cue in this stretch of the text"
+            },
+            {
+              "field": "gender",
+              "value": "male",
+              "source_block": null,
+              "invented": false,
+              "reason": "owner/graph value or pronoun evidence"
+            },
+            {
+              "field": "hair",
+              "value": "dark brown hair, long, tied up in a topknot",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no hair; chosen per person from the slot bank"
+            },
+            {
+              "field": "build",
+              "value": "a slight build",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no build"
+            },
+            {
+              "field": "face",
+              "value": "a narrow face with high cheekbones",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no face; chosen per person"
+            },
+            {
+              "field": "clothes",
+              "value": "a dark maroon frock coat and waistcoat over a white shirt",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no clothes here"
+            }
+          ],
+          "hair": "dark brown hair, long, tied up in a topknot",
+          "eyes": "",
+          "build": "a slight build",
+          "face": "a narrow face with high cheekbones",
+          "outfit": "a dark maroon frock coat and waistcoat over a white shirt",
+          "condition": "",
+          "marks": "",
+          "block_from": 0,
+          "block_to": 72
+        }
+      ]
+    },
+    "lord-of-the-mysteries:self:ba4bdde665": {
+      "name": "Eh",
+      "names": [
+        "Eh"
+      ],
+      "present_blocks": [
+        13
+      ],
+      "looks": [
+        {
+          "look_id": "lord-of-the-mysteries:self:ba4bdde665:1:e0",
+          "entity_id": "lord-of-the-mysteries:self:ba4bdde665",
+          "epoch_label": "adult",
+          "age_band": "adult",
+          "gender": null,
+          "description": "ash brown hair, short and swept back, a lean build and a sharp chin and deep-set eyes, wearing a moss green frock coat and waistcoat over a white shirt",
+          "facts": [
+            {
+              "field": "age_band",
+              "value": "adult",
+              "source_block": null,
+              "invented": true,
+              "reason": "no age cue in this stretch of the text"
+            },
+            {
+              "field": "hair",
+              "value": "ash brown hair, short and swept back",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no hair; chosen per person from the slot bank"
+            },
+            {
+              "field": "build",
+              "value": "a lean build",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no build"
+            },
+            {
+              "field": "face",
+              "value": "a sharp chin and deep-set eyes",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no face; chosen per person"
+            },
+            {
+              "field": "clothes",
+              "value": "a moss green frock coat and waistcoat over a white shirt",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no clothes here"
+            }
+          ],
+          "hair": "ash brown hair, short and swept back",
+          "eyes": "",
+          "build": "a lean build",
+          "face": "a sharp chin and deep-set eyes",
+          "outfit": "a moss green frock coat and waistcoat over a white shirt",
+          "condition": "",
+          "marks": "",
+          "block_from": 0,
+          "block_to": 72
+        }
+      ]
+    },
+    "lord-of-the-mysteries:self:2aaf67a520": {
+      "name": "Hey",
+      "names": [
+        "Hey"
+      ],
+      "present_blocks": [
+        16
+      ],
+      "looks": [
+        {
+          "look_id": "lord-of-the-mysteries:self:2aaf67a520:1:e0",
+          "entity_id": "lord-of-the-mysteries:self:2aaf67a520",
+          "epoch_label": "adult",
+          "age_band": "adult",
+          "gender": "male",
+          "description": "chestnut brown hair, short, neatly combed, an average build and a long face with a straight nose, wearing a plum frock coat and waistcoat over a white shirt",
+          "facts": [
+            {
+              "field": "age_band",
+              "value": "adult",
+              "source_block": null,
+              "invented": true,
+              "reason": "no age cue in this stretch of the text"
+            },
+            {
+              "field": "gender",
+              "value": "male",
+              "source_block": null,
+              "invented": false,
+              "reason": "owner/graph value or pronoun evidence"
+            },
+            {
+              "field": "hair",
+              "value": "chestnut brown hair, short, neatly combed",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no hair; chosen per person from the slot bank"
+            },
+            {
+              "field": "build",
+              "value": "an average build",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no build"
+            },
+            {
+              "field": "face",
+              "value": "a long face with a straight nose",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no face; chosen per person"
+            },
+            {
+              "field": "clothes",
+              "value": "a plum frock coat and waistcoat over a white shirt",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no clothes here"
+            }
+          ],
+          "hair": "chestnut brown hair, short, neatly combed",
+          "eyes": "",
+          "build": "an average build",
+          "face": "a long face with a straight nose",
+          "outfit": "a plum frock coat and waistcoat over a white shirt",
+          "condition": "",
+          "marks": "",
+          "block_from": 0,
+          "block_to": 72
+        }
+      ]
+    },
+    "lord-of-the-mysteries:self:8b9223a566": {
+      "name": "Diagonally",
+      "names": [
+        "Diagonally"
+      ],
+      "present_blocks": [
+        21
+      ],
+      "looks": [
+        {
+          "look_id": "lord-of-the-mysteries:self:8b9223a566:1:e0",
+          "entity_id": "lord-of-the-mysteries:self:8b9223a566",
+          "epoch_label": "adult",
+          "age_band": "adult",
+          "gender": null,
+          "description": "auburn hair, cropped close to the scalp, an average build and a square jaw and heavy brows, wearing a rust brown frock coat and waistcoat over a white shirt",
+          "facts": [
+            {
+              "field": "age_band",
+              "value": "adult",
+              "source_block": null,
+              "invented": true,
+              "reason": "no age cue in this stretch of the text"
+            },
+            {
+              "field": "hair",
+              "value": "auburn hair, cropped close to the scalp",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no hair; chosen per person from the slot bank"
+            },
+            {
+              "field": "build",
+              "value": "an average build",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no build"
+            },
+            {
+              "field": "face",
+              "value": "a square jaw and heavy brows",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no face; chosen per person"
+            },
+            {
+              "field": "clothes",
+              "value": "a rust brown frock coat and waistcoat over a white shirt",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no clothes here"
+            }
+          ],
+          "hair": "auburn hair, cropped close to the scalp",
+          "eyes": "",
+          "build": "an average build",
+          "face": "a square jaw and heavy brows",
+          "outfit": "a rust brown frock coat and waistcoat over a white shirt",
+          "condition": "",
+          "marks": "",
+          "block_from": 0,
+          "block_to": 72
+        }
+      ]
+    },
+    "lord-of-the-mysteries:self:ddae5cc270": {
+      "name": "Subconsciously",
+      "names": [
+        "Subconsciously"
+      ],
+      "present_blocks": [
+        25,
+        63
+      ],
+      "looks": [
+        {
+          "look_id": "lord-of-the-mysteries:self:ddae5cc270:1:e0",
+          "entity_id": "lord-of-the-mysteries:self:ddae5cc270",
+          "epoch_label": "adult, covered in blood",
+          "age_band": "adult",
+          "gender": "male",
+          "description": "dark brown hair, long, tied up in a topknot, an average build and a broad forehead and thin lips, wearing a deep navy frock coat and waistcoat over a white shirt, covered in blood",
+          "facts": [
+            {
+              "field": "age_band",
+              "value": "adult",
+              "source_block": null,
+              "invented": true,
+              "reason": "no age cue in this stretch of the text"
+            },
+            {
+              "field": "gender",
+              "value": "male",
+              "source_block": null,
+              "invented": false,
+              "reason": "owner/graph value or pronoun evidence"
+            },
+            {
+              "field": "hair",
+              "value": "dark brown hair, long, tied up in a topknot",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no hair; chosen per person from the slot bank"
+            },
+            {
+              "field": "build",
+              "value": "an average build",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no build"
+            },
+            {
+              "field": "face",
+              "value": "a broad forehead and thin lips",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no face; chosen per person"
+            },
+            {
+              "field": "clothes",
+              "value": "a deep navy frock coat and waistcoat over a white shirt",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no clothes here"
+            },
+            {
+              "field": "condition",
+              "value": "covered in blood",
+              "source_block": 63,
+              "invented": false,
+              "reason": ""
+            }
+          ],
+          "hair": "dark brown hair, long, tied up in a topknot",
+          "eyes": "",
+          "build": "an average build",
+          "face": "a broad forehead and thin lips",
+          "outfit": "a deep navy frock coat and waistcoat over a white shirt",
+          "condition": "covered in blood",
+          "marks": "",
+          "block_from": 0,
+          "block_to": 72
+        }
+      ]
+    },
+    "lord-of-the-mysteries:self:e9566eddb5": {
+      "name": "Pa",
+      "names": [
+        "Pa"
+      ],
+      "present_blocks": [
+        28
+      ],
+      "looks": [
+        {
+          "look_id": "lord-of-the-mysteries:self:e9566eddb5:1:e0",
+          "entity_id": "lord-of-the-mysteries:self:e9566eddb5",
+          "epoch_label": "adult",
+          "age_band": "adult",
+          "gender": null,
+          "description": "deep brown-black hair, long and worn loose over the shoulders, a lean build and a narrow face with high cheekbones, wearing a plum frock coat and waistcoat over a white shirt",
+          "facts": [
+            {
+              "field": "age_band",
+              "value": "adult",
+              "source_block": null,
+              "invented": true,
+              "reason": "no age cue in this stretch of the text"
+            },
+            {
+              "field": "hair",
+              "value": "deep brown-black hair, long and worn loose over the shoulders",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no hair; chosen per person from the slot bank"
+            },
+            {
+              "field": "build",
+              "value": "a lean build",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no build"
+            },
+            {
+              "field": "face",
+              "value": "a narrow face with high cheekbones",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no face; chosen per person"
+            },
+            {
+              "field": "clothes",
+              "value": "a plum frock coat and waistcoat over a white shirt",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no clothes here"
+            }
+          ],
+          "hair": "deep brown-black hair, long and worn loose over the shoulders",
+          "eyes": "",
+          "build": "a lean build",
+          "face": "a narrow face with high cheekbones",
+          "outfit": "a plum frock coat and waistcoat over a white shirt",
+          "condition": "",
+          "marks": "",
+          "block_from": 0,
+          "block_to": 72
+        }
+      ]
+    },
+    "lord-of-the-mysteries:self:7c1b075d90": {
+      "name": "Between",
+      "names": [
+        "Between"
+      ],
+      "present_blocks": [
+        31,
+        55
+      ],
+      "looks": [
+        {
+          "look_id": "lord-of-the-mysteries:self:7c1b075d90:1:e0",
+          "entity_id": "lord-of-the-mysteries:self:7c1b075d90",
+          "epoch_label": "adult",
+          "age_band": "adult",
+          "gender": "male",
+          "description": "deep brown-black hair, long, tied up in a topknot, a lean build and a broad forehead and thin lips, wearing a ochre frock coat and waistcoat over a white shirt",
+          "facts": [
+            {
+              "field": "age_band",
+              "value": "adult",
+              "source_block": null,
+              "invented": true,
+              "reason": "no age cue in this stretch of the text"
+            },
+            {
+              "field": "gender",
+              "value": "male",
+              "source_block": null,
+              "invented": false,
+              "reason": "owner/graph value or pronoun evidence"
+            },
+            {
+              "field": "hair",
+              "value": "deep brown-black hair, long, tied up in a topknot",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no hair; chosen per person from the slot bank"
+            },
+            {
+              "field": "build",
+              "value": "a lean build",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no build"
+            },
+            {
+              "field": "face",
+              "value": "a broad forehead and thin lips",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no face; chosen per person"
+            },
+            {
+              "field": "clothes",
+              "value": "a ochre frock coat and waistcoat over a white shirt",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no clothes here"
+            }
+          ],
+          "hair": "deep brown-black hair, long, tied up in a topknot",
+          "eyes": "",
+          "build": "a lean build",
+          "face": "a broad forehead and thin lips",
+          "outfit": "a ochre frock coat and waistcoat over a white shirt",
+          "condition": "",
+          "marks": "",
+          "block_from": 0,
+          "block_to": 72
+        }
+      ]
+    },
+    "lord-of-the-mysteries:self:f311ba2b8e": {
+      "name": "Across",
+      "names": [
+        "Across"
+      ],
+      "present_blocks": [
+        34
+      ],
+      "looks": [
+        {
+          "look_id": "lord-of-the-mysteries:self:f311ba2b8e:1:e0",
+          "entity_id": "lord-of-the-mysteries:self:f311ba2b8e",
+          "epoch_label": "adult",
+          "age_band": "adult",
+          "gender": "male",
+          "description": "Black hair, short and swept back, brown eyes, a stocky build and average-looking features, wearing a dark maroon frock coat and waistcoat over a white shirt",
+          "facts": [
+            {
+              "field": "age_band",
+              "value": "adult",
+              "source_block": null,
+              "invented": true,
+              "reason": "no age cue in this stretch of the text"
+            },
+            {
+              "field": "gender",
+              "value": "male",
+              "source_block": null,
+              "invented": false,
+              "reason": "owner/graph value or pronoun evidence"
+            },
+            {
+              "field": "hair_colour",
+              "value": "Black hair",
+              "source_block": 36,
+              "invented": false,
+              "reason": ""
+            },
+            {
+              "field": "hair_style",
+              "value": "short and swept back",
+              "source_block": null,
+              "invented": true,
+              "reason": "colour stated, length and style not"
+            },
+            {
+              "field": "eyes",
+              "value": "brown eyes",
+              "source_block": 36,
+              "invented": false,
+              "reason": ""
+            },
+            {
+              "field": "build",
+              "value": "a stocky build",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no build"
+            },
+            {
+              "field": "face",
+              "value": "average-looking features",
+              "source_block": 36,
+              "invented": false,
+              "reason": ""
+            },
+            {
+              "field": "clothes",
+              "value": "a dark maroon frock coat and waistcoat over a white shirt",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no clothes here"
+            }
+          ],
+          "hair": "Black hair, short and swept back",
+          "eyes": "brown eyes",
+          "build": "a stocky build",
+          "face": "average-looking features",
+          "outfit": "a dark maroon frock coat and waistcoat over a white shirt",
+          "condition": "",
+          "marks": "",
+          "block_from": 0,
+          "block_to": 72
+        }
+      ]
+    },
+    "lord-of-the-mysteries:self:98482ecef6": {
+      "name": "C-could",
+      "names": [
+        "C-could"
+      ],
+      "present_blocks": [
+        39
+      ],
+      "looks": [
+        {
+          "look_id": "lord-of-the-mysteries:self:98482ecef6:1:e0",
+          "entity_id": "lord-of-the-mysteries:self:98482ecef6",
+          "epoch_label": "adult",
+          "age_band": "adult",
+          "gender": null,
+          "description": "black hair, shoulder-length with a side parting, a broad-shouldered build and a round face with soft features, wearing a moss green frock coat and waistcoat over a white shirt",
+          "facts": [
+            {
+              "field": "age_band",
+              "value": "adult",
+              "source_block": null,
+              "invented": true,
+              "reason": "no age cue in this stretch of the text"
+            },
+            {
+              "field": "hair",
+              "value": "black hair, shoulder-length with a side parting",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no hair; chosen per person from the slot bank"
+            },
+            {
+              "field": "build",
+              "value": "a broad-shouldered build",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no build"
+            },
+            {
+              "field": "face",
+              "value": "a round face with soft features",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no face; chosen per person"
+            },
+            {
+              "field": "clothes",
+              "value": "a moss green frock coat and waistcoat over a white shirt",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no clothes here"
+            }
+          ],
+          "hair": "black hair, shoulder-length with a side parting",
+          "eyes": "",
+          "build": "a broad-shouldered build",
+          "face": "a round face with soft features",
+          "outfit": "a moss green frock coat and waistcoat over a white shirt",
+          "condition": "",
+          "marks": "",
+          "block_from": 0,
+          "block_to": 72
+        }
+      ]
+    },
+    "lord-of-the-mysteries:self:51d4b35ff5": {
+      "name": "Hiss",
+      "names": [
+        "Hiss"
+      ],
+      "present_blocks": [
+        55
+      ],
+      "looks": [
+        {
+          "look_id": "lord-of-the-mysteries:self:51d4b35ff5:1:e0",
+          "entity_id": "lord-of-the-mysteries:self:51d4b35ff5",
+          "epoch_label": "adult",
+          "age_band": "adult",
+          "gender": "male",
+          "description": "ash brown hair, short and swept back, a slight build and a narrow face with high cheekbones, wearing a slate blue frock coat and waistcoat over a white shirt",
+          "facts": [
+            {
+              "field": "age_band",
+              "value": "adult",
+              "source_block": null,
+              "invented": true,
+              "reason": "no age cue in this stretch of the text"
+            },
+            {
+              "field": "gender",
+              "value": "male",
+              "source_block": null,
+              "invented": false,
+              "reason": "owner/graph value or pronoun evidence"
+            },
+            {
+              "field": "hair",
+              "value": "ash brown hair, short and swept back",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no hair; chosen per person from the slot bank"
+            },
+            {
+              "field": "build",
+              "value": "a slight build",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no build"
+            },
+            {
+              "field": "face",
+              "value": "a narrow face with high cheekbones",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no face; chosen per person"
+            },
+            {
+              "field": "clothes",
+              "value": "a slate blue frock coat and waistcoat over a white shirt",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no clothes here"
+            }
+          ],
+          "hair": "ash brown hair, short and swept back",
+          "eyes": "",
+          "build": "a slight build",
+          "face": "a narrow face with high cheekbones",
+          "outfit": "a slate blue frock coat and waistcoat over a white shirt",
+          "condition": "",
+          "marks": "",
+          "block_from": 0,
+          "block_to": 72
+        }
+      ]
+    },
+    "lord-of-the-mysteries:self:7c8996b398": {
+      "name": "Using",
+      "names": [
+        "Using",
+        "Using Benson\u2019s"
+      ],
+      "present_blocks": [
+        70
+      ],
+      "looks": [
+        {
+          "look_id": "lord-of-the-mysteries:self:7c8996b398:1:e0",
+          "entity_id": "lord-of-the-mysteries:self:7c8996b398",
+          "epoch_label": "adult, grotesque wound with burn marks along its periphery",
+          "age_band": "adult",
+          "gender": "male",
+          "description": "chestnut brown hair, short, neatly combed, a tall wiry build and a round face with soft features, wearing a slate blue frock coat and waistcoat over a white shirt, grotesque wound with burn marks along its periphery",
+          "facts": [
+            {
+              "field": "age_band",
+              "value": "adult",
+              "source_block": null,
+              "invented": true,
+              "reason": "no age cue in this stretch of the text"
+            },
+            {
+              "field": "gender",
+              "value": "male",
+              "source_block": null,
+              "invented": false,
+              "reason": "owner/graph value or pronoun evidence"
+            },
+            {
+              "field": "hair",
+              "value": "chestnut brown hair, short, neatly combed",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no hair; chosen per person from the slot bank"
+            },
+            {
+              "field": "eyes",
+              "value": "grayish-white brain juices",
+              "source_block": 71,
+              "invented": false,
+              "reason": ""
+            },
+            {
+              "field": "build",
+              "value": "a tall wiry build",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no build"
+            },
+            {
+              "field": "face",
+              "value": "a round face with soft features",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no face; chosen per person"
+            },
+            {
+              "field": "clothes",
+              "value": "a slate blue frock coat and waistcoat over a white shirt",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no clothes here"
+            },
+            {
+              "field": "condition",
+              "value": "grotesque wound with burn marks along its periphery",
+              "source_block": 71,
+              "invented": false,
+              "reason": ""
+            }
+          ],
+          "hair": "chestnut brown hair, short, neatly combed",
+          "eyes": "",
+          "build": "a tall wiry build",
+          "face": "a round face with soft features",
+          "outfit": "a slate blue frock coat and waistcoat over a white shirt",
+          "condition": "grotesque wound with burn marks along its periphery",
+          "marks": "",
+          "block_from": 0,
+          "block_to": 72
+        }
+      ]
+    },
+    "lord-of-the-mysteries:self:6663efd169": {
+      "name": "I\u2019m",
+      "names": [
+        "I\u2019m",
+        "I\u2019m Klein",
+        "I\u2019m Rozanne",
+        "I\u2019m Glacis",
+        "I\u2019m Klein Moretti",
+        "Dear Klein",
+        "Klein",
+        "Klein Moretti",
+        "Klein Spirit Vision",
+        "Beyonders Klein",
+        "Klein Beyonder",
+        "Where Klein"
+      ],
+      "present_blocks": [
+        5,
+        11,
+        45,
+        46,
+        47,
+        50,
+        59,
+        68
+      ],
+      "looks": [
+        {
+          "look_id": "lord-of-the-mysteries:self:6663efd169:1:e0",
+          "entity_id": "lord-of-the-mysteries:self:6663efd169",
+          "epoch_label": "adult",
+          "age_band": "adult",
+          "gender": "male",
+          "description": "black-haired, short, neatly combed, brown eyes, a medium build and a square jaw and heavy brows, wearing a charcoal grey frock coat and waistcoat over a white shirt",
+          "facts": [
+            {
+              "field": "age_band",
+              "value": "adult",
+              "source_block": null,
+              "invented": true,
+              "reason": "no age cue in this stretch of the text"
+            },
+            {
+              "field": "gender",
+              "value": "male",
+              "source_block": null,
+              "invented": false,
+              "reason": "owner/graph value or pronoun evidence"
+            },
+            {
+              "field": "hair_colour",
+              "value": "black-haired",
+              "source_block": 67,
+              "invented": false,
+              "reason": ""
+            },
+            {
+              "field": "hair_style",
+              "value": "short, neatly combed",
+              "source_block": null,
+              "invented": true,
+              "reason": "colour stated, length and style not"
+            },
+            {
+              "field": "eyes",
+              "value": "brown eyes",
+              "source_block": 67,
+              "invented": false,
+              "reason": ""
+            },
+            {
+              "field": "build",
+              "value": "medium build",
+              "source_block": 67,
+              "invented": false,
+              "reason": ""
+            },
+            {
+              "field": "face",
+              "value": "a square jaw and heavy brows",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no face; chosen per person"
+            },
+            {
+              "field": "clothes",
+              "value": "a charcoal grey frock coat and waistcoat over a white shirt",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no clothes here"
+            }
+          ],
+          "hair": "black-haired, short, neatly combed",
+          "eyes": "brown eyes",
+          "build": "a medium build",
+          "face": "a square jaw and heavy brows",
+          "outfit": "a charcoal grey frock coat and waistcoat over a white shirt",
+          "condition": "",
+          "marks": "",
+          "block_from": 0,
+          "block_to": 72
+        }
+      ]
+    },
+    "lord-of-the-mysteries:self:d88f46e74c": {
+      "name": "European",
+      "names": [
+        "European"
+      ],
+      "present_blocks": [
+        38
+      ],
+      "looks": [
+        {
+          "look_id": "lord-of-the-mysteries:self:d88f46e74c:1:e0",
+          "entity_id": "lord-of-the-mysteries:self:d88f46e74c",
+          "epoch_label": "adult",
+          "age_band": "adult",
+          "gender": null,
+          "description": "Black hair, long, tied back in a low ponytail, brown eyes, a lean build and average-looking features, wearing linen shirt",
+          "facts": [
+            {
+              "field": "age_band",
+              "value": "adult",
+              "source_block": null,
+              "invented": true,
+              "reason": "no age cue in this stretch of the text"
+            },
+            {
+              "field": "hair_colour",
+              "value": "Black hair",
+              "source_block": 36,
+              "invented": false,
+              "reason": ""
+            },
+            {
+              "field": "hair_style",
+              "value": "long, tied back in a low ponytail",
+              "source_block": null,
+              "invented": true,
+              "reason": "colour stated, length and style not"
+            },
+            {
+              "field": "eyes",
+              "value": "brown eyes",
+              "source_block": 36,
+              "invented": false,
+              "reason": ""
+            },
+            {
+              "field": "build",
+              "value": "a lean build",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no build"
+            },
+            {
+              "field": "face",
+              "value": "average-looking features",
+              "source_block": 36,
+              "invented": false,
+              "reason": ""
+            },
+            {
+              "field": "clothes",
+              "value": "linen shirt",
+              "source_block": 36,
+              "invented": false,
+              "reason": ""
+            }
+          ],
+          "hair": "Black hair, long, tied back in a low ponytail",
+          "eyes": "brown eyes",
+          "build": "a lean build",
+          "face": "average-looking features",
+          "outfit": "linen shirt",
+          "condition": "",
+          "marks": "",
+          "block_from": 0,
+          "block_to": 72
+        }
+      ]
+    },
+    "lord-of-the-mysteries:self:901c8ae4bc": {
+      "name": "Western",
+      "names": [
+        "Western"
+      ],
+      "present_blocks": [
+        20
+      ],
+      "looks": [
+        {
+          "look_id": "lord-of-the-mysteries:self:901c8ae4bc:1:e0",
+          "entity_id": "lord-of-the-mysteries:self:901c8ae4bc",
+          "epoch_label": "adult",
+          "age_band": "adult",
+          "gender": null,
+          "description": "dark brown hair, long and braided over one shoulder, a slight build and a long face with a straight nose, wearing a deep navy frock coat and waistcoat over a white shirt",
+          "facts": [
+            {
+              "field": "age_band",
+              "value": "adult",
+              "source_block": null,
+              "invented": true,
+              "reason": "no age cue in this stretch of the text"
+            },
+            {
+              "field": "hair",
+              "value": "dark brown hair, long and braided over one shoulder",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no hair; chosen per person from the slot bank"
+            },
+            {
+              "field": "build",
+              "value": "a slight build",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no build"
+            },
+            {
+              "field": "face",
+              "value": "a long face with a straight nose",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no face; chosen per person"
+            },
+            {
+              "field": "clothes",
+              "value": "a deep navy frock coat and waistcoat over a white shirt",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no clothes here"
+            }
+          ],
+          "hair": "dark brown hair, long and braided over one shoulder",
+          "eyes": "",
+          "build": "a slight build",
+          "face": "a long face with a straight nose",
+          "outfit": "a deep navy frock coat and waistcoat over a white shirt",
+          "condition": "",
+          "marks": "",
+          "block_from": 0,
+          "block_to": 72
+        }
+      ]
+    },
+    "lord-of-the-mysteries:self:399ab53b0e": {
+      "name": "Imperial Army",
+      "names": [
+        "Imperial Army"
+      ],
+      "present_blocks": [
+        46
+      ],
+      "looks": [
+        {
+          "look_id": "lord-of-the-mysteries:self:399ab53b0e:1:e0",
+          "entity_id": "lord-of-the-mysteries:self:399ab53b0e",
+          "epoch_label": "adult",
+          "age_band": "adult",
+          "gender": "male",
+          "description": "auburn hair, medium-length, combed to one side, a stocky build and a sharp chin and deep-set eyes, wearing a dark maroon frock coat and waistcoat over a white shirt",
+          "facts": [
+            {
+              "field": "age_band",
+              "value": "adult",
+              "source_block": null,
+              "invented": true,
+              "reason": "no age cue in this stretch of the text"
+            },
+            {
+              "field": "gender",
+              "value": "male",
+              "source_block": null,
+              "invented": false,
+              "reason": "owner/graph value or pronoun evidence"
+            },
+            {
+              "field": "hair",
+              "value": "auburn hair, medium-length, combed to one side",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no hair; chosen per person from the slot bank"
+            },
+            {
+              "field": "build",
+              "value": "a stocky build",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no build"
+            },
+            {
+              "field": "face",
+              "value": "a sharp chin and deep-set eyes",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no face; chosen per person"
+            },
+            {
+              "field": "clothes",
+              "value": "a dark maroon frock coat and waistcoat over a white shirt",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no clothes here"
+            }
+          ],
+          "hair": "auburn hair, medium-length, combed to one side",
+          "eyes": "",
+          "build": "a stocky build",
+          "face": "a sharp chin and deep-set eyes",
+          "outfit": "a dark maroon frock coat and waistcoat over a white shirt",
+          "condition": "",
+          "marks": "",
+          "block_from": 0,
+          "block_to": 72
+        }
+      ]
+    },
+    "lord-of-the-mysteries:self:61e12d8f40": {
+      "name": "Lord Ye",
+      "names": [
+        "Lord Ye"
+      ],
+      "present_blocks": [
+        72
+      ],
+      "looks": [
+        {
+          "look_id": "lord-of-the-mysteries:self:61e12d8f40:1:e0",
+          "entity_id": "lord-of-the-mysteries:self:61e12d8f40",
+          "epoch_label": "adult, grotesque wound with burn marks along its periphery",
+          "age_band": "adult",
+          "gender": "male",
+          "description": "deep brown-black hair, long and worn loose over the shoulders, a tall wiry build and a sharp chin and deep-set eyes, wearing a charcoal grey frock coat and waistcoat over a white shirt, grotesque wound with burn marks along its periphery",
+          "facts": [
+            {
+              "field": "age_band",
+              "value": "adult",
+              "source_block": null,
+              "invented": true,
+              "reason": "no age cue in this stretch of the text"
+            },
+            {
+              "field": "gender",
+              "value": "male",
+              "source_block": null,
+              "invented": false,
+              "reason": "owner/graph value or pronoun evidence"
+            },
+            {
+              "field": "hair",
+              "value": "deep brown-black hair, long and worn loose over the shoulders",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no hair; chosen per person from the slot bank"
+            },
+            {
+              "field": "build",
+              "value": "a tall wiry build",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no build"
+            },
+            {
+              "field": "face",
+              "value": "a sharp chin and deep-set eyes",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no face; chosen per person"
+            },
+            {
+              "field": "clothes",
+              "value": "a charcoal grey frock coat and waistcoat over a white shirt",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no clothes here"
+            },
+            {
+              "field": "condition",
+              "value": "grotesque wound with burn marks along its periphery",
+              "source_block": 71,
+              "invented": false,
+              "reason": ""
+            }
+          ],
+          "hair": "deep brown-black hair, long and worn loose over the shoulders",
+          "eyes": "",
+          "build": "a tall wiry build",
+          "face": "a sharp chin and deep-set eyes",
+          "outfit": "a charcoal grey frock coat and waistcoat over a white shirt",
+          "condition": "grotesque wound with burn marks along its periphery",
+          "marks": "",
+          "block_from": 0,
+          "block_to": 72
+        }
+      ]
+    },
+    "lord-of-the-mysteries:self:6518c7008c": {
+      "name": "Hehe",
+      "names": [
+        "Hehe"
+      ],
+      "present_blocks": [
+        16
+      ],
+      "looks": [
+        {
+          "look_id": "lord-of-the-mysteries:self:6518c7008c:1:e0",
+          "entity_id": "lord-of-the-mysteries:self:6518c7008c",
+          "epoch_label": "adult",
+          "age_band": "adult",
+          "gender": "male",
+          "description": "black hair, cropped close to the scalp, a stocky build and a narrow face with high cheekbones, wearing a moss green frock coat and waistcoat over a white shirt",
+          "facts": [
+            {
+              "field": "age_band",
+              "value": "adult",
+              "source_block": null,
+              "invented": true,
+              "reason": "no age cue in this stretch of the text"
+            },
+            {
+              "field": "gender",
+              "value": "male",
+              "source_block": null,
+              "invented": false,
+              "reason": "owner/graph value or pronoun evidence"
+            },
+            {
+              "field": "hair",
+              "value": "black hair, cropped close to the scalp",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no hair; chosen per person from the slot bank"
+            },
+            {
+              "field": "build",
+              "value": "a stocky build",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no build"
+            },
+            {
+              "field": "face",
+              "value": "a narrow face with high cheekbones",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no face; chosen per person"
+            },
+            {
+              "field": "clothes",
+              "value": "a moss green frock coat and waistcoat over a white shirt",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no clothes here"
+            }
+          ],
+          "hair": "black hair, cropped close to the scalp",
+          "eyes": "",
+          "build": "a stocky build",
+          "face": "a narrow face with high cheekbones",
+          "outfit": "a moss green frock coat and waistcoat over a white shirt",
+          "condition": "",
+          "marks": "",
+          "block_from": 0,
+          "block_to": 72
+        }
+      ]
+    },
+    "lord-of-the-mysteries:self:e41f3f19c8": {
+      "name": "Close",
+      "names": [
+        "Close"
+      ],
+      "present_blocks": [
+        30
+      ],
+      "looks": [
+        {
+          "look_id": "lord-of-the-mysteries:self:e41f3f19c8:1:e0",
+          "entity_id": "lord-of-the-mysteries:self:e41f3f19c8",
+          "epoch_label": "adult",
+          "age_band": "adult",
+          "gender": null,
+          "description": "dark brown hair, shoulder-length with a side parting, a tall wiry build and a square jaw and heavy brows, wearing a rust brown frock coat and waistcoat over a white shirt",
+          "facts": [
+            {
+              "field": "age_band",
+              "value": "adult",
+              "source_block": null,
+              "invented": true,
+              "reason": "no age cue in this stretch of the text"
+            },
+            {
+              "field": "hair",
+              "value": "dark brown hair, shoulder-length with a side parting",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no hair; chosen per person from the slot bank"
+            },
+            {
+              "field": "build",
+              "value": "a tall wiry build",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no build"
+            },
+            {
+              "field": "face",
+              "value": "a square jaw and heavy brows",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no face; chosen per person"
+            },
+            {
+              "field": "clothes",
+              "value": "a rust brown frock coat and waistcoat over a white shirt",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no clothes here"
+            }
+          ],
+          "hair": "dark brown hair, shoulder-length with a side parting",
+          "eyes": "",
+          "build": "a tall wiry build",
+          "face": "a square jaw and heavy brows",
+          "outfit": "a rust brown frock coat and waistcoat over a white shirt",
+          "condition": "",
+          "marks": "",
+          "block_from": 0,
+          "block_to": 72
+        }
+      ]
+    },
+    "lord-of-the-mysteries:self:65f475a183": {
+      "name": "Earth",
+      "names": [
+        "Earth",
+        "Earth\u2019s",
+        "Earth Mother",
+        "Earth\u2019s Gothic"
+      ],
+      "present_blocks": [
+        38
+      ],
+      "looks": [
+        {
+          "look_id": "lord-of-the-mysteries:self:65f475a183:1:e0",
+          "entity_id": "lord-of-the-mysteries:self:65f475a183",
+          "epoch_label": "adult",
+          "age_band": "adult",
+          "gender": null,
+          "description": "Black hair, medium-length, combed to one side, brown eyes, a stocky build and average-looking features, wearing linen shirt",
+          "facts": [
+            {
+              "field": "age_band",
+              "value": "adult",
+              "source_block": null,
+              "invented": true,
+              "reason": "no age cue in this stretch of the text"
+            },
+            {
+              "field": "hair_colour",
+              "value": "Black hair",
+              "source_block": 36,
+              "invented": false,
+              "reason": ""
+            },
+            {
+              "field": "hair_style",
+              "value": "medium-length, combed to one side",
+              "source_block": null,
+              "invented": true,
+              "reason": "colour stated, length and style not"
+            },
+            {
+              "field": "eyes",
+              "value": "brown eyes",
+              "source_block": 36,
+              "invented": false,
+              "reason": ""
+            },
+            {
+              "field": "build",
+              "value": "a stocky build",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no build"
+            },
+            {
+              "field": "face",
+              "value": "average-looking features",
+              "source_block": 36,
+              "invented": false,
+              "reason": ""
+            },
+            {
+              "field": "clothes",
+              "value": "linen shirt",
+              "source_block": 36,
+              "invented": false,
+              "reason": ""
+            }
+          ],
+          "hair": "Black hair, medium-length, combed to one side",
+          "eyes": "brown eyes",
+          "build": "a stocky build",
+          "face": "average-looking features",
+          "outfit": "linen shirt",
+          "condition": "",
+          "marks": "",
+          "block_from": 0,
+          "block_to": 72
+        }
+      ]
+    },
+    "lord-of-the-mysteries:self:8f906ddc75": {
+      "name": "Zhou Mingrui",
+      "names": [
+        "Zhou Mingrui",
+        "Klein Moretti",
+        "Northern Continent\u2019s Loen Kingdom",
+        "Klein",
+        "Zhou Mingrui\u2019s",
+        "Klein\u2019s",
+        "Klein Moretti\u2019s",
+        "Northern Continents",
+        "Dear Klein",
+        "Klein Spirit Vision",
+        "Beyonders Klein",
+        "Klein Beyonder",
+        "Where Klein"
+      ],
+      "present_blocks": [
+        3,
+        4,
+        6,
+        17,
+        23,
+        27,
+        29,
+        35,
+        37,
+        39,
+        41,
+        43,
+        45,
+        46,
+        47,
+        50,
+        51,
+        55,
+        57,
+        59,
+        60,
+        63,
+        66,
+        68,
+        69
+      ],
+      "looks": [
+        {
+          "look_id": "lord-of-the-mysteries:self:8f906ddc75:1:e0",
+          "entity_id": "lord-of-the-mysteries:self:8f906ddc75",
+          "epoch_label": "adult, grotesque wound with burn marks along its periphery",
+          "age_band": "adult",
+          "gender": "male",
+          "description": "Black hair, cropped close to the scalp, brown eyes, a medium build and average-looking features, wearing a charcoal grey frock coat and waistcoat over a white shirt, grotesque wound with burn marks along its periphery",
+          "facts": [
+            {
+              "field": "age_band",
+              "value": "adult",
+              "source_block": null,
+              "invented": true,
+              "reason": "no age cue in this stretch of the text"
+            },
+            {
+              "field": "gender",
+              "value": "male",
+              "source_block": null,
+              "invented": false,
+              "reason": "owner/graph value or pronoun evidence"
+            },
+            {
+              "field": "hair_colour",
+              "value": "Black",
+              "source_block": 36,
+              "invented": false,
+              "reason": ""
+            },
+            {
+              "field": "hair_style",
+              "value": "cropped close to the scalp",
+              "source_block": null,
+              "invented": true,
+              "reason": "colour stated, length and style not"
+            },
+            {
+              "field": "eyes",
+              "value": "brown eyes",
+              "source_block": 36,
+              "invented": false,
+              "reason": ""
+            },
+            {
+              "field": "build",
+              "value": "medium build",
+              "source_block": 67,
+              "invented": false,
+              "reason": ""
+            },
+            {
+              "field": "face",
+              "value": "average-looking features",
+              "source_block": 36,
+              "invented": false,
+              "reason": ""
+            },
+            {
+              "field": "clothes",
+              "value": "a charcoal grey frock coat and waistcoat over a white shirt",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no clothes here"
+            },
+            {
+              "field": "condition",
+              "value": "grotesque wound with burn marks along its periphery",
+              "source_block": 71,
+              "invented": false,
+              "reason": ""
+            }
+          ],
+          "hair": "Black hair, cropped close to the scalp",
+          "eyes": "brown eyes",
+          "build": "a medium build",
+          "face": "average-looking features",
+          "outfit": "a charcoal grey frock coat and waistcoat over a white shirt",
+          "condition": "grotesque wound with burn marks along its periphery",
+          "marks": "",
+          "block_from": 0,
+          "block_to": 72
+        }
+      ]
+    },
+    "lord-of-the-mysteries:self:7be2e09e43": {
+      "name": "Looking",
+      "names": [
+        "Looking"
+      ],
+      "present_blocks": [
+        36,
+        63
+      ],
+      "looks": [
+        {
+          "look_id": "lord-of-the-mysteries:self:7be2e09e43:1:e0",
+          "entity_id": "lord-of-the-mysteries:self:7be2e09e43",
+          "epoch_label": "adult, covered in blood",
+          "age_band": "adult",
+          "gender": "male",
+          "description": "Black hair, long and worn loose over the shoulders, brown eyes, a broad-shouldered build and average-looking features, wearing a deep navy frock coat and waistcoat over a white shirt, covered in blood",
+          "facts": [
+            {
+              "field": "age_band",
+              "value": "adult",
+              "source_block": null,
+              "invented": true,
+              "reason": "no age cue in this stretch of the text"
+            },
+            {
+              "field": "gender",
+              "value": "male",
+              "source_block": null,
+              "invented": false,
+              "reason": "owner/graph value or pronoun evidence"
+            },
+            {
+              "field": "hair_colour",
+              "value": "Black hair",
+              "source_block": 36,
+              "invented": false,
+              "reason": ""
+            },
+            {
+              "field": "hair_style",
+              "value": "long and worn loose over the shoulders",
+              "source_block": null,
+              "invented": true,
+              "reason": "colour stated, length and style not"
+            },
+            {
+              "field": "eyes",
+              "value": "brown eyes",
+              "source_block": 36,
+              "invented": false,
+              "reason": ""
+            },
+            {
+              "field": "build",
+              "value": "a broad-shouldered build",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no build"
+            },
+            {
+              "field": "face",
+              "value": "average-looking features",
+              "source_block": 36,
+              "invented": false,
+              "reason": ""
+            },
+            {
+              "field": "clothes",
+              "value": "a deep navy frock coat and waistcoat over a white shirt",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no clothes here"
+            },
+            {
+              "field": "condition",
+              "value": "covered in blood",
+              "source_block": 63,
+              "invented": false,
+              "reason": ""
+            }
+          ],
+          "hair": "Black hair, long and worn loose over the shoulders",
+          "eyes": "brown eyes",
+          "build": "a broad-shouldered build",
+          "face": "average-looking features",
+          "outfit": "a deep navy frock coat and waistcoat over a white shirt",
+          "condition": "covered in blood",
+          "marks": "",
+          "block_from": 0,
+          "block_to": 72
+        }
+      ]
+    },
+    "lord-of-the-mysteries:self:5bd59d4aeb": {
+      "name": "Clearly",
+      "names": [
+        "Clearly"
+      ],
+      "present_blocks": [
+        67,
+        69,
+        72
+      ],
+      "looks": [
+        {
+          "look_id": "lord-of-the-mysteries:self:5bd59d4aeb:1:e0",
+          "entity_id": "lord-of-the-mysteries:self:5bd59d4aeb",
+          "epoch_label": "adult",
+          "age_band": "adult",
+          "gender": "male",
+          "description": "black-haired, long and worn loose over the shoulders, brown eyes, a medium build and a broad forehead and thin lips, wearing a deep navy frock coat and waistcoat over a white shirt",
+          "facts": [
+            {
+              "field": "age_band",
+              "value": "adult",
+              "source_block": null,
+              "invented": true,
+              "reason": "no age cue in this stretch of the text"
+            },
+            {
+              "field": "gender",
+              "value": "male",
+              "source_block": null,
+              "invented": false,
+              "reason": "owner/graph value or pronoun evidence"
+            },
+            {
+              "field": "hair_colour",
+              "value": "black-haired",
+              "source_block": 67,
+              "invented": false,
+              "reason": ""
+            },
+            {
+              "field": "hair_style",
+              "value": "long and worn loose over the shoulders",
+              "source_block": null,
+              "invented": true,
+              "reason": "colour stated, length and style not"
+            },
+            {
+              "field": "eyes",
+              "value": "brown eyes",
+              "source_block": 67,
+              "invented": false,
+              "reason": ""
+            },
+            {
+              "field": "build",
+              "value": "medium build",
+              "source_block": 67,
+              "invented": false,
+              "reason": ""
+            },
+            {
+              "field": "face",
+              "value": "a broad forehead and thin lips",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no face; chosen per person"
+            },
+            {
+              "field": "clothes",
+              "value": "a deep navy frock coat and waistcoat over a white shirt",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no clothes here"
+            }
+          ],
+          "hair": "black-haired, long and worn loose over the shoulders",
+          "eyes": "brown eyes",
+          "build": "a medium build",
+          "face": "a broad forehead and thin lips",
+          "outfit": "a deep navy frock coat and waistcoat over a white shirt",
+          "condition": "",
+          "marks": "",
+          "block_from": 0,
+          "block_to": 72
+        }
+      ]
+    }
+  },
+  "windows": [
+    {
+      "blocks": [
+        0,
+        26
+      ],
+      "present": [
+        "lord-of-the-mysteries:self:8a02b75841",
+        "lord-of-the-mysteries:self:ba4bdde665",
+        "lord-of-the-mysteries:self:2aaf67a520",
+        "lord-of-the-mysteries:self:8b9223a566",
+        "lord-of-the-mysteries:self:ddae5cc270",
+        "lord-of-the-mysteries:self:6663efd169",
+        "lord-of-the-mysteries:self:901c8ae4bc",
+        "lord-of-the-mysteries:self:6518c7008c",
+        "lord-of-the-mysteries:self:8f906ddc75"
+      ]
+    },
+    {
+      "blocks": [
+        27,
+        50
+      ],
+      "present": [
+        "lord-of-the-mysteries:self:e9566eddb5",
+        "lord-of-the-mysteries:self:7c1b075d90",
+        "lord-of-the-mysteries:self:f311ba2b8e",
+        "lord-of-the-mysteries:self:98482ecef6",
+        "lord-of-the-mysteries:self:6663efd169",
+        "lord-of-the-mysteries:self:d88f46e74c",
+        "lord-of-the-mysteries:self:399ab53b0e",
+        "lord-of-the-mysteries:self:e41f3f19c8",
+        "lord-of-the-mysteries:self:65f475a183",
+        "lord-of-the-mysteries:self:8f906ddc75",
+        "lord-of-the-mysteries:self:7be2e09e43"
+      ]
+    },
+    {
+      "blocks": [
+        51,
+        72
+      ],
+      "present": [
+        "lord-of-the-mysteries:self:ddae5cc270",
+        "lord-of-the-mysteries:self:7c1b075d90",
+        "lord-of-the-mysteries:self:51d4b35ff5",
+        "lord-of-the-mysteries:self:7c8996b398",
+        "lord-of-the-mysteries:self:6663efd169",
+        "lord-of-the-mysteries:self:61e12d8f40",
+        "lord-of-the-mysteries:self:8f906ddc75",
+        "lord-of-the-mysteries:self:7be2e09e43",
+        "lord-of-the-mysteries:self:5bd59d4aeb"
+      ]
+    }
+  ],
+  "pairs": [
+    {
+      "window": [
+        0,
+        26
+      ],
+      "a": "lord-of-the-mysteries:self:8a02b75841",
+      "b": "lord-of-the-mysteries:self:ba4bdde665",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        0,
+        26
+      ],
+      "a": "lord-of-the-mysteries:self:8a02b75841",
+      "b": "lord-of-the-mysteries:self:2aaf67a520",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "hair",
+        "age_band"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        0,
+        26
+      ],
+      "a": "lord-of-the-mysteries:self:8a02b75841",
+      "b": "lord-of-the-mysteries:self:8b9223a566",
+      "before_distinct_dims": 3,
+      "before_same": [
+        "age_band"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        0,
+        26
+      ],
+      "a": "lord-of-the-mysteries:self:8a02b75841",
+      "b": "lord-of-the-mysteries:self:ddae5cc270",
+      "before_distinct_dims": 3,
+      "before_same": [
+        "age_band"
+      ],
+      "after_distinct_dims": 2,
+      "after_same": [
+        "hair",
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        0,
+        26
+      ],
+      "a": "lord-of-the-mysteries:self:8a02b75841",
+      "b": "lord-of-the-mysteries:self:6663efd169",
+      "before_distinct_dims": 1,
+      "before_same": [
+        "hair",
+        "age_band",
+        "clothes"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        0,
+        26
+      ],
+      "a": "lord-of-the-mysteries:self:8a02b75841",
+      "b": "lord-of-the-mysteries:self:901c8ae4bc",
+      "before_distinct_dims": 3,
+      "before_same": [
+        "age_band"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        0,
+        26
+      ],
+      "a": "lord-of-the-mysteries:self:8a02b75841",
+      "b": "lord-of-the-mysteries:self:6518c7008c",
+      "before_distinct_dims": 3,
+      "before_same": [
+        "age_band"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        0,
+        26
+      ],
+      "a": "lord-of-the-mysteries:self:8a02b75841",
+      "b": "lord-of-the-mysteries:self:8f906ddc75",
+      "before_distinct_dims": 3,
+      "before_same": [
+        "age_band"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        0,
+        26
+      ],
+      "a": "lord-of-the-mysteries:self:ba4bdde665",
+      "b": "lord-of-the-mysteries:self:2aaf67a520",
+      "before_distinct_dims": 3,
+      "before_same": [
+        "age_band"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        0,
+        26
+      ],
+      "a": "lord-of-the-mysteries:self:ba4bdde665",
+      "b": "lord-of-the-mysteries:self:8b9223a566",
+      "before_distinct_dims": 3,
+      "before_same": [
+        "age_band"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        0,
+        26
+      ],
+      "a": "lord-of-the-mysteries:self:ba4bdde665",
+      "b": "lord-of-the-mysteries:self:ddae5cc270",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "hair",
+        "age_band"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        0,
+        26
+      ],
+      "a": "lord-of-the-mysteries:self:ba4bdde665",
+      "b": "lord-of-the-mysteries:self:6663efd169",
+      "before_distinct_dims": 3,
+      "before_same": [
+        "age_band"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        0,
+        26
+      ],
+      "a": "lord-of-the-mysteries:self:ba4bdde665",
+      "b": "lord-of-the-mysteries:self:901c8ae4bc",
+      "before_distinct_dims": 1,
+      "before_same": [
+        "hair",
+        "age_band",
+        "clothes"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        0,
+        26
+      ],
+      "a": "lord-of-the-mysteries:self:ba4bdde665",
+      "b": "lord-of-the-mysteries:self:6518c7008c",
+      "before_distinct_dims": 3,
+      "before_same": [
+        "age_band"
+      ],
+      "after_distinct_dims": 2,
+      "after_same": [
+        "age_band",
+        "clothes"
+      ]
+    },
+    {
+      "window": [
+        0,
+        26
+      ],
+      "a": "lord-of-the-mysteries:self:ba4bdde665",
+      "b": "lord-of-the-mysteries:self:8f906ddc75",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "hair",
+        "age_band"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        0,
+        26
+      ],
+      "a": "lord-of-the-mysteries:self:2aaf67a520",
+      "b": "lord-of-the-mysteries:self:8b9223a566",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        0,
+        26
+      ],
+      "a": "lord-of-the-mysteries:self:2aaf67a520",
+      "b": "lord-of-the-mysteries:self:ddae5cc270",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        0,
+        26
+      ],
+      "a": "lord-of-the-mysteries:self:2aaf67a520",
+      "b": "lord-of-the-mysteries:self:6663efd169",
+      "before_distinct_dims": 1,
+      "before_same": [
+        "hair",
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        0,
+        26
+      ],
+      "a": "lord-of-the-mysteries:self:2aaf67a520",
+      "b": "lord-of-the-mysteries:self:901c8ae4bc",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        0,
+        26
+      ],
+      "a": "lord-of-the-mysteries:self:2aaf67a520",
+      "b": "lord-of-the-mysteries:self:6518c7008c",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        0,
+        26
+      ],
+      "a": "lord-of-the-mysteries:self:2aaf67a520",
+      "b": "lord-of-the-mysteries:self:8f906ddc75",
+      "before_distinct_dims": 1,
+      "before_same": [
+        "age_band",
+        "clothes",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        0,
+        26
+      ],
+      "a": "lord-of-the-mysteries:self:8b9223a566",
+      "b": "lord-of-the-mysteries:self:ddae5cc270",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        0,
+        26
+      ],
+      "a": "lord-of-the-mysteries:self:8b9223a566",
+      "b": "lord-of-the-mysteries:self:6663efd169",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        0,
+        26
+      ],
+      "a": "lord-of-the-mysteries:self:8b9223a566",
+      "b": "lord-of-the-mysteries:self:901c8ae4bc",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        0,
+        26
+      ],
+      "a": "lord-of-the-mysteries:self:8b9223a566",
+      "b": "lord-of-the-mysteries:self:6518c7008c",
+      "before_distinct_dims": 1,
+      "before_same": [
+        "hair",
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        0,
+        26
+      ],
+      "a": "lord-of-the-mysteries:self:8b9223a566",
+      "b": "lord-of-the-mysteries:self:8f906ddc75",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        0,
+        26
+      ],
+      "a": "lord-of-the-mysteries:self:ddae5cc270",
+      "b": "lord-of-the-mysteries:self:6663efd169",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        0,
+        26
+      ],
+      "a": "lord-of-the-mysteries:self:ddae5cc270",
+      "b": "lord-of-the-mysteries:self:901c8ae4bc",
+      "before_distinct_dims": 1,
+      "before_same": [
+        "hair",
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 2,
+      "after_same": [
+        "age_band",
+        "clothes"
+      ]
+    },
+    {
+      "window": [
+        0,
+        26
+      ],
+      "a": "lord-of-the-mysteries:self:ddae5cc270",
+      "b": "lord-of-the-mysteries:self:6518c7008c",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        0,
+        26
+      ],
+      "a": "lord-of-the-mysteries:self:ddae5cc270",
+      "b": "lord-of-the-mysteries:self:8f906ddc75",
+      "before_distinct_dims": 1,
+      "before_same": [
+        "hair",
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        0,
+        26
+      ],
+      "a": "lord-of-the-mysteries:self:6663efd169",
+      "b": "lord-of-the-mysteries:self:901c8ae4bc",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        0,
+        26
+      ],
+      "a": "lord-of-the-mysteries:self:6663efd169",
+      "b": "lord-of-the-mysteries:self:6518c7008c",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        0,
+        26
+      ],
+      "a": "lord-of-the-mysteries:self:6663efd169",
+      "b": "lord-of-the-mysteries:self:8f906ddc75",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 2,
+      "after_same": [
+        "age_band",
+        "clothes"
+      ]
+    },
+    {
+      "window": [
+        0,
+        26
+      ],
+      "a": "lord-of-the-mysteries:self:901c8ae4bc",
+      "b": "lord-of-the-mysteries:self:6518c7008c",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        0,
+        26
+      ],
+      "a": "lord-of-the-mysteries:self:901c8ae4bc",
+      "b": "lord-of-the-mysteries:self:8f906ddc75",
+      "before_distinct_dims": 1,
+      "before_same": [
+        "hair",
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        0,
+        26
+      ],
+      "a": "lord-of-the-mysteries:self:6518c7008c",
+      "b": "lord-of-the-mysteries:self:8f906ddc75",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 2,
+      "after_same": [
+        "hair",
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:e9566eddb5",
+      "b": "lord-of-the-mysteries:self:7c1b075d90",
+      "before_distinct_dims": 3,
+      "before_same": [
+        "age_band"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:e9566eddb5",
+      "b": "lord-of-the-mysteries:self:f311ba2b8e",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "age_band",
+        "clothes"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:e9566eddb5",
+      "b": "lord-of-the-mysteries:self:98482ecef6",
+      "before_distinct_dims": 1,
+      "before_same": [
+        "age_band",
+        "clothes",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:e9566eddb5",
+      "b": "lord-of-the-mysteries:self:6663efd169",
+      "before_distinct_dims": 1,
+      "before_same": [
+        "hair",
+        "age_band",
+        "clothes"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:e9566eddb5",
+      "b": "lord-of-the-mysteries:self:d88f46e74c",
+      "before_distinct_dims": 3,
+      "before_same": [
+        "age_band"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:e9566eddb5",
+      "b": "lord-of-the-mysteries:self:399ab53b0e",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:e9566eddb5",
+      "b": "lord-of-the-mysteries:self:e41f3f19c8",
+      "before_distinct_dims": 3,
+      "before_same": [
+        "age_band"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:e9566eddb5",
+      "b": "lord-of-the-mysteries:self:65f475a183",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "hair",
+        "age_band"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:e9566eddb5",
+      "b": "lord-of-the-mysteries:self:8f906ddc75",
+      "before_distinct_dims": 3,
+      "before_same": [
+        "age_band"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:e9566eddb5",
+      "b": "lord-of-the-mysteries:self:7be2e09e43",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:7c1b075d90",
+      "b": "lord-of-the-mysteries:self:f311ba2b8e",
+      "before_distinct_dims": 1,
+      "before_same": [
+        "hair",
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:7c1b075d90",
+      "b": "lord-of-the-mysteries:self:98482ecef6",
+      "before_distinct_dims": 3,
+      "before_same": [
+        "age_band"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:7c1b075d90",
+      "b": "lord-of-the-mysteries:self:6663efd169",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:7c1b075d90",
+      "b": "lord-of-the-mysteries:self:d88f46e74c",
+      "before_distinct_dims": 1,
+      "before_same": [
+        "age_band",
+        "clothes",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:7c1b075d90",
+      "b": "lord-of-the-mysteries:self:399ab53b0e",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "age_band",
+        "clothes"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:7c1b075d90",
+      "b": "lord-of-the-mysteries:self:e41f3f19c8",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:7c1b075d90",
+      "b": "lord-of-the-mysteries:self:65f475a183",
+      "before_distinct_dims": 1,
+      "before_same": [
+        "age_band",
+        "clothes",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:7c1b075d90",
+      "b": "lord-of-the-mysteries:self:8f906ddc75",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:7c1b075d90",
+      "b": "lord-of-the-mysteries:self:7be2e09e43",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "hair",
+        "age_band"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:f311ba2b8e",
+      "b": "lord-of-the-mysteries:self:98482ecef6",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "age_band",
+        "clothes"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:f311ba2b8e",
+      "b": "lord-of-the-mysteries:self:6663efd169",
+      "before_distinct_dims": 1,
+      "before_same": [
+        "age_band",
+        "clothes",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:f311ba2b8e",
+      "b": "lord-of-the-mysteries:self:d88f46e74c",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:f311ba2b8e",
+      "b": "lord-of-the-mysteries:self:399ab53b0e",
+      "before_distinct_dims": 3,
+      "before_same": [
+        "age_band"
+      ],
+      "after_distinct_dims": 2,
+      "after_same": [
+        "age_band",
+        "clothes"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:f311ba2b8e",
+      "b": "lord-of-the-mysteries:self:e41f3f19c8",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:f311ba2b8e",
+      "b": "lord-of-the-mysteries:self:65f475a183",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 2,
+      "after_same": [
+        "age_band",
+        "build_face"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:f311ba2b8e",
+      "b": "lord-of-the-mysteries:self:8f906ddc75",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:f311ba2b8e",
+      "b": "lord-of-the-mysteries:self:7be2e09e43",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "hair",
+        "age_band"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:98482ecef6",
+      "b": "lord-of-the-mysteries:self:6663efd169",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "age_band",
+        "clothes"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:98482ecef6",
+      "b": "lord-of-the-mysteries:self:d88f46e74c",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "hair",
+        "age_band"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:98482ecef6",
+      "b": "lord-of-the-mysteries:self:399ab53b0e",
+      "before_distinct_dims": 1,
+      "before_same": [
+        "hair",
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:98482ecef6",
+      "b": "lord-of-the-mysteries:self:e41f3f19c8",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "hair",
+        "age_band"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:98482ecef6",
+      "b": "lord-of-the-mysteries:self:65f475a183",
+      "before_distinct_dims": 3,
+      "before_same": [
+        "age_band"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:98482ecef6",
+      "b": "lord-of-the-mysteries:self:8f906ddc75",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "hair",
+        "age_band"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:98482ecef6",
+      "b": "lord-of-the-mysteries:self:7be2e09e43",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:6663efd169",
+      "b": "lord-of-the-mysteries:self:d88f46e74c",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:6663efd169",
+      "b": "lord-of-the-mysteries:self:399ab53b0e",
+      "before_distinct_dims": 3,
+      "before_same": [
+        "age_band"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:6663efd169",
+      "b": "lord-of-the-mysteries:self:e41f3f19c8",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:6663efd169",
+      "b": "lord-of-the-mysteries:self:65f475a183",
+      "before_distinct_dims": 1,
+      "before_same": [
+        "hair",
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:6663efd169",
+      "b": "lord-of-the-mysteries:self:8f906ddc75",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 2,
+      "after_same": [
+        "age_band",
+        "clothes"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:6663efd169",
+      "b": "lord-of-the-mysteries:self:7be2e09e43",
+      "before_distinct_dims": 3,
+      "before_same": [
+        "age_band"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:d88f46e74c",
+      "b": "lord-of-the-mysteries:self:399ab53b0e",
+      "before_distinct_dims": 1,
+      "before_same": [
+        "hair",
+        "age_band",
+        "clothes"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:d88f46e74c",
+      "b": "lord-of-the-mysteries:self:e41f3f19c8",
+      "before_distinct_dims": 1,
+      "before_same": [
+        "hair",
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:d88f46e74c",
+      "b": "lord-of-the-mysteries:self:65f475a183",
+      "before_distinct_dims": 1,
+      "before_same": [
+        "age_band",
+        "clothes",
+        "build_face"
+      ],
+      "after_distinct_dims": 2,
+      "after_same": [
+        "age_band",
+        "clothes"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:d88f46e74c",
+      "b": "lord-of-the-mysteries:self:8f906ddc75",
+      "before_distinct_dims": 1,
+      "before_same": [
+        "hair",
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:d88f46e74c",
+      "b": "lord-of-the-mysteries:self:7be2e09e43",
+      "before_distinct_dims": 3,
+      "before_same": [
+        "age_band"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:399ab53b0e",
+      "b": "lord-of-the-mysteries:self:e41f3f19c8",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "hair",
+        "age_band"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:399ab53b0e",
+      "b": "lord-of-the-mysteries:self:65f475a183",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "age_band",
+        "clothes"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:399ab53b0e",
+      "b": "lord-of-the-mysteries:self:8f906ddc75",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "hair",
+        "age_band"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:399ab53b0e",
+      "b": "lord-of-the-mysteries:self:7be2e09e43",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:e41f3f19c8",
+      "b": "lord-of-the-mysteries:self:65f475a183",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:e41f3f19c8",
+      "b": "lord-of-the-mysteries:self:8f906ddc75",
+      "before_distinct_dims": 0,
+      "before_same": [
+        "hair",
+        "age_band",
+        "clothes",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:e41f3f19c8",
+      "b": "lord-of-the-mysteries:self:7be2e09e43",
+      "before_distinct_dims": 3,
+      "before_same": [
+        "age_band"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:65f475a183",
+      "b": "lord-of-the-mysteries:self:8f906ddc75",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:65f475a183",
+      "b": "lord-of-the-mysteries:self:7be2e09e43",
+      "before_distinct_dims": 3,
+      "before_same": [
+        "age_band"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        27,
+        50
+      ],
+      "a": "lord-of-the-mysteries:self:8f906ddc75",
+      "b": "lord-of-the-mysteries:self:7be2e09e43",
+      "before_distinct_dims": 3,
+      "before_same": [
+        "age_band"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        51,
+        72
+      ],
+      "a": "lord-of-the-mysteries:self:ddae5cc270",
+      "b": "lord-of-the-mysteries:self:7c1b075d90",
+      "before_distinct_dims": 1,
+      "before_same": [
+        "age_band",
+        "clothes",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        51,
+        72
+      ],
+      "a": "lord-of-the-mysteries:self:ddae5cc270",
+      "b": "lord-of-the-mysteries:self:51d4b35ff5",
+      "before_distinct_dims": 1,
+      "before_same": [
+        "age_band",
+        "clothes",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        51,
+        72
+      ],
+      "a": "lord-of-the-mysteries:self:ddae5cc270",
+      "b": "lord-of-the-mysteries:self:7c8996b398",
+      "before_distinct_dims": 3,
+      "before_same": [
+        "age_band"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        51,
+        72
+      ],
+      "a": "lord-of-the-mysteries:self:ddae5cc270",
+      "b": "lord-of-the-mysteries:self:6663efd169",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        51,
+        72
+      ],
+      "a": "lord-of-the-mysteries:self:ddae5cc270",
+      "b": "lord-of-the-mysteries:self:61e12d8f40",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        51,
+        72
+      ],
+      "a": "lord-of-the-mysteries:self:ddae5cc270",
+      "b": "lord-of-the-mysteries:self:8f906ddc75",
+      "before_distinct_dims": 1,
+      "before_same": [
+        "hair",
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        51,
+        72
+      ],
+      "a": "lord-of-the-mysteries:self:ddae5cc270",
+      "b": "lord-of-the-mysteries:self:7be2e09e43",
+      "before_distinct_dims": 3,
+      "before_same": [
+        "age_band"
+      ],
+      "after_distinct_dims": 2,
+      "after_same": [
+        "age_band",
+        "clothes"
+      ]
+    },
+    {
+      "window": [
+        51,
+        72
+      ],
+      "a": "lord-of-the-mysteries:self:ddae5cc270",
+      "b": "lord-of-the-mysteries:self:5bd59d4aeb",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "hair",
+        "age_band"
+      ],
+      "after_distinct_dims": 2,
+      "after_same": [
+        "age_band",
+        "clothes"
+      ]
+    },
+    {
+      "window": [
+        51,
+        72
+      ],
+      "a": "lord-of-the-mysteries:self:7c1b075d90",
+      "b": "lord-of-the-mysteries:self:51d4b35ff5",
+      "before_distinct_dims": 1,
+      "before_same": [
+        "age_band",
+        "clothes",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        51,
+        72
+      ],
+      "a": "lord-of-the-mysteries:self:7c1b075d90",
+      "b": "lord-of-the-mysteries:self:7c8996b398",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "hair",
+        "age_band"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        51,
+        72
+      ],
+      "a": "lord-of-the-mysteries:self:7c1b075d90",
+      "b": "lord-of-the-mysteries:self:6663efd169",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        51,
+        72
+      ],
+      "a": "lord-of-the-mysteries:self:7c1b075d90",
+      "b": "lord-of-the-mysteries:self:61e12d8f40",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        51,
+        72
+      ],
+      "a": "lord-of-the-mysteries:self:7c1b075d90",
+      "b": "lord-of-the-mysteries:self:8f906ddc75",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        51,
+        72
+      ],
+      "a": "lord-of-the-mysteries:self:7c1b075d90",
+      "b": "lord-of-the-mysteries:self:7be2e09e43",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "hair",
+        "age_band"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        51,
+        72
+      ],
+      "a": "lord-of-the-mysteries:self:7c1b075d90",
+      "b": "lord-of-the-mysteries:self:5bd59d4aeb",
+      "before_distinct_dims": 3,
+      "before_same": [
+        "age_band"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        51,
+        72
+      ],
+      "a": "lord-of-the-mysteries:self:51d4b35ff5",
+      "b": "lord-of-the-mysteries:self:7c8996b398",
+      "before_distinct_dims": 3,
+      "before_same": [
+        "age_band"
+      ],
+      "after_distinct_dims": 2,
+      "after_same": [
+        "age_band",
+        "clothes"
+      ]
+    },
+    {
+      "window": [
+        51,
+        72
+      ],
+      "a": "lord-of-the-mysteries:self:51d4b35ff5",
+      "b": "lord-of-the-mysteries:self:6663efd169",
+      "before_distinct_dims": 1,
+      "before_same": [
+        "hair",
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        51,
+        72
+      ],
+      "a": "lord-of-the-mysteries:self:51d4b35ff5",
+      "b": "lord-of-the-mysteries:self:61e12d8f40",
+      "before_distinct_dims": 1,
+      "before_same": [
+        "hair",
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        51,
+        72
+      ],
+      "a": "lord-of-the-mysteries:self:51d4b35ff5",
+      "b": "lord-of-the-mysteries:self:8f906ddc75",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        51,
+        72
+      ],
+      "a": "lord-of-the-mysteries:self:51d4b35ff5",
+      "b": "lord-of-the-mysteries:self:7be2e09e43",
+      "before_distinct_dims": 3,
+      "before_same": [
+        "age_band"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        51,
+        72
+      ],
+      "a": "lord-of-the-mysteries:self:51d4b35ff5",
+      "b": "lord-of-the-mysteries:self:5bd59d4aeb",
+      "before_distinct_dims": 3,
+      "before_same": [
+        "age_band"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        51,
+        72
+      ],
+      "a": "lord-of-the-mysteries:self:7c8996b398",
+      "b": "lord-of-the-mysteries:self:6663efd169",
+      "before_distinct_dims": 3,
+      "before_same": [
+        "age_band"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        51,
+        72
+      ],
+      "a": "lord-of-the-mysteries:self:7c8996b398",
+      "b": "lord-of-the-mysteries:self:61e12d8f40",
+      "before_distinct_dims": 3,
+      "before_same": [
+        "age_band"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        51,
+        72
+      ],
+      "a": "lord-of-the-mysteries:self:7c8996b398",
+      "b": "lord-of-the-mysteries:self:8f906ddc75",
+      "before_distinct_dims": 3,
+      "before_same": [
+        "age_band"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        51,
+        72
+      ],
+      "a": "lord-of-the-mysteries:self:7c8996b398",
+      "b": "lord-of-the-mysteries:self:7be2e09e43",
+      "before_distinct_dims": 1,
+      "before_same": [
+        "hair",
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        51,
+        72
+      ],
+      "a": "lord-of-the-mysteries:self:7c8996b398",
+      "b": "lord-of-the-mysteries:self:5bd59d4aeb",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        51,
+        72
+      ],
+      "a": "lord-of-the-mysteries:self:6663efd169",
+      "b": "lord-of-the-mysteries:self:61e12d8f40",
+      "before_distinct_dims": 1,
+      "before_same": [
+        "hair",
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 2,
+      "after_same": [
+        "age_band",
+        "clothes"
+      ]
+    },
+    {
+      "window": [
+        51,
+        72
+      ],
+      "a": "lord-of-the-mysteries:self:6663efd169",
+      "b": "lord-of-the-mysteries:self:8f906ddc75",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 2,
+      "after_same": [
+        "age_band",
+        "clothes"
+      ]
+    },
+    {
+      "window": [
+        51,
+        72
+      ],
+      "a": "lord-of-the-mysteries:self:6663efd169",
+      "b": "lord-of-the-mysteries:self:7be2e09e43",
+      "before_distinct_dims": 3,
+      "before_same": [
+        "age_band"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        51,
+        72
+      ],
+      "a": "lord-of-the-mysteries:self:6663efd169",
+      "b": "lord-of-the-mysteries:self:5bd59d4aeb",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "age_band",
+        "clothes"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        51,
+        72
+      ],
+      "a": "lord-of-the-mysteries:self:61e12d8f40",
+      "b": "lord-of-the-mysteries:self:8f906ddc75",
+      "before_distinct_dims": 1,
+      "before_same": [
+        "age_band",
+        "clothes",
+        "build_face"
+      ],
+      "after_distinct_dims": 2,
+      "after_same": [
+        "age_band",
+        "clothes"
+      ]
+    },
+    {
+      "window": [
+        51,
+        72
+      ],
+      "a": "lord-of-the-mysteries:self:61e12d8f40",
+      "b": "lord-of-the-mysteries:self:7be2e09e43",
+      "before_distinct_dims": 3,
+      "before_same": [
+        "age_band"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        51,
+        72
+      ],
+      "a": "lord-of-the-mysteries:self:61e12d8f40",
+      "b": "lord-of-the-mysteries:self:5bd59d4aeb",
+      "before_distinct_dims": 3,
+      "before_same": [
+        "age_band"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        51,
+        72
+      ],
+      "a": "lord-of-the-mysteries:self:8f906ddc75",
+      "b": "lord-of-the-mysteries:self:7be2e09e43",
+      "before_distinct_dims": 3,
+      "before_same": [
+        "age_band"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        51,
+        72
+      ],
+      "a": "lord-of-the-mysteries:self:8f906ddc75",
+      "b": "lord-of-the-mysteries:self:5bd59d4aeb",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "hair",
+        "age_band"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        51,
+        72
+      ],
+      "a": "lord-of-the-mysteries:self:7be2e09e43",
+      "b": "lord-of-the-mysteries:self:5bd59d4aeb",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 2,
+      "after_same": [
+        "age_band",
+        "clothes"
+      ]
+    }
+  ],
+  "before": {
+    "lord-of-the-mysteries:self:8a02b75841": {
+      "hair": "short black hair neatly combed",
+      "age_band": "adult",
+      "clothes": "a deep maroon frock coat and waistcoat over a white shirt",
+      "build_face": "an average build"
+    },
+    "lord-of-the-mysteries:self:ba4bdde665": {
+      "hair": "medium-length black hair combed to one side",
+      "age_band": "adult",
+      "clothes": "a black frock coat and waistcoat over a white shirt",
+      "build_face": "an average build"
+    },
+    "lord-of-the-mysteries:self:2aaf67a520": {
+      "hair": "short black hair neatly combed",
+      "age_band": "adult",
+      "clothes": "a dark green frock coat and waistcoat over a white shirt",
+      "build_face": "a lean build"
+    },
+    "lord-of-the-mysteries:self:8b9223a566": {
+      "hair": "short black hair swept back",
+      "age_band": "adult",
+      "clothes": "a charcoal grey frock coat and waistcoat over a white shirt",
+      "build_face": "a lean build"
+    },
+    "lord-of-the-mysteries:self:ddae5cc270": {
+      "hair": "medium-length black hair combed to one side",
+      "age_band": "adult",
+      "clothes": "a deep brown frock coat and waistcoat over a white shirt",
+      "build_face": "a lean build"
+    },
+    "lord-of-the-mysteries:self:e9566eddb5": {
+      "hair": "short black hair neatly combed",
+      "age_band": "adult",
+      "clothes": "a deep maroon frock coat and waistcoat over a white shirt",
+      "build_face": "an average build"
+    },
+    "lord-of-the-mysteries:self:7c1b075d90": {
+      "hair": "short black hair swept back",
+      "age_band": "adult",
+      "clothes": "a deep brown frock coat and waistcoat over a white shirt",
+      "build_face": "a lean build"
+    },
+    "lord-of-the-mysteries:self:f311ba2b8e": {
+      "hair": "short black hair swept back",
+      "age_band": "adult",
+      "clothes": "a deep maroon frock coat and waistcoat over a white shirt",
+      "build_face": "a lean build"
+    },
+    "lord-of-the-mysteries:self:98482ecef6": {
+      "hair": "medium-length black hair combed to one side",
+      "age_band": "adult",
+      "clothes": "a deep maroon frock coat and waistcoat over a white shirt",
+      "build_face": "an average build"
+    },
+    "lord-of-the-mysteries:self:51d4b35ff5": {
+      "hair": "short black hair neatly combed",
+      "age_band": "adult",
+      "clothes": "a deep brown frock coat and waistcoat over a white shirt",
+      "build_face": "a lean build"
+    },
+    "lord-of-the-mysteries:self:7c8996b398": {
+      "hair": "short black hair swept back",
+      "age_band": "adult",
+      "clothes": "a charcoal grey frock coat and waistcoat over a white shirt",
+      "build_face": "an average build"
+    },
+    "lord-of-the-mysteries:self:6663efd169": {
+      "hair": "short black hair neatly combed",
+      "age_band": "adult",
+      "clothes": "a deep maroon frock coat and waistcoat over a white shirt",
+      "build_face": "a lean build"
+    },
+    "lord-of-the-mysteries:self:d88f46e74c": {
+      "hair": "medium-length black hair combed to one side",
+      "age_band": "adult",
+      "clothes": "a deep brown frock coat and waistcoat over a white shirt",
+      "build_face": "a lean build"
+    },
+    "lord-of-the-mysteries:self:901c8ae4bc": {
+      "hair": "medium-length black hair combed to one side",
+      "age_band": "adult",
+      "clothes": "a black frock coat and waistcoat over a white shirt",
+      "build_face": "a lean build"
+    },
+    "lord-of-the-mysteries:self:399ab53b0e": {
+      "hair": "medium-length black hair combed to one side",
+      "age_band": "adult",
+      "clothes": "a deep brown frock coat and waistcoat over a white shirt",
+      "build_face": "an average build"
+    },
+    "lord-of-the-mysteries:self:61e12d8f40": {
+      "hair": "short black hair neatly combed",
+      "age_band": "adult",
+      "clothes": "a dark green frock coat and waistcoat over a white shirt",
+      "build_face": "a lean build"
+    },
+    "lord-of-the-mysteries:self:6518c7008c": {
+      "hair": "short black hair swept back",
+      "age_band": "adult",
+      "clothes": "a dark navy frock coat and waistcoat over a white shirt",
+      "build_face": "a lean build"
+    },
+    "lord-of-the-mysteries:self:e41f3f19c8": {
+      "hair": "medium-length black hair combed to one side",
+      "age_band": "adult",
+      "clothes": "a dark green frock coat and waistcoat over a white shirt",
+      "build_face": "a lean build"
+    },
+    "lord-of-the-mysteries:self:65f475a183": {
+      "hair": "short black hair neatly combed",
+      "age_band": "adult",
+      "clothes": "a deep brown frock coat and waistcoat over a white shirt",
+      "build_face": "a lean build"
+    },
+    "lord-of-the-mysteries:self:8f906ddc75": {
+      "hair": "medium-length black hair combed to one side",
+      "age_band": "adult",
+      "clothes": "a dark green frock coat and waistcoat over a white shirt",
+      "build_face": "a lean build"
+    },
+    "lord-of-the-mysteries:self:7be2e09e43": {
+      "hair": "short black hair swept back",
+      "age_band": "adult",
+      "clothes": "a black frock coat and waistcoat over a white shirt",
+      "build_face": "an average build"
+    },
+    "lord-of-the-mysteries:self:5bd59d4aeb": {
+      "hair": "medium-length black hair combed to one side",
+      "age_band": "adult",
+      "clothes": "a deep maroon frock coat and waistcoat over a white shirt",
+      "build_face": "an average build"
+    }
+  },
+  "totals": {
+    "pairs": 127,
+    "before_ok": 97,
+    "after_ok": 127
+  }
+}

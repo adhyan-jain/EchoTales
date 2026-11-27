@@ -1,0 +1,314 @@
+{
+  "novel": "pnp",
+  "chapter": 1.0,
+  "characters": {
+    "pnp:self:ee74e5a887": {
+      "name": "Mr. Bennet",
+      "names": [
+        "Mr. Bennet",
+        "Mr. Bennet\u2019s"
+      ],
+      "present_blocks": [
+        2,
+        3,
+        5
+      ],
+      "looks": [
+        {
+          "look_id": "pnp:self:ee74e5a887:1:e0",
+          "entity_id": "pnp:self:ee74e5a887",
+          "epoch_label": "adult",
+          "age_band": "adult",
+          "gender": "male",
+          "description": "deep brown-black hair, short and swept back, a tall wiry build and a sharp chin and deep-set eyes, wearing a plum frock coat and waistcoat over a white shirt",
+          "facts": [
+            {
+              "field": "age_band",
+              "value": "adult",
+              "source_block": null,
+              "invented": true,
+              "reason": "no age cue in this stretch of the text"
+            },
+            {
+              "field": "gender",
+              "value": "male",
+              "source_block": null,
+              "invented": false,
+              "reason": "owner/graph value or pronoun evidence"
+            },
+            {
+              "field": "hair",
+              "value": "deep brown-black hair, short and swept back",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no hair; chosen per person from the slot bank"
+            },
+            {
+              "field": "build",
+              "value": "a tall wiry build",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no build"
+            },
+            {
+              "field": "face",
+              "value": "a sharp chin and deep-set eyes",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no face; chosen per person"
+            },
+            {
+              "field": "clothes",
+              "value": "a plum frock coat and waistcoat over a white shirt",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no clothes here"
+            }
+          ],
+          "hair": "deep brown-black hair, short and swept back",
+          "eyes": "",
+          "build": "a tall wiry build",
+          "face": "a sharp chin and deep-set eyes",
+          "outfit": "a plum frock coat and waistcoat over a white shirt",
+          "condition": "",
+          "marks": "",
+          "block_from": 0,
+          "block_to": 7
+        }
+      ]
+    },
+    "pnp:self:cf15ce617a": {
+      "name": "Mrs. Long",
+      "names": [
+        "Mrs. Long"
+      ],
+      "present_blocks": [
+        4
+      ],
+      "looks": [
+        {
+          "look_id": "pnp:self:cf15ce617a:1:e0",
+          "entity_id": "pnp:self:cf15ce617a",
+          "epoch_label": "adult",
+          "age_band": "adult",
+          "gender": "female",
+          "description": "black hair, cropped close to the scalp, a slight build and a broad forehead and thin lips, wearing a plum long dress with a high collar",
+          "facts": [
+            {
+              "field": "age_band",
+              "value": "adult",
+              "source_block": null,
+              "invented": true,
+              "reason": "no age cue in this stretch of the text"
+            },
+            {
+              "field": "gender",
+              "value": "female",
+              "source_block": null,
+              "invented": false,
+              "reason": "owner/graph value or pronoun evidence"
+            },
+            {
+              "field": "hair",
+              "value": "black hair, cropped close to the scalp",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no hair; chosen per person from the slot bank"
+            },
+            {
+              "field": "build",
+              "value": "a slight build",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no build"
+            },
+            {
+              "field": "face",
+              "value": "a broad forehead and thin lips",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no face; chosen per person"
+            },
+            {
+              "field": "clothes",
+              "value": "a plum long dress with a high collar",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no clothes here"
+            }
+          ],
+          "hair": "black hair, cropped close to the scalp",
+          "eyes": "",
+          "build": "a slight build",
+          "face": "a broad forehead and thin lips",
+          "outfit": "a plum long dress with a high collar",
+          "condition": "",
+          "marks": "",
+          "block_from": 0,
+          "block_to": 7
+        }
+      ]
+    },
+    "pnp:self:393e24f68c": {
+      "name": "Netherfield Park",
+      "names": [
+        "Netherfield Park"
+      ],
+      "present_blocks": [
+        2
+      ],
+      "looks": [
+        {
+          "look_id": "pnp:self:393e24f68c:1:e0",
+          "entity_id": "pnp:self:393e24f68c",
+          "epoch_label": "adult",
+          "age_band": "adult",
+          "gender": "male",
+          "description": "chestnut brown hair, medium-length, combed to one side, a slight build and a sharp chin and deep-set eyes, wearing a charcoal grey frock coat and waistcoat over a white shirt",
+          "facts": [
+            {
+              "field": "age_band",
+              "value": "adult",
+              "source_block": null,
+              "invented": true,
+              "reason": "no age cue in this stretch of the text"
+            },
+            {
+              "field": "gender",
+              "value": "male",
+              "source_block": null,
+              "invented": false,
+              "reason": "owner/graph value or pronoun evidence"
+            },
+            {
+              "field": "hair",
+              "value": "chestnut brown hair, medium-length, combed to one side",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no hair; chosen per person from the slot bank"
+            },
+            {
+              "field": "build",
+              "value": "a slight build",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no build"
+            },
+            {
+              "field": "face",
+              "value": "a sharp chin and deep-set eyes",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no face; chosen per person"
+            },
+            {
+              "field": "clothes",
+              "value": "a charcoal grey frock coat and waistcoat over a white shirt",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no clothes here"
+            }
+          ],
+          "hair": "chestnut brown hair, medium-length, combed to one side",
+          "eyes": "",
+          "build": "a slight build",
+          "face": "a sharp chin and deep-set eyes",
+          "outfit": "a charcoal grey frock coat and waistcoat over a white shirt",
+          "condition": "",
+          "marks": "",
+          "block_from": 0,
+          "block_to": 7
+        }
+      ]
+    }
+  },
+  "windows": [
+    {
+      "blocks": [
+        0,
+        7
+      ],
+      "present": [
+        "pnp:self:ee74e5a887",
+        "pnp:self:cf15ce617a",
+        "pnp:self:393e24f68c"
+      ]
+    }
+  ],
+  "pairs": [
+    {
+      "window": [
+        0,
+        7
+      ],
+      "a": "pnp:self:ee74e5a887",
+      "b": "pnp:self:cf15ce617a",
+      "before_distinct_dims": 3,
+      "before_same": [
+        "age_band"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        0,
+        7
+      ],
+      "a": "pnp:self:ee74e5a887",
+      "b": "pnp:self:393e24f68c",
+      "before_distinct_dims": 3,
+      "before_same": [
+        "age_band"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    },
+    {
+      "window": [
+        0,
+        7
+      ],
+      "a": "pnp:self:cf15ce617a",
+      "b": "pnp:self:393e24f68c",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 3,
+      "after_same": [
+        "age_band"
+      ]
+    }
+  ],
+  "before": {
+    "pnp:self:ee74e5a887": {
+      "hair": "short black hair neatly combed",
+      "age_band": "adult",
+      "clothes": "a deep maroon frock coat and waistcoat over a white shirt",
+      "build_face": "an average build"
+    },
+    "pnp:self:cf15ce617a": {
+      "hair": "medium-length black hair combed to one side",
+      "age_band": "adult",
+      "clothes": "a black frock coat and waistcoat over a white shirt",
+      "build_face": "a lean build"
+    },
+    "pnp:self:393e24f68c": {
+      "hair": "short black hair swept back",
+      "age_band": "adult",
+      "clothes": "a dark green frock coat and waistcoat over a white shirt",
+      "build_face": "a lean build"
+    }
+  },
+  "totals": {
+    "pairs": 3,
+    "before_ok": 3,
+    "after_ok": 3
+  }
+}

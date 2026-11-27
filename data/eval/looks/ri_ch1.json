@@ -1,0 +1,486 @@
+{
+  "novel": "reverend-insanity",
+  "chapter": 1.0,
+  "characters": {
+    "reverend-insanity:title:head_of_gu": {
+      "name": "head of gu",
+      "names": [
+        "head of gu",
+        "The clan head",
+        "Gu Yue clan head"
+      ],
+      "present_blocks": [
+        37,
+        40,
+        57,
+        59,
+        61,
+        64,
+        68,
+        73,
+        75,
+        78
+      ],
+      "looks": [
+        {
+          "look_id": "reverend-insanity:title:head_of_gu:1:e0",
+          "entity_id": "reverend-insanity:title:head_of_gu",
+          "epoch_label": "middle-aged",
+          "age_band": "middle-aged",
+          "gender": "male",
+          "description": "dark brown hair graying at the temples, shoulder-length and tied back with a cord, graying sideburns, eyes tightly shut, a broad-shouldered build and a long face with a straight nose, wearing ceremonial white robes",
+          "facts": [
+            {
+              "field": "age_band",
+              "value": "middle-aged",
+              "source_block": 37,
+              "invented": false,
+              "reason": ""
+            },
+            {
+              "field": "gender",
+              "value": "male",
+              "source_block": null,
+              "invented": false,
+              "reason": "owner/graph value or pronoun evidence"
+            },
+            {
+              "field": "hair_colour",
+              "value": "graying sideburns",
+              "source_block": 37,
+              "invented": false,
+              "reason": ""
+            },
+            {
+              "field": "hair",
+              "value": "dark brown hair graying at the temples, shoulder-length and tied back with a cord",
+              "source_block": null,
+              "invented": true,
+              "reason": "age band middle-aged and the person's own slot; the text states no hair"
+            },
+            {
+              "field": "eyes",
+              "value": "eyes tightly shut",
+              "source_block": 37,
+              "invented": false,
+              "reason": ""
+            },
+            {
+              "field": "build",
+              "value": "a broad-shouldered build",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no build"
+            },
+            {
+              "field": "face",
+              "value": "a long face with a straight nose",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no face; chosen per person"
+            },
+            {
+              "field": "clothes",
+              "value": "ceremonial white robes",
+              "source_block": 37,
+              "invented": false,
+              "reason": ""
+            }
+          ],
+          "hair": "dark brown hair graying at the temples, shoulder-length and tied back with a cord, graying sideburns",
+          "eyes": "eyes tightly shut",
+          "build": "a broad-shouldered build",
+          "face": "a long face with a straight nose",
+          "outfit": "ceremonial white robes",
+          "condition": "",
+          "marks": "",
+          "block_from": 0,
+          "block_to": 91
+        }
+      ]
+    },
+    "reverend-insanity:self:476821534c": {
+      "name": "Fang Yuan",
+      "names": [
+        "Fang Yuan",
+        "Gu Yue Fang Yuan"
+      ],
+      "present_blocks": [
+        0,
+        2,
+        5,
+        7,
+        10,
+        12,
+        13,
+        15,
+        17,
+        18,
+        22,
+        25,
+        29,
+        58,
+        59,
+        67,
+        80,
+        83
+      ],
+      "looks": [
+        {
+          "look_id": "reverend-insanity:self:476821534c:1:e0",
+          "entity_id": "reverend-insanity:self:476821534c",
+          "epoch_label": "ageless-ancient, covered in blood",
+          "age_band": "ageless-ancient",
+          "gender": "male",
+          "description": "chestnut brown hair with a few silver strands, long and worn loose over the shoulders, a broad-shouldered build, deathly pale and pale skin, wearing deep green robes, covered in blood, torn to shreds, numerous wounds",
+          "facts": [
+            {
+              "field": "age_band",
+              "value": "ageless-ancient",
+              "source_block": 20,
+              "invented": false,
+              "reason": ""
+            },
+            {
+              "field": "gender",
+              "value": "male",
+              "source_block": null,
+              "invented": false,
+              "reason": "owner/graph value or pronoun evidence"
+            },
+            {
+              "field": "hair",
+              "value": "chestnut brown hair with a few silver strands, long and worn loose over the shoulders",
+              "source_block": null,
+              "invented": true,
+              "reason": "age band ageless-ancient and the person's own slot; the text states no hair"
+            },
+            {
+              "field": "eyes",
+              "value": "deep pools of water",
+              "source_block": 11,
+              "invented": false,
+              "reason": ""
+            },
+            {
+              "field": "build",
+              "value": "a broad-shouldered build",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no build"
+            },
+            {
+              "field": "face",
+              "value": "deathly pale",
+              "source_block": 17,
+              "invented": false,
+              "reason": ""
+            },
+            {
+              "field": "skin",
+              "value": "pale",
+              "source_block": 0,
+              "invented": false,
+              "reason": ""
+            },
+            {
+              "field": "clothes",
+              "value": "deep green robes",
+              "source_block": 5,
+              "invented": false,
+              "reason": ""
+            },
+            {
+              "field": "condition",
+              "value": "covered in blood, torn to shreds, numerous wounds",
+              "source_block": 5,
+              "invented": false,
+              "reason": ""
+            }
+          ],
+          "hair": "chestnut brown hair with a few silver strands, long and worn loose over the shoulders",
+          "eyes": "",
+          "build": "a broad-shouldered build",
+          "face": "deathly pale",
+          "outfit": "deep green robes",
+          "condition": "covered in blood, torn to shreds, numerous wounds",
+          "marks": "",
+          "block_from": 0,
+          "block_to": 30
+        },
+        {
+          "look_id": "reverend-insanity:self:476821534c:1:e1",
+          "entity_id": "reverend-insanity:self:476821534c",
+          "epoch_label": "teen",
+          "age_band": "teen",
+          "gender": "male",
+          "description": "chestnut brown hair, long and worn loose over the shoulders, a slim boyish build and a narrow face with high cheekbones, wearing a charcoal grey robe with wide sleeves and a plain sash",
+          "facts": [
+            {
+              "field": "age_band",
+              "value": "teen",
+              "source_block": 58,
+              "invented": false,
+              "reason": ""
+            },
+            {
+              "field": "gender",
+              "value": "male",
+              "source_block": null,
+              "invented": false,
+              "reason": "owner/graph value or pronoun evidence"
+            },
+            {
+              "field": "hair",
+              "value": "chestnut brown hair, long and worn loose over the shoulders",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no hair; chosen per person from the slot bank"
+            },
+            {
+              "field": "eyes",
+              "value": "deep pools of water",
+              "source_block": 11,
+              "invented": false,
+              "reason": ""
+            },
+            {
+              "field": "build",
+              "value": "a slim boyish build",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no build"
+            },
+            {
+              "field": "face",
+              "value": "a narrow face with high cheekbones",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no face; chosen per person"
+            },
+            {
+              "field": "clothes",
+              "value": "a charcoal grey robe with wide sleeves and a plain sash",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no clothes here; another epoch's stated clothes are not carried"
+            }
+          ],
+          "hair": "chestnut brown hair, long and worn loose over the shoulders",
+          "eyes": "",
+          "build": "a slim boyish build",
+          "face": "a narrow face with high cheekbones",
+          "outfit": "a charcoal grey robe with wide sleeves and a plain sash",
+          "condition": "",
+          "marks": "",
+          "block_from": 31,
+          "block_to": 91
+        }
+      ]
+    },
+    "reverend-insanity:self:60117b7f5a": {
+      "name": "Fang Zhi",
+      "names": [
+        "Fang Zhi"
+      ],
+      "present_blocks": [
+        55,
+        67
+      ],
+      "looks": [
+        {
+          "look_id": "reverend-insanity:self:60117b7f5a:1:e0",
+          "entity_id": "reverend-insanity:self:60117b7f5a",
+          "epoch_label": "adult",
+          "age_band": "adult",
+          "gender": "male",
+          "description": "black hair, medium-length, combed to one side, a lean build and a long face with a straight nose, wearing a ochre robe with wide sleeves and a plain sash",
+          "facts": [
+            {
+              "field": "age_band",
+              "value": "adult",
+              "source_block": null,
+              "invented": true,
+              "reason": "no age cue in this stretch of the text"
+            },
+            {
+              "field": "gender",
+              "value": "male",
+              "source_block": null,
+              "invented": false,
+              "reason": "owner/graph value or pronoun evidence"
+            },
+            {
+              "field": "hair",
+              "value": "black hair, medium-length, combed to one side",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no hair; chosen per person from the slot bank"
+            },
+            {
+              "field": "build",
+              "value": "a lean build",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no build"
+            },
+            {
+              "field": "face",
+              "value": "a long face with a straight nose",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no face; chosen per person"
+            },
+            {
+              "field": "clothes",
+              "value": "a ochre robe with wide sleeves and a plain sash",
+              "source_block": null,
+              "invented": true,
+              "reason": "the text states no clothes here"
+            }
+          ],
+          "hair": "black hair, medium-length, combed to one side",
+          "eyes": "",
+          "build": "a lean build",
+          "face": "a long face with a straight nose",
+          "outfit": "a ochre robe with wide sleeves and a plain sash",
+          "condition": "",
+          "marks": "",
+          "block_from": 0,
+          "block_to": 91
+        }
+      ]
+    }
+  },
+  "windows": [
+    {
+      "blocks": [
+        0,
+        4
+      ],
+      "present": [
+        "reverend-insanity:self:476821534c"
+      ]
+    },
+    {
+      "blocks": [
+        5,
+        30
+      ],
+      "present": [
+        "reverend-insanity:self:476821534c"
+      ]
+    },
+    {
+      "blocks": [
+        31,
+        54
+      ],
+      "present": [
+        "reverend-insanity:title:head_of_gu"
+      ]
+    },
+    {
+      "blocks": [
+        55,
+        76
+      ],
+      "present": [
+        "reverend-insanity:title:head_of_gu",
+        "reverend-insanity:self:476821534c",
+        "reverend-insanity:self:60117b7f5a"
+      ]
+    },
+    {
+      "blocks": [
+        78,
+        86
+      ],
+      "present": [
+        "reverend-insanity:title:head_of_gu"
+      ]
+    },
+    {
+      "blocks": [
+        80,
+        86
+      ],
+      "present": [
+        "reverend-insanity:self:476821534c"
+      ]
+    }
+  ],
+  "pairs": [
+    {
+      "window": [
+        55,
+        76
+      ],
+      "a": "reverend-insanity:title:head_of_gu",
+      "b": "reverend-insanity:self:476821534c",
+      "before_distinct_dims": 1,
+      "before_same": [
+        "hair",
+        "age_band",
+        "build_face"
+      ],
+      "after_distinct_dims": 4,
+      "after_same": []
+    },
+    {
+      "window": [
+        55,
+        76
+      ],
+      "a": "reverend-insanity:title:head_of_gu",
+      "b": "reverend-insanity:self:60117b7f5a",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "hair",
+        "age_band"
+      ],
+      "after_distinct_dims": 4,
+      "after_same": []
+    },
+    {
+      "window": [
+        55,
+        76
+      ],
+      "a": "reverend-insanity:self:476821534c",
+      "b": "reverend-insanity:self:60117b7f5a",
+      "before_distinct_dims": 2,
+      "before_same": [
+        "hair",
+        "age_band"
+      ],
+      "after_distinct_dims": 4,
+      "after_same": []
+    }
+  ],
+  "before": {
+    "reverend-insanity:title:head_of_gu": {
+      "hair": "long black hair tied up in a topknot with a hairpin",
+      "age_band": "adult",
+      "clothes": "a dark navy hanfu robe with wide sleeves and a plain sash",
+      "build_face": "an average build"
+    },
+    "reverend-insanity:self:476821534c": {
+      "hair": "long black hair tied up in a topknot with a hairpin",
+      "age_band": "adult",
+      "clothes": "deep green robes",
+      "build_face": "an average build"
+    },
+    "reverend-insanity:self:60117b7f5a": {
+      "hair": "long black hair tied up in a topknot with a hairpin",
+      "age_band": "adult",
+      "clothes": "a deep brown hanfu robe with wide sleeves and a plain sash",
+      "build_face": "a lean build"
+    }
+  },
+  "totals": {
+    "pairs": 3,
+    "before_ok": 2,
+    "after_ok": 3
+  }
+}
