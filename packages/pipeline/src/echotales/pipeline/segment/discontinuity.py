@@ -27,6 +27,7 @@ from functools import lru_cache
 from typing import Any
 
 from echotales.core.models import Chapter, Mention
+from echotales.pipeline.segment.embed import cosine_distance, mean_vector
 
 #: A block with fewer words than this carries no scene content of its own. 4 is
 #: where the measured RI/LotM/ORV one-line headers, ellipsis blocks and symbol
@@ -38,6 +39,10 @@ SUBSTANTIVE_MIN_WORDS = 4
 #: ranked the gold cuts worse (recall in the top 8 boundaries fell from 11/22 to
 #: 9/22; docs/results/SCENE_INDUCTION.md, "window"), so the plain block window stays.
 WINDOW = 3
+
+#: Cosine distances between adjacent nomic-embed-text windows sit in roughly 0.05-0.35, while the TF-IDF
+#: distance spans 0.3-1.0; the scale puts the embedding feature on the same footing in the weighted sum.
+EMBED_TOPIC_SCALE = 2.5
 
 #: Non-maximum suppression radius, in boundaries.
 PEAK_RADIUS = 2
@@ -255,11 +260,16 @@ def score_chapter(
     nlp: Any | None = None,
     topic: TopicModel | None = None,
     weights: dict[str, float] | None = None,
+    embedder: Any | None = None,
 ) -> list[Boundary]:
     """Score every canonical boundary of a chapter, in reading order.
 
     `topic` should be fitted on the whole volume; without it the chapter's own
     blocks are used, which is enough for tests but gives noisier IDF.
+
+    With `embedder` (segment/embed.py) the topic feature is the cosine distance
+    of the mean block embeddings of the two windows; when the embedder cannot be
+    reached the TF-IDF feature is used, so the score never depends on a daemon.
     """
     weights = weights or DEFAULT_WEIGHTS
     signals = analyse_blocks(chapter, mentions, nlp)
@@ -270,6 +280,11 @@ def score_chapter(
 
     boundaries: list[Boundary] = []
     story_idx = [b.index for b in story]
+    vec_of: dict[int, list[float]] = {}
+    if embedder is not None:
+        vecs = embedder.embed([b.text for b in story])
+        if vecs is not None:
+            vec_of = {i: v for i, v in zip(story_idx, vecs, strict=True)}
     for k in range(1, len(story)):
         pos = story_idx[k]
         before = [signals[i] for i in story_idx[max(0, k - WINDOW) : k]]
@@ -295,7 +310,13 @@ def score_chapter(
             term_b.update(s.terms)
         for s in after:
             term_a.update(s.terms)
-        topic_d = topic.distance(term_b, term_a)
+        if vec_of:
+            topic_d = min(1.0, cosine_distance(
+                mean_vector([vec_of[i] for i in story_idx[max(0, k - WINDOW) : k]]),
+                mean_vector([vec_of[i] for i in story_idx[k : k + WINDOW]]),
+            ) * EMBED_TOPIC_SCALE)
+        else:
+            topic_d = topic.distance(term_b, term_a)
 
         features = {"cast": cast, "location": location, "time": time_expr, "tense": tense, "topic": topic_d}
         score = sum(weights[k_] * features[k_] for k_ in weights)

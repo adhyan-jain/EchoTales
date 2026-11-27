@@ -1,5 +1,5 @@
 {
- "_note": "SILVER gold: scene boundaries drafted by reading the text (Claude, 2026-11-27), not human-verified. cut = index of the first block of the new scene; ambiguous = a defensible cut that is neither rewarded nor penalised. Anchors are the first <=5 words of the block; source texts are not stored. Pride and Prejudice is public domain.",
+ "_note": "SILVER gold: scene boundaries drafted by reading the text (Claude, 2026-11-27), not human-verified. cut = index of the first block of the new scene; ambiguous = a defensible cut that is neither rewarded nor penalised. Anchors are the first <=5 words of the block; source texts are not stored. Pride and Prejudice is public domain. RI chapter 1 is OWNER gold (data/gold/segment/ri_ch1_owner.json, 2026-11-28): cuts at 31 and 79 only.",
  "novels": {
   "reverend-insanity": {
    "1": {
@@ -9,12 +9,13 @@
       "anchor": "The spring rain quietly rained"
      },
      {
-      "block": 80,
-      "anchor": "“Gu Yue Village, this is"
+      "block": 79,
+      "anchor": "At the very same moment,"
      }
     ],
     "ambiguous": [],
-    "n_blocks": 92
+    "n_blocks": 92,
+    "owner_checked": true
    },
    "2": {
     "cuts": [],
@@ -68,6 +69,138 @@
     ],
     "ambiguous": [],
     "n_blocks": 82
+   },
+   "4": {
+    "cuts": [],
+    "ambiguous": [
+     3
+    ],
+    "negatives": [],
+    "n_blocks": 47,
+    "coverage": "full"
+   },
+   "6": {
+    "cuts": [],
+    "ambiguous": [],
+    "negatives": [
+     {
+      "block": 22,
+      "anchor": "—"
+     },
+     {
+      "block": 59,
+      "anchor": "* * *"
+     }
+    ],
+    "n_blocks": 62,
+    "coverage": "full"
+   },
+   "7": {
+    "cuts": [],
+    "ambiguous": [],
+    "negatives": [
+     {
+      "block": 41,
+      "anchor": "Under the blue sky and"
+     }
+    ],
+    "n_blocks": 46,
+    "coverage": "full"
+   },
+   "8": {
+    "cuts": [
+     {
+      "block": 18,
+      "anchor": "After he left the Gu",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "SAME"
+     }
+    ],
+    "ambiguous": [
+     32,
+     45
+    ],
+    "negatives": [
+     {
+      "block": 28,
+      "anchor": "It was at this moment,"
+     }
+    ],
+    "n_blocks": 54,
+    "coverage": "full"
+   },
+   "9": {
+    "cuts": [
+     {
+      "block": 33,
+      "anchor": "Gu Yue Fang Zheng was",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "LATER"
+     },
+     {
+      "block": 41,
+      "anchor": "The dark clouds in the",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "SAME"
+     },
+     {
+      "block": 56,
+      "anchor": "The younger brother Fang Zheng",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "SAME"
+     }
+    ],
+    "ambiguous": [
+     24,
+     32
+    ],
+    "negatives": [],
+    "n_blocks": 62,
+    "coverage": "full"
+   },
+   "10": {
+    "cuts": [],
+    "ambiguous": [],
+    "negatives": [
+     {
+      "block": 45,
+      "anchor": "Outside the door came his"
+     }
+    ],
+    "n_blocks": 46,
+    "coverage": "full"
+   },
+   "12": {
+    "cuts": [],
+    "ambiguous": [],
+    "negatives": [
+     {
+      "block": 29,
+      "anchor": "At this moment the young"
+     },
+     {
+      "block": 68,
+      "anchor": "* * *"
+     }
+    ],
+    "n_blocks": 71,
+    "coverage": "full"
+   },
+   "14": {
+    "cuts": [],
+    "ambiguous": [],
+    "negatives": [
+     {
+      "block": 24,
+      "anchor": "A quiet mountain stream paved"
+     },
+     {
+      "block": 38,
+      "anchor": "Once he rushed in, the"
+     }
+    ],
+    "n_blocks": 59,
+    "coverage": "full"
    }
   },
   "lord-of-the-mysteries": {
@@ -143,6 +276,161 @@
     ],
     "ambiguous": [],
     "n_blocks": 81
+   },
+   "5": {
+    "cuts": [
+     {
+      "block": 50,
+      "anchor": "After the second-floor tenants gradually",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "LATER"
+     },
+     {
+      "block": 84,
+      "anchor": "In the Loen Kingdom’s capital,",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "SAME"
+     },
+     {
+      "block": 93,
+      "anchor": "In the Sonia Sea, a",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "SAME"
+     },
+     {
+      "block": 99,
+      "anchor": "In the fog of gray",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "SAME"
+     }
+    ],
+    "ambiguous": [],
+    "negatives": [
+     {
+      "block": 87,
+      "anchor": "“In the name of the"
+     },
+     {
+      "block": 89,
+      "anchor": "She switched between many different"
+     },
+     {
+      "block": 91,
+      "anchor": "Her voice trailed off. The"
+     },
+     {
+      "block": 96,
+      "anchor": "“Still short on the Ghost"
+     },
+     {
+      "block": 100,
+      "anchor": "Immediately after, the both of"
+     }
+    ],
+    "n_blocks": 105,
+    "coverage": "candidates"
+   },
+   "6": {
+    "cuts": [],
+    "ambiguous": [],
+    "negatives": [
+     {
+      "block": 22,
+      "anchor": "When she did not identify"
+     },
+     {
+      "block": 38,
+      "anchor": "“Are you from Loen?"
+     },
+     {
+      "block": 41,
+      "anchor": "Zhou Mingrui listened attentively, but"
+     },
+     {
+      "block": 45,
+      "anchor": "Alger gave a low-sounding laugh,"
+     },
+     {
+      "block": 51,
+      "anchor": "Alger leaned back slightly, and"
+     },
+     {
+      "block": 74,
+      "anchor": "Language of Giants."
+     }
+    ],
+    "n_blocks": 75,
+    "coverage": "candidates"
+   },
+   "9": {
+    "cuts": [],
+    "ambiguous": [
+     12
+    ],
+    "negatives": [
+     {
+      "block": 25,
+      "anchor": "Anyone would choke eating those"
+     },
+     {
+      "block": 47,
+      "anchor": "There are four more days"
+     },
+     {
+      "block": 51,
+      "anchor": "The book he had began"
+     },
+     {
+      "block": 54,
+      "anchor": "“16th May. Senior Associate Professor"
+     },
+     {
+      "block": 56,
+      "anchor": "“29th May. Welch found me"
+     },
+     {
+      "block": 64,
+      "anchor": "“18th June. I have graduated."
+     },
+     {
+      "block": 74,
+      "anchor": "Which means to say that"
+     },
+     {
+      "block": 80,
+      "anchor": "There was a series of"
+     }
+    ],
+    "n_blocks": 85,
+    "coverage": "candidates"
+   },
+   "10": {
+    "cuts": [],
+    "ambiguous": [],
+    "negatives": [
+     {
+      "block": 9,
+      "anchor": "Then he picked up the"
+     },
+     {
+      "block": 25,
+      "anchor": "As talents needed to be"
+     },
+     {
+      "block": 29,
+      "anchor": "The inspector with the peak"
+     },
+     {
+      "block": 45,
+      "anchor": "When he heard the question,"
+     },
+     {
+      "block": 52,
+      "anchor": "Where are your search warrants?"
+     }
+    ],
+    "n_blocks": 82,
+    "coverage": "candidates"
    }
   },
   "omniscient-readers-viewpoint": {
@@ -182,6 +470,201 @@
     ],
     "ambiguous": [],
     "n_blocks": 165
+   },
+   "14": {
+    "cuts": [],
+    "ambiguous": [
+     28
+    ],
+    "negatives": [],
+    "n_blocks": 128,
+    "coverage": "candidates"
+   },
+   "16": {
+    "cuts": [],
+    "ambiguous": [
+     13
+    ],
+    "negatives": [],
+    "n_blocks": 110,
+    "coverage": "candidates"
+   },
+   "17": {
+    "cuts": [
+     {
+      "block": 97,
+      "anchor": "Geumho Station was originally a",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "UNKNOWN"
+     }
+    ],
+    "ambiguous": [],
+    "negatives": [],
+    "n_blocks": 148,
+    "coverage": "candidates"
+   },
+   "18": {
+    "cuts": [
+     {
+      "block": 113,
+      "anchor": "After a while, only the",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "LATER"
+     }
+    ],
+    "ambiguous": [],
+    "negatives": [],
+    "n_blocks": 130,
+    "coverage": "candidates"
+   },
+   "20": {
+    "cuts": [
+     {
+      "block": 30,
+      "anchor": "After a while, several people",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "LATER"
+     }
+    ],
+    "ambiguous": [],
+    "negatives": [],
+    "n_blocks": 127,
+    "coverage": "candidates"
+   },
+   "23": {
+    "cuts": [
+     {
+      "block": 74,
+      "anchor": "After a while, we searched",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "LATER"
+     }
+    ],
+    "ambiguous": [],
+    "negatives": [],
+    "n_blocks": 145,
+    "coverage": "candidates"
+   },
+   "26": {
+    "cuts": [
+     {
+      "block": 79,
+      "anchor": "We had crossed half the",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "LATER"
+     },
+     {
+      "block": 127,
+      "anchor": "After a while, I stood",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "LATER"
+     }
+    ],
+    "ambiguous": [],
+    "negatives": [],
+    "n_blocks": 141,
+    "coverage": "candidates"
+   },
+   "27": {
+    "cuts": [],
+    "ambiguous": [
+     78
+    ],
+    "negatives": [],
+    "n_blocks": 170,
+    "coverage": "candidates"
+   },
+   "28": {
+    "cuts": [
+     {
+      "block": 44,
+      "anchor": "While taking care of the",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "LATER"
+     }
+    ],
+    "ambiguous": [],
+    "negatives": [],
+    "n_blocks": 122,
+    "coverage": "candidates"
+   },
+   "29": {
+    "cuts": [
+     {
+      "block": 105,
+      "anchor": "After a while, we safely",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "LATER"
+     }
+    ],
+    "ambiguous": [],
+    "negatives": [],
+    "n_blocks": 151,
+    "coverage": "candidates"
+   },
+   "30": {
+    "cuts": [],
+    "ambiguous": [
+     41
+    ],
+    "negatives": [],
+    "n_blocks": 141,
+    "coverage": "candidates"
+   },
+   "32": {
+    "cuts": [
+     {
+      "block": 48,
+      "anchor": "「 Dokja. 」",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "UNKNOWN"
+     },
+     {
+      "block": 118,
+      "anchor": "I breathed out roughly. There",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "LATER"
+     },
+     {
+      "block": 160,
+      "anchor": "I woke up two hours",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "LATER"
+     }
+    ],
+    "ambiguous": [],
+    "negatives": [],
+    "n_blocks": 201,
+    "coverage": "candidates"
+   },
+   "39": {
+    "cuts": [
+     {
+      "block": 20,
+      "anchor": "Dudududu. There was the sound",
+      "cut_type": "POV_SWITCH",
+      "time_relation": "SAME"
+     },
+     {
+      "block": 103,
+      "anchor": "After a while, we kidnapped",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "LATER"
+     }
+    ],
+    "ambiguous": [],
+    "negatives": [],
+    "n_blocks": 188,
+    "coverage": "candidates"
+   },
+   "40": {
+    "cuts": [],
+    "ambiguous": [
+     51
+    ],
+    "negatives": [],
+    "n_blocks": 194,
+    "coverage": "candidates"
    }
   },
   "pride-and-prejudice": {
@@ -260,5 +743,11 @@
     "n_blocks": 36
    }
   }
+ },
+ "dbs": {
+  "reverend-insanity": "data/scratch/segment/reverend-insanity.db",
+  "lord-of-the-mysteries": "data/scratch/segment/lord-of-the-mysteries.db",
+  "omniscient-readers-viewpoint": "data/scratch/segment/omniscient-readers-viewpoint.db",
+  "pride-and-prejudice": "data/scratch/segment/pp.db"
  }
 }

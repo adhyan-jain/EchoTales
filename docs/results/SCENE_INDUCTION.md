@@ -69,3 +69,51 @@ A cut carries `cut_type` and `time_relation` (`cuts.SceneCut`), saved in `derive
 A prior loop maps to `SegmentType.REGRESSION_PRIOR_LOOP` with layer `FLASHBACK_OWN`; core enums were not changed.
 Unmeasured: unresolved-name presence on novels without mentions (P&P has none), LotM presence beyond a spot check,
 the whole-novel run time.
+
+# v2 (2026-11-28): HANDOFF, work in progress (not finished, no v2 numbers yet)
+
+Branch `worktree-agent-af27213abf94196be`, based on v1 commit 7670e1b. The agent stopped at the context limit before
+the measured v2 table existed. Nothing below is a result unless a number is given.
+
+## Done
+- **ORV score 0, root cause (measured):** not an ingest bug and not wrong gold. Ingest keeps `* * *` as a NON_DIEGETIC
+  block. In ORV chapters 1-10 every `* * *` is the chapter-final marker (last block); interior separators first appear
+  in chapter 14 (22 of them in ch 14-40, almost all real cuts, "After a while..."). So induction on chapters 1-10 sees no
+  interior separator and cannot learn it; v1's only accepted convention was numbered list lines. Fix direction: the
+  whole-chapter model sees separators as ordinary numbered blocks; also consider a learn range wider than 10 for novels
+  whose first volume has no interior separators.
+- `segment/embed.py` (nomic-embed-text via ollama, cached, `get_embedder()` returns None when down) and
+  `discontinuity.score_chapter(..., embedder=)` (TF-IDF fallback, `EMBED_TOPIC_SCALE` 2.5 untuned). `nomic-embed-text` is pulled.
+- `segment/llm_segment.py`: whole-chapter scene listing (numbered blocks cut to 40 words, windows of 60 with overlap 15,
+  cut trusted from the window where it is most interior, same-place merge), `segment_chapter_llm(chapter, llm)`.
+- `scenes.py`: `combine_llm_cuts` (accept an LLM cut when its snapped boundary score >= p75 of the learn chapters, or enough
+  model votes), `analyse_chapter_scenes(..., method="whole_chapter"|"per_boundary", embedder=, llm_scenes=, accept_score=)`,
+  `SceneCutConfig.method/embedder`, `prior_loops_from_scenes`.
+- **Presence (Fang Zhi):** cause = the speaker attribution at RI block 55 names Fang Zhi (an elder says "Fang Zhi's side has
+  a young genius"); `speaks` short-circuited the model. Fix in `presence.py`: a speaker block that is also a DIALOGUE_REFERENCE
+  block of the same entity does not count as speaking; the no-model fallback counts a narration mention only when the name is
+  a clause subject outside a complement clause (spaCy dependency parse), for most of its mentions. With no model: clan head
+  present; Fang Yuan, Fang Zhi, Bai Ning Bing referenced. Not yet re-verified with the model.
+- Owner gold for RI ch1 (`data/gold/segment/ri_ch1_owner.json`): cuts exactly {31, 79}; scenes 0-30 (prior loop), 31-78, 79-89.
+  `scripts/eval/segment_ri_ch1_check.py` updated to these expectations (not run).
+- Gold: `data/gold/segment/scene_boundaries.json` now has a `dbs` map, RI ch1 corrected (cut 80 -> 79), new labels for RI 4,6-10,12,14,
+  LotM 5,6,9,10, ORV 14-40 (13 new cuts around separators). Still 43 cuts over 4 novels; the target of 60 over 5 is NOT met.
+  `scripts/eval/segment_gold_add.py` holds the new labels. Coverage "candidates" means only separators/top-scored boundaries were read.
+  Second-pass re-read of labels NOT done. `negatives` are stored but not yet used by the scorer.
+- `scripts/eval/segment_pd_to_scratch.py` builds a scratch DB from a Gutenberg txt (A Study in Scarlet, `data/scratch/segment/a-study-in-scarlet.db`,
+  chapters 1-14, Part II starts at 8; plan: learn on 1-7). No Scarlet labels written yet.
+
+## Measured so far (qwen3:8b, first prompt, TF-IDF, v1 gold of 22 cuts; `data/scratch/segment/v2_run1.log`)
+The model over-segments: LLM cuts accepted unfiltered give precision 0.03-0.08 (RI learn P .05, LotM learn P .03). Held-out F1 with the
+p90 score filter: LotM .36, ORV .20, RI 0, P&P 0. These are WORSE than the 0.6 target. After this run the prompt got a scene-length prior and a
+same-place merge (see `llm_segment.py`); that version was started as `v2_run2` (learn split, qwen3:8b and gemma2:9b) but had not finished
+(GPU lock held by other agents).
+
+## Remaining
+1. Run `flock /tmp/echotales-gpu.lock python scripts/eval/segment_v2_eval.py --models qwen3:8b gemma2:9b --split learn --out data/scratch/segment/v2_run2.json`
+   (needs `PYTHONPATH=packages/core/src:packages/pipeline/src`), read per-chapter cut counts in `data/scratch/segment/llmcache/`, fix over-segmentation on learn
+   chapters only, then run `--split all` for held-out and write `data/eval/segment/scene_induction_v2.json`.
+2. Reach 60+ cuts over 5+ novels (add Scarlet via `cand.py`-style reading, P&P), second-pass re-check every label, add the model comparison.
+3. Run the RI ch1 check with the model; check prior-loop on segment 0 (needs the order pass over a multi-window chapter, `resolve_story_order`).
+4. Add unit tests with a fake LLM for `llm_segment`, `combine_llm_cuts`, the presence fix, embedder fallback; run the full suite (baseline ~3210) and ruff.
+5. Fill in the v2 tables here and the RI ch1 verdict.

@@ -18,6 +18,7 @@ import hashlib
 import json
 import re
 from dataclasses import dataclass, field
+from functools import lru_cache
 from typing import Any
 
 from echotales.core.enums import SpanType
@@ -31,6 +32,43 @@ from pydantic import BaseModel, Field
 _NOT_PEOPLE_LABELS = {"item", "location", "organization", "category"}
 
 _CACHE_PREFIX = "presence"
+
+
+@lru_cache(maxsize=1)
+def _parser() -> Any | None:
+    """spaCy with the dependency parser, or None when the model is absent (callers keep the older heuristic)."""
+    try:
+        import spacy
+
+        return spacy.load("en_core_web_sm", disable=["ner", "lemmatizer"])
+    except Exception:
+        return None
+
+
+def _is_subject_at(text: str, offset: int, length: int = 1) -> bool | None:
+    """Whether the name at `offset` is the grammatical subject of its clause; None when no parser is available.
+
+    RI ch1 block 58: "the elders were discussing about the youth known as Gu Yue Fang Yuan" is narration, and the
+    reader tagged Fang Yuan PRESENT there, but he is the object of the elders' talk. A person on stage acts, so
+    a narration mention counts toward presence only when the name is a subject; objects, possessives and
+    appositives ("Fang Zhi's bloodline") are references. This is a syntactic test, not a word list.
+    """
+    nlp = _parser()
+    if nlp is None:
+        return None
+    doc = nlp(text)
+    span = [t for t in doc if t.idx < offset + max(length, 1) and t.idx + len(t.text) > offset]
+    if not span:
+        return None
+    inside = {t.i for t in span}
+    # The mention's own syntactic head: the token whose head lies outside the mention ("the clan head" -> head).
+    root = next((t for t in span if t.head.i not in inside or t.head is t), span[-1])
+    if root.dep_ not in ("nsubj", "nsubjpass"):
+        return False
+    # A subject inside a complement clause ("it so happens that X was the best") is the content of someone's
+    # statement or thought, not an action on stage.
+    verb = root.head
+    return verb.dep_ not in ("ccomp", "csubj", "csubjpass")
 #: The segment text sent to the model is clipped so the prompt fits an 8k context on an 8 GB card.
 _MAX_SEGMENT_CHARS = 7000
 
@@ -41,7 +79,13 @@ class Candidate:
     label: str
     blocks: list[int] = field(default_factory=list)
     speaks: bool = False
+    #: Blocks where a speaker attribution names this entity, and blocks where the reader marked the same entity
+    #: as talked about; `speaks` is only trusted for a speaker block that is not also a talked-about block.
+    speaker_blocks: set[int] = field(default_factory=set)
+    reference_blocks: set[int] = field(default_factory=set)
     narration_present_mentions: int = 0
+    #: Narration mentions where the name is the clause subject; None-parser runs count every narration mention.
+    acting_mentions: int = 0
     talked_about_mentions: int = 0
     snippets: list[str] = field(default_factory=list)
 
@@ -102,8 +146,12 @@ def collect_candidates(
         # DIALOGUE_REFERENCE and INNER_THOUGHT_REFERENCE are, by definition, someone else's words or thoughts.
         if m.reference_mode.value in ("DIALOGUE_REFERENCE", "INNER_THOUGHT_REFERENCE"):
             c.talked_about_mentions += 1
+            c.reference_blocks.add(m.block_index)
         elif m.span_type in (SpanType.NARRATION_ACTION, SpanType.NARRATION_DESCRIPTION):
             c.narration_present_mentions += 1
+            acts = _is_subject_at(texts.get(m.block_index, ""), m.offset, len(m.text))
+            if acts is None or acts:
+                c.acting_mentions += 1
         text = texts.get(m.block_index, "")
         if len(c.snippets) < 2 and text:
             s = max(0, m.offset - 60)
@@ -114,7 +162,15 @@ def collect_candidates(
         # Speaker ids that are neither a known entity nor a numbered anonymous slot are bare labels the
         # attribution pass emitted ("Audrey", "Audrey's" in LotM ch8); they would double-count the real id.
         if sp.speaker_self_id in labels or ":anon:" in sp.speaker_self_id:
-            cand(sp.speaker_self_id, labels.get(sp.speaker_self_id, "unnamed speaker")).speaks = True
+            cand(sp.speaker_self_id, labels.get(sp.speaker_self_id, "unnamed speaker")).speaker_blocks.add(
+                sp.block_index
+            )
+    for c in by_id.values():
+        # RI ch1 block 55: an elder says "Fang Zhi's side has appeared a young genius" and the attribution pass
+        # named Fang Zhi as the speaker, so he was marked present in the clan head's ritual (31-79) though he
+        # is only talked about. The reader's own DIALOGUE_REFERENCE mention of the same entity in the same
+        # block contradicts that attribution, so it no longer short-circuits the scene reading.
+        c.speaks = bool(c.speaker_blocks - c.reference_blocks)
     return list(by_id.values()), texts
 
 
@@ -142,7 +198,7 @@ def _heuristic(c: Candidate) -> bool:
     """Reader-signal fallback: speaking, or named in narration and never quoted as talked-about."""
     if c.speaks:
         return True
-    return c.narration_present_mentions > 0 and c.talked_about_mentions == 0
+    return c.acting_mentions * 2 > c.narration_present_mentions and c.acting_mentions > 0 and c.talked_about_mentions == 0
 
 
 def present_cast(

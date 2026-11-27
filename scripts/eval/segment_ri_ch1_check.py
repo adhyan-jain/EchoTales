@@ -28,7 +28,7 @@ from echotales.pipeline.segment.scenes import analyse_chapter_scenes
 NOVEL = "reverend-insanity"
 FANG_YUAN = "reverend-insanity:self:476821534c"
 FANG_ZHI = "reverend-insanity:self:60117b7f5a"
-SEGMENTS = [(0, 30), (31, 79), (80, 91)]
+SEGMENTS = [(0, 30), (31, 78), (79, 89)]  # owner gold data/gold/segment/ri_ch1_owner.json
 
 
 def has(ids: list[str], needle: str) -> bool:
@@ -65,17 +65,20 @@ def main() -> None:
         pres[f"{lo}-{hi}"] = {"present": present, "referenced": referenced}
     p0, p1, p2 = (pres[f"{lo}-{hi}"] for lo, hi in SEGMENTS)
     checks = {
-        "cut_31": 31 in found,
-        "cut_80": 80 in found,
+        "cuts exactly {31, 79}": found == {31, 79},
         "0-30: Fang Yuan present": FANG_YUAN in p0["present"],
-        "31-79: clan head present": has(p1["present"], "clan head"),
-        "31-79: Fang Yuan NOT present": FANG_YUAN not in p1["present"],
-        "31-79: Fang Yuan referenced": FANG_YUAN in p1["referenced"],
-        "31-79: Bai Ning Bing referenced": has(p1["referenced"], "bai ning bing"),
-        "31-79: Bai Ning Bing NOT present": not has(p1["present"], "bai ning bing"),
-        "31-79: Fang Zhi referenced": FANG_ZHI in p1["referenced"],
-        "31-79: Fang Zhi NOT present": FANG_ZHI not in p1["present"],
-        "80-91: Fang Yuan present": FANG_YUAN in p2["present"],
+        "31-78: clan head present": has(p1["present"], "clan head"),
+        "31-78: Fang Yuan NOT present": FANG_YUAN not in p1["present"],
+        "31-78: Fang Yuan referenced": FANG_YUAN in p1["referenced"],
+        "31-78: Bai Ning Bing referenced": has(p1["referenced"], "bai ning bing"),
+        "31-78: Bai Ning Bing NOT present": not has(p1["present"], "bai ning bing"),
+        "31-78: Fang Zhi referenced": FANG_ZHI in p1["referenced"],
+        "31-78: Fang Zhi NOT present": FANG_ZHI not in p1["present"],
+        "prior-loop flag on segment 0 only": set(analysis.prior_loop_segments) == {0},
+        "cut 31 time relation EARLIER or UNKNOWN": any(
+            c["block"] == 31 and c["time"] in ("EARLIER", "UNKNOWN") for c in cuts
+        ),
+        "79-89: Fang Yuan present": FANG_YUAN in p2["present"],
     }
     out = {
         "model": args.model,
