@@ -660,6 +660,13 @@ def build_parser() -> argparse.ArgumentParser:
     p_pages.add_argument("--suffix", default=None, help="version suffix, e.g. v1_<suffix>; default: the format")
     p_pages.add_argument("--panel-dir", default=None, help="default: data/novels/<CODE>/panels")
     p_pages.add_argument("--out", default=None, help="default: data/novels/<CODE>/pages")
+    p_pages.add_argument(
+        "--storyboard", default=None,
+        help="render this Storyboard JSON as a grammar webtoon (panel shapes, layer gutters, lettering kinds; "
+        "docs/results/WEBTOON_GRAMMAR.md) instead of the latest panel version; needs --images",
+    )
+    p_pages.add_argument("--images", default=None, help="with --storyboard: folder of <panel_id>.png pictures (missing ones get a placeholder)")
+    p_pages.add_argument("--style", default=None, help="with --storyboard: StyleTable JSON for this work (default: built-in table)")
 
     p_comic = sub.add_parser(
         "comic",

@@ -1,0 +1,5 @@
+Comic Neue (Craig Rozynski: ComicNeue-Bold.pfb, ComicNeue-Regular.pfb) and Lato (Lukasz Dziedzic: Lato-Black.ttf)
+are both licensed under the SIL Open Font License 1.1 (https://openfontlicense.org). They were copied from the
+system TeX distribution (/usr/share/texmf-dist/fonts) so no network download was needed. The OFL permits bundling
+and redistribution with software provided the fonts are not sold on their own and this notice is kept. The full
+licence text is in LICENSE-LiberationSans-OFL.txt (same licence, different copyright holders).
