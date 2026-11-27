@@ -1395,11 +1395,42 @@ def cmd_estimate(args: argparse.Namespace) -> int:
     return 0
 
 
+def _pages_from_storyboard(args: argparse.Namespace) -> int:
+    """`pages --storyboard`: the director's Storyboard drawn with the webtoon grammar (pages/storyboard_render.py)."""
+    from echotales.pipeline import paths
+    from echotales.pipeline.pages.build import parse_exports
+    from echotales.pipeline.pages.storyboard_render import (
+        export_storyboard_webtoon,
+        render_storyboard_webtoon,
+        storyboard_dir_images,
+    )
+    from echotales.pipeline.pages.storyboard_style import DEFAULT_STYLE, StyleTable
+    from echotales.pipeline.storyboard.schema import Storyboard
+
+    try:
+        sb = Storyboard.model_validate_json(Path(args.storyboard).read_text())
+        style = StyleTable.from_dict(json.loads(Path(args.style).read_text())) if args.style else DEFAULT_STYLE
+        images = storyboard_dir_images(sb, Path(args.images)) if args.images else {}
+        out = Path(args.out or paths.asset_dir(sb.novel_id, "pages")) / f"ch{sb.chapter:g}_storyboard"
+        slices = render_storyboard_webtoon(sb, images, out, style)
+        files = [*slices, out / "contact.png"]
+        exports = [e for e in parse_exports(args.export) if e != "png"]
+        if exports:
+            files += export_storyboard_webtoon(slices, out, f"ch{sb.chapter:g}", exports, series=sb.novel_id)
+    except (ValueError, FileNotFoundError, OSError) as exc:
+        print(f"refusing: {exc}", file=sys.stderr)
+        return 2
+    print(f"chapter {sb.chapter:g}: {len(slices)} slices -> {out}")
+    return 0
+
+
 def cmd_pages(args: argparse.Namespace) -> int:
     """Manga, comic or webtoon pages from each chapter's latest rendered panels."""
     from echotales.pipeline.pages.build import build_pages, parse_exports, resolve_format
     from echotales.pipeline.render.anime import AnimeRefusal
 
+    if getattr(args, "storyboard", None):
+        return _pages_from_storyboard(args)
     store = _open_store(args)
     try:
         look = getattr(args, "look", "colour")
