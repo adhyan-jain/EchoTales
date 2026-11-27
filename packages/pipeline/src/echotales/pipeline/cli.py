@@ -738,6 +738,18 @@ def build_parser() -> argparse.ArgumentParser:
         "emotions on a book already read without re-running speaker attribution",
     )
 
+    p_storyboard = sub.add_parser(
+        "storyboard",
+        help="storyboard director: the panel list a manhwa adapter would draw for a chapter (cold open, cuts, inserts, "
+        "referenced insets, crowd faces, SFX), cached by input hash; one local model call per scene window",
+    )
+    p_storyboard.add_argument("--novel", required=True)
+    p_storyboard.add_argument("--chapters", help="range, e.g. 1-3; default: all")
+    p_storyboard.add_argument("--model", default=None, help="ollama model for this run (default: the task profile / ECHOTALES_STORYBOARD_MODEL)")
+    p_storyboard.add_argument("--force", action="store_true", help="ignore the cache and re-plan")
+    p_storyboard.add_argument("--hand-presence", default=None, help="JSON hand list of who is present per block range, to score presence against")
+    p_storyboard.add_argument("--data-root", default=None, help="where storyboards are written (default: data/)")
+
     p_persona = sub.add_parser("persona", help="persona-level operations")
     pe_sub = p_persona.add_subparsers(dest="persona_command", required=True)
     pe_gender = pe_sub.add_parser(

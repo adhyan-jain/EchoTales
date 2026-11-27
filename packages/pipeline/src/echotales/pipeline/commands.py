@@ -1554,6 +1554,39 @@ def cmd_reader(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_storyboard(args: argparse.Namespace) -> int:
+    """Storyboard director: one cached panel plan per chapter, with its scorecard."""
+    from echotales.pipeline.llm.tasks import Task
+    from echotales.pipeline.paths import DATA_ROOT
+    from echotales.pipeline.storyboard import scorecard
+    from echotales.pipeline.storyboard.director import run_chapter, set_model
+
+    store = _open_store(args)
+    client = _build_client(store, tasks={Task.STORYBOARD})
+    if client is None:
+        print("error: the storyboard director needs a model backend (set ECHOTALES_MODEL_BACKEND=ollama).", file=sys.stderr)
+        return 2
+    if getattr(args, "model", None):
+        set_model(args.model)
+    wanted = None
+    if selected := _chapter_range(getattr(args, "chapters", None)):
+        wanted = [n for n in store.chapter_numbers(args.novel) if n in selected]
+    chapters = wanted if wanted is not None else store.chapter_numbers(args.novel)
+    hand = scorecard.load_hand_list(args.hand_presence) if getattr(args, "hand_presence", None) else None
+    root = getattr(args, "data_root", None) or DATA_ROOT
+    for ch in chapters:
+        print(f"=== storyboard {args.novel} chapter {ch:g} ===")
+        sb, meta, cached = run_chapter(store, client, args.novel, ch, force=args.force, data_root=root)
+        n_blocks = len({b for p in sb.panels for b in p.source_blocks}) or len(sb.panels)
+        card = scorecard.score(sb, n_blocks=n_blocks, hand=hand)
+        print(("(cached) " if cached else "") + f"{len(sb.panels)} panels, {len(sb.segments)} scenes, model {meta.get('model', '')}")
+        print(scorecard.format_table(card))
+        print(f"rule violations before repair: {sum(meta['before'].values())} {meta['before']}")
+        print(f"rule violations after repair:  {sum(meta['after'].values())} {meta['after']}")
+    store.close()
+    return 0
+
+
 def render_panels_directed(  # type: ignore[no-untyped-def]
     novel_id: str,
     store,
@@ -2149,6 +2182,7 @@ _DISPATCH = {
     "run": cmd_run,
     "appearance": cmd_appearance,
     "reader": cmd_reader,
+    "storyboard": cmd_storyboard,
     "persona": cmd_persona,
     "voice": cmd_voice,
     "render": cmd_render,

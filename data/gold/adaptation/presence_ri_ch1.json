@@ -1,0 +1,12 @@
+{
+  "novel": "reverend-insanity",
+  "chapter": 1,
+  "note": "Hand-written from the chapter text 2026-11-27 (task brief), not from any model output. Blocks are story-block indices; unmarked cuts at 31 and 80.",
+  "cuts": [31, 80],
+  "segments": [
+    {"blocks": [0, 30], "present": ["Fang Yuan", "besiegers"], "referenced": []},
+    {"blocks": [31, 79], "present": ["clan head", "elders"], "referenced": ["Fang Yuan", "Bai Ning Bing", "Fang Zhi"],
+     "aliases": {"clan head": ["head of gu", "clan-head", "head of the clan"]}},
+    {"blocks": [80, 85], "present": ["Fang Yuan"], "referenced": []}
+  ]
+}
