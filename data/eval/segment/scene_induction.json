@@ -1,0 +1,1981 @@
+{
+ "llm": "qwen3:8b",
+ "learn_chapters": 10,
+ "novels": [
+  {
+   "novel": "reverend-insanity",
+   "base_rate": 0.1,
+   "high_threshold": 0.4706,
+   "conventions": [],
+   "results": {
+    "score_top6pct": {
+     "all": {
+      "tp": 4,
+      "fp": 17,
+      "fn": 3,
+      "precision": 0.19,
+      "recall": 0.571,
+      "f1": 0.286
+     },
+     "learned_range": {
+      "tp": 3,
+      "fp": 11,
+      "fn": 1,
+      "precision": 0.214,
+      "recall": 0.75,
+      "f1": 0.333
+     },
+     "held_out": {
+      "tp": 1,
+      "fp": 6,
+      "fn": 2,
+      "precision": 0.143,
+      "recall": 0.333,
+      "f1": 0.2
+     }
+    },
+    "induced_strong": {
+     "all": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 7,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+     },
+     "learned_range": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 4,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+     },
+     "held_out": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 3,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+     }
+    },
+    "full": {
+     "all": {
+      "tp": 5,
+      "fp": 18,
+      "fn": 2,
+      "precision": 0.217,
+      "recall": 0.714,
+      "f1": 0.333
+     },
+     "learned_range": {
+      "tp": 3,
+      "fp": 13,
+      "fn": 1,
+      "precision": 0.188,
+      "recall": 0.75,
+      "f1": 0.3
+     },
+     "held_out": {
+      "tp": 2,
+      "fp": 5,
+      "fn": 1,
+      "precision": 0.286,
+      "recall": 0.667,
+      "f1": 0.4
+     }
+    }
+   },
+   "predictions": {
+    "score_top6pct": {
+     "1": [
+      31,
+      35,
+      49,
+      62,
+      80
+     ],
+     "2": [
+      11,
+      18,
+      24,
+      39
+     ],
+     "3": [
+      22,
+      39,
+      48
+     ],
+     "5": [
+      5,
+      22
+     ],
+     "21": [
+      24,
+      29,
+      51
+     ],
+     "45": [
+      24,
+      34,
+      54,
+      64,
+      78
+     ]
+    },
+    "induced_strong": {
+     "1": [],
+     "2": [],
+     "3": [],
+     "5": [],
+     "21": [],
+     "45": []
+    },
+    "full": {
+     "1": [
+      31,
+      49,
+      62,
+      80
+     ],
+     "2": [
+      11,
+      18,
+      24,
+      39
+     ],
+     "3": [
+      2,
+      22,
+      39,
+      48
+     ],
+     "5": [
+      5,
+      11,
+      22,
+      27
+     ],
+     "21": [
+      24,
+      29,
+      37,
+      51
+     ],
+     "45": [
+      24,
+      34,
+      64,
+      78
+     ]
+    }
+   },
+   "labels": {
+    "1": [
+     {
+      "block": 31,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point describes a completely different location (Qing Mao Mountain), time (late in the night), and context (spring rain) compared to the text",
+       "order: Scene 1 occurs after Scene 0 as it describes a different time and context."
+      ]
+     },
+     {
+      "block": 49,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces new characters and places, and shifts to a different conversation about a specific individual, indicating a new scene.",
+       "order: Scene 2 occurs after Scene 1 as it continues the narrative progression."
+      ]
+     },
+     {
+      "block": 62,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces a new action (the clan head speaking to the elders) and a new time reference (tonight and tomorrow), indicating a new scene.",
+       "order: Scene 3 occurs after Scene 2 as it continues the narrative progression."
+      ]
+     },
+     {
+      "block": 80,
+      "source": "implicit:llm",
+      "type": "TIME_JUMP",
+      "time": "EARLIER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point refers to a time 500 years ago, which is earlier than the time implied in the text before the point."
+      ]
+     },
+     {
+      "prior_loop_segments": [
+       4
+      ]
+     }
+    ],
+    "2": [
+     {
+      "block": 11,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces new characters (Fang Yuan) and a new narrative focus, indicating a shift to a new scene.",
+       "order: Scene 1 follows Scene 0 in the narrative."
+      ]
+     },
+     {
+      "block": 18,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces a new setting with the mention of '500 years of time' and discusses the challenges of accessing hidden locations, which is a",
+       "order: Scene 2 follows Scene 1 in the narrative."
+      ]
+     },
+     {
+      "block": 24,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces a new perspective with a 500-year-old person who has cultivated in the Demonic Way, indicating a shift in viewpoint and a ne"
+      ]
+     },
+     {
+      "block": 39,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces new characters and events, indicating a new scene. The story-time relation is unknown as the text does not clearly state or ",
+       "order: Scene 4 follows Scene 3 in the narrative."
+      ]
+     },
+     {
+      "prior_loop_segments": []
+     }
+    ],
+    "3": [
+     {
+      "block": 2,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces a new scene with Fang Yuan in his bed, indicating a shift in location and time to the hour before dawn, which is later than "
+      ]
+     },
+     {
+      "block": 22,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces a new perspective on Fang Yuan's past and his current feelings towards Shen Cui, indicating a shift in focus and possibly a ",
+       "order: Fang Yuan's thoughts and actions follow his waking up."
+      ]
+     },
+     {
+      "block": 39,
+      "source": "implicit:llm",
+      "type": "FLASHBACK",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces a flashback to Fang Yuan's previous life, indicating a shift in time relative to the text before the point."
+      ]
+     },
+     {
+      "block": 48,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces new characters and shifts the focus to different relationships, indicating a new scene.",
+       "order: Fang Yuan's reflections on his past and current mindset follow his previous thoughts."
+      ]
+     },
+     {
+      "prior_loop_segments": [
+       3
+      ]
+     }
+    ],
+    "5": [
+     {
+      "block": 5,
+      "source": "implicit:llm",
+      "type": "LORE",
+      "time": "LATER",
+      "conf": 0.8,
+      "why": [
+       "The text after the point introduces a legend about the Hope Gu, which is a separate narrative context and not directly related to the ongoing action of Fang Yua",
+       "order: SCENE 1 describes a legend and does not reference any prior events or time markers."
+      ]
+     },
+     {
+      "block": 11,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces a new phase in Ren Zu's life where he gives his prime middle years to the second Gu, indicating a progression in time and a "
+      ]
+     },
+     {
+      "block": 22,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces a new scene with Fang Yuan and the Hope Gu entering his body, which is a different character and a new action sequence. The "
+      ]
+     },
+     {
+      "block": 27,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 1.0,
+      "why": [
+       "The text after the point describes a new event in the story where Fang Yuan's ball of light explodes, indicating a new scene with a different action and progres"
+      ]
+     },
+     {
+      "prior_loop_segments": []
+     }
+    ],
+    "21": [
+     {
+      "block": 24,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces a different set of descriptors about the same person, suggesting a shift in perspective or context, indicating a new scene.",
+       "order: Scene 1 follows Scene 0 as it describes the same character's actions in a different context."
+      ]
+     },
+     {
+      "block": 29,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point describes a new location (Qing Mao Mountain), a new time (spring), and new emotional state, indicating a scene change.",
+       "order: Scene 2 follows Scene 1 as it describes the same character's emotional state after the events of Scene 1."
+      ]
+     },
+     {
+      "block": 37,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces a new location (Mo branch family home), different characters (Gu Yue Mo Bei), and a different context, indicating a scene ch",
+       "order: Scene 3 follows Scene 2 as it introduces a new character and setting, likely in a different time frame."
+      ]
+     },
+     {
+      "block": 51,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces a new element (the phrase '\u5929\u65b9\u591c\u8c2d' and its explanation) which appears to be a separate narrative or commentary, indicating a s",
+       "order: Scene 4 follows Scene 3 as it introduces a new context and explanation, likely in a different time frame."
+      ]
+     },
+     {
+      "prior_loop_segments": []
+     }
+    ],
+    "45": [
+     {
+      "block": 24,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces a new location (Flower Wine Monk\u2019s place) and new characters (Fang Yuan, Flower Wine Monk), indicating a scene change. The s",
+       "order: Scene 1 happens after Scene 0 as it follows in the text."
+      ]
+     },
+     {
+      "block": 34,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces new characters (Jia Jin Sheng) and a different setting (a mushroom table, shouting for wine), indicating a new scene. The st",
+       "order: Scene 2 happens after Scene 1 as it follows in the text."
+      ]
+     },
+     {
+      "block": 64,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces new characters (Jia Jin Sheng, Fang Yuan) and a different setting (the wine cellar), indicating a new scene. The mention of "
+      ]
+     },
+     {
+      "block": 78,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces new locations (Qing Mao Mountain, Bai family), new characters (Bai Ning Bing), and discusses the situation of Qing Mao Mount",
+       "order: Scene 4 happens after Scene 3 as it follows in the text."
+      ]
+     },
+     {
+      "prior_loop_segments": []
+     }
+    ]
+   }
+  },
+  {
+   "novel": "lord-of-the-mysteries",
+   "base_rate": 0.1,
+   "high_threshold": 0.4969,
+   "conventions": [
+    {
+     "id": "symbol:...",
+     "support": 14,
+     "hits": 4,
+     "hit_rate": 0.286,
+     "lift": 2.85,
+     "accepted": true,
+     "strength": "weak",
+     "reason": "stats + model (3/3)"
+    },
+    {
+     "id": "short:w2-3|title|none|alone",
+     "support": 5,
+     "hits": 1,
+     "hit_rate": 0.2,
+     "lift": 2.0,
+     "accepted": false,
+     "strength": "weak",
+     "reason": "lift 2.0 / hit_rate 0.2 below thresholds"
+    }
+   ],
+   "results": {
+    "score_top6pct": {
+     "all": {
+      "tp": 2,
+      "fp": 37,
+      "fn": 4,
+      "precision": 0.051,
+      "recall": 0.333,
+      "f1": 0.089
+     },
+     "learned_range": {
+      "tp": 2,
+      "fp": 28,
+      "fn": 1,
+      "precision": 0.067,
+      "recall": 0.667,
+      "f1": 0.121
+     },
+     "held_out": {
+      "tp": 0,
+      "fp": 9,
+      "fn": 3,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+     }
+    },
+    "induced_strong": {
+     "all": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 6,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+     },
+     "learned_range": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 3,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+     },
+     "held_out": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 3,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+     }
+    },
+    "full": {
+     "all": {
+      "tp": 4,
+      "fp": 26,
+      "fn": 2,
+      "precision": 0.133,
+      "recall": 0.667,
+      "f1": 0.222
+     },
+     "learned_range": {
+      "tp": 2,
+      "fp": 20,
+      "fn": 1,
+      "precision": 0.091,
+      "recall": 0.667,
+      "f1": 0.16
+     },
+     "held_out": {
+      "tp": 2,
+      "fp": 6,
+      "fn": 1,
+      "precision": 0.25,
+      "recall": 0.667,
+      "f1": 0.364
+     }
+    }
+   },
+   "predictions": {
+    "score_top6pct": {
+     "1": [
+      9,
+      45,
+      50,
+      72
+     ],
+     "2": [
+      22,
+      40,
+      43,
+      67
+     ],
+     "3": [
+      5,
+      18,
+      46,
+      62
+     ],
+     "4": [
+      10,
+      32,
+      50,
+      61,
+      70,
+      96
+     ],
+     "7": [
+      3,
+      8,
+      13,
+      30,
+      73
+     ],
+     "8": [
+      29,
+      43,
+      69,
+      78,
+      91,
+      99,
+      104
+     ],
+     "26": [
+      12,
+      24,
+      58,
+      70,
+      84
+     ],
+     "36": [
+      2,
+      5,
+      17,
+      33
+     ]
+    },
+    "induced_strong": {
+     "1": [],
+     "2": [],
+     "3": [],
+     "4": [],
+     "7": [],
+     "8": [],
+     "26": [],
+     "36": []
+    },
+    "full": {
+     "1": [
+      9,
+      45,
+      50,
+      72
+     ],
+     "2": [
+      22,
+      40,
+      43,
+      67
+     ],
+     "3": [
+      5,
+      8,
+      18,
+      62
+     ],
+     "4": [
+      32,
+      40,
+      50,
+      96
+     ],
+     "7": [
+      8,
+      13,
+      30,
+      79
+     ],
+     "8": [
+      43,
+      78,
+      86,
+      110
+     ],
+     "26": [
+      12,
+      58,
+      70,
+      84
+     ],
+     "36": [
+      17,
+      33,
+      59,
+      74
+     ]
+    }
+   },
+   "labels": {
+    "1": [
+     {
+      "block": 9,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces a new scene with Zhou Mingrui experiencing a headache, which is a different situation and likely a new location or time.",
+       "order: Scene 1 continues the narrative from Scene 0, describing the ongoing pain and concern about the cause."
+      ]
+     },
+     {
+      "block": 45,
+      "source": "implicit:llm",
+      "type": "LORE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces new characters and background information about Klein Moretti, which is not part of the ongoing narrative or scene involving",
+       "order: Scene 2 provides background information on Klein Moretti, following the narrative from Scene 1."
+      ]
+     },
+     {
+      "block": 50,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces a new character (Zhou Mingrui) and shifts to a different context involving the Hermes language, indicating a new scene.",
+       "order: Scene 3 continues the narrative, introducing Zhou Mingrui and his reaction to the Hermes language, following Scene 2."
+      ]
+     },
+     {
+      "block": 72,
+      "source": "implicit:llm",
+      "type": "LORE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point shifts to a historical anecdote about Lord Ye, which is a separate narrative context and not part of the ongoing action or scene.",
+       "order: Scene 4 continues the narrative, explaining the proverb about Lord Ye and the dragon, following Scene 3."
+      ]
+     },
+     {
+      "prior_loop_segments": []
+     }
+    ],
+    "2": [
+     {
+      "block": 22,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces new elements such as the coin's description, the Loen Kingdom, and the gas meter's interaction, indicating a new scene with ",
+       "order: No time statement provided."
+      ]
+     },
+     {
+      "block": 40,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces a new character (Mr. Franky) and a new context (the landlord inspecting the bathroom), indicating a shift to a new scene.",
+       "order: No time statement provided."
+      ]
+     },
+     {
+      "block": 43,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text before the point describes Mr. Franky inspecting the bathroom, while the text after the point describes Zhou Mingrui cleaning bloodstains in the bathro",
+       "order: No time statement provided."
+      ]
+     },
+     {
+      "block": 67,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces a new scene where Zhou Mingrui is in his room performing a ritual, which is a different location and time from the previous "
+      ]
+     },
+     {
+      "prior_loop_segments": []
+     }
+    ],
+    "3": [
+     {
+      "block": 5,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces new time expressions such as 'two days later' and describes a different scene with the red moon setting, indicating a shift "
+      ]
+     },
+     {
+      "block": 8,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.8,
+      "why": [
+       "The text after the point describes a different location (window, red moon setting) and introduces new characters (Melissa) and actions (commotion, footsteps app",
+       "order: Scene 2 occurs later as it describes the passage of time with the red moon setting and Melissa waking up, which follows "
+      ]
+     },
+     {
+      "block": 18,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces new characters (Klein) and new locations (Southern Continent, Northern Continent), and shifts to a different time frame with",
+       "order: Scene 3 occurs later as it describes Benson's company being affected by the Southern Continent situation, which is a sep"
+      ]
+     },
+     {
+      "block": 62,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces new characters (Benson, Mingrui, Zhou) and a new location (Klein), indicating a scene change. The time relation is unknown a",
+       "order: Scene 4 occurs later as it describes Zhou Mingrui interacting with Melissa and receiving instructions, which follows the"
+      ]
+     },
+     {
+      "prior_loop_segments": []
+     }
+    ],
+    "4": [
+     {
+      "block": 32,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces a new location (Tingen) and new characters (Klein), indicating a scene change. The time relation is unknown as the text does",
+       "order: No time statements or references to prior events."
+      ]
+     },
+     {
+      "block": 40,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "SAME",
+      "conf": 1.0,
+      "why": [
+       "The text after the point introduces a new scene with different people and setting, while maintaining the same story time."
+      ]
+     },
+     {
+      "block": 50,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces a new location (Smyrin Bakery) and new characters (Wendy Smyrin), indicating a scene change. The time relation is unknown as",
+       "order: No time statements or references to prior events."
+      ]
+     },
+     {
+      "block": 96,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces a new scene with different people, places, and time, specifically mentioning the assassination of Roselle in the year 1198, "
+      ]
+     },
+     {
+      "prior_loop_segments": []
+     }
+    ],
+    "7": [
+     {
+      "block": 8,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces new characters (Audrey), new locations (Pelican Street, White Rose Borough, Pritz Harbor), and new actions (obtaining the Gh",
+       "order: No time markers, but the scene follows naturally after Scene 0."
+      ]
+     },
+     {
+      "block": 13,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces new characters (Mr. Fool, Zhou Mingrui) and shifts to a different context involving a 'gathering' and 'attempts', indicating",
+       "order: No time markers, but the scene follows naturally after Scene 1."
+      ]
+     },
+     {
+      "block": 30,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces a new character (Audrey) and a new situation, indicating a scene change. The mention of Audrey turning seventeen suggests a "
+      ]
+     },
+     {
+      "block": 79,
+      "source": "implicit:llm",
+      "type": "POV_SWITCH",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The perspective shifts from Zhou Mingrui to Klein, indicating a change in point of view, which is a scene change.",
+       "order: No time markers, but the scene follows naturally after Scene 3."
+      ]
+     },
+     {
+      "prior_loop_segments": []
+     }
+    ],
+    "8": [
+     {
+      "block": 43,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces a new location (Empress Borough, Backlund, capital of the Loen Kingdom) and new characters (Audrey Hall), indicating a scene",
+       "order: No time statements or prior loops indicated."
+      ]
+     },
+     {
+      "block": 78,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 1.0,
+      "why": [
+       "The text after the point introduces a new location (Pritz Harbor, Oak Island) and different people on stage, indicating a scene change.",
+       "order: No time statements or prior loops indicated."
+      ]
+     },
+     {
+      "block": 86,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.8,
+      "why": [
+       "The text before the point describes a ship in a military port, while the text after the point describes a different event involving Audrey and a flying machine,",
+       "order: No time statements or prior loops indicated."
+      ]
+     },
+     {
+      "block": 110,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point describes the naming of the ship and its departure, which is a continuation of the event described in the text before the point, but sh"
+      ]
+     },
+     {
+      "prior_loop_segments": []
+     }
+    ],
+    "26": [
+     {
+      "block": 12,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces a new location (Blackthorn Security Company) and new characters (Rozanne), indicating a scene change.",
+       "order: The first scene sets up the context of Klein following the priest, while the second scene introduces Klein interacting w"
+      ]
+     },
+     {
+      "block": 58,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point describes Klein picking up the revolver and firing, which is a new action and setting compared to the previous scene where he was resti",
+       "order: Scene 2 describes Klein practicing with a revolver, which follows his interaction with Rozanne in scene 1."
+      ]
+     },
+     {
+      "block": 70,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces a new character (Benson Moretti) and provides additional information about him, indicating a shift to a new scene.",
+       "order: Scene 3 introduces Benson, Klein's brother, which occurs after Klein's practice session in scene 2."
+      ]
+     },
+     {
+      "block": 84,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.8,
+      "why": [
+       "The text after the point introduces new characters (Zhou Mingrui), a new location (China), and a different context (students attending military stints), indicat",
+       "order: Scene 4 provides additional context about Zhou Mingrui, which logically follows the introduction of Benson in scene 3."
+      ]
+     },
+     {
+      "prior_loop_segments": []
+     }
+    ],
+    "36": [
+     {
+      "block": 17,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.8,
+      "why": [
+       "The text after the point introduces a new discussion about bureaucracy and Audrey's questioning, indicating a shift in focus and context, suggesting a new scene",
+       "order: Scene 1 continues the conversation from Scene 0."
+      ]
+     },
+     {
+      "block": 33,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces a new location (the opulent palace where gods seemingly lived) and a new character (Klein) in a different context, indicatin",
+       "order: Scene 2 describes Klein's actions following the conversation in Scene 1."
+      ]
+     },
+     {
+      "block": 59,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces a new character (Audrey Hall) and a different setting (mirror, writing potion formula), indicating a scene change.",
+       "order: Scene 3 shows Audrey working on the potion, which follows the previous scenes."
+      ]
+     },
+     {
+      "block": 74,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces a new location (underground basement), new characters (Alger Wilson), and a different narrative context, indicating a scene ",
+       "order: Scene 4 takes place in an underground basement, which is a separate location and occurs after the previous scenes."
+      ]
+     },
+     {
+      "prior_loop_segments": []
+     }
+    ]
+   }
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "base_rate": 0.101,
+   "high_threshold": 0.4621,
+   "conventions": [
+    {
+     "id": "short:w4-8|title|none|inline",
+     "support": 3,
+     "hits": 2,
+     "hit_rate": 0.667,
+     "lift": 6.6,
+     "accepted": false,
+     "strength": "strong",
+     "reason": "vetoed by model (0/3 examples are scene changes)"
+    },
+    {
+     "id": "short:w1|title|org|alone",
+     "support": 3,
+     "hits": 1,
+     "hit_rate": 0.333,
+     "lift": 3.3,
+     "accepted": false,
+     "strength": "weak",
+     "reason": "lift 3.3 / hit_rate 0.333 below thresholds"
+    },
+    {
+     "id": "opener:Ps|w31+",
+     "support": 9,
+     "hits": 2,
+     "hit_rate": 0.222,
+     "lift": 2.2,
+     "accepted": false,
+     "strength": "weak",
+     "reason": "lift 2.2 / hit_rate 0.222 below thresholds"
+    },
+    {
+     "id": "short:w1|title|place|alone",
+     "support": 5,
+     "hits": 1,
+     "hit_rate": 0.2,
+     "lift": 1.98,
+     "accepted": false,
+     "strength": "weak",
+     "reason": "lift 1.98 / hit_rate 0.2 below thresholds"
+    },
+    {
+     "id": "short:w4-8|title|none|alone",
+     "support": 5,
+     "hits": 1,
+     "hit_rate": 0.2,
+     "lift": 1.98,
+     "accepted": false,
+     "strength": "weak",
+     "reason": "lift 1.98 / hit_rate 0.2 below thresholds"
+    }
+   ],
+   "results": {
+    "score_top6pct": {
+     "all": {
+      "tp": 0,
+      "fp": 24,
+      "fn": 3,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+     },
+     "learned_range": {
+      "tp": 0,
+      "fp": 9,
+      "fn": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+     },
+     "held_out": {
+      "tp": 0,
+      "fp": 15,
+      "fn": 2,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+     }
+    },
+    "induced_strong": {
+     "all": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 3,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+     },
+     "learned_range": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+     },
+     "held_out": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 2,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+     }
+    },
+    "full": {
+     "all": {
+      "tp": 0,
+      "fp": 16,
+      "fn": 3,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+     },
+     "learned_range": {
+      "tp": 0,
+      "fp": 8,
+      "fn": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+     },
+     "held_out": {
+      "tp": 0,
+      "fp": 8,
+      "fn": 2,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+     }
+    }
+   },
+   "predictions": {
+    "score_top6pct": {
+     "2": [
+      9,
+      49,
+      89,
+      104,
+      110
+     ],
+     "3": [
+      2,
+      49,
+      53,
+      56
+     ],
+     "24": [
+      3,
+      18,
+      23,
+      33,
+      63,
+      76,
+      114,
+      149
+     ],
+     "33": [
+      29,
+      48,
+      82,
+      109,
+      115,
+      122,
+      131,
+      145
+     ]
+    },
+    "induced_strong": {
+     "2": [],
+     "3": [],
+     "24": [],
+     "33": []
+    },
+    "full": {
+     "2": [
+      9,
+      49,
+      89,
+      110
+     ],
+     "3": [
+      2,
+      49,
+      53,
+      56
+     ],
+     "24": [
+      18,
+      23,
+      33,
+      149
+     ],
+     "33": [
+      82,
+      109,
+      115,
+      131
+     ]
+    }
+   },
+   "labels": {
+    "2": [
+     {
+      "block": 9,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces a new character (Yoo Sangah) and a new setting (subway), indicating a scene change.",
+       "order: No time statement provided, but the scene follows the first scene in reading order."
+      ]
+     },
+     {
+      "block": 49,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces new information about Yoo Sangah's promotion last month, indicating a shift in time relative to the previous conversation."
+      ]
+     },
+     {
+      "block": 89,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces a new scene with a notification from the author, a new time reference (7 p.m.), and a shift in focus to the author's message",
+       "order: No time statement provided, but the scene follows the previous scene in reading order."
+      ]
+     },
+     {
+      "block": 110,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces a new event with a bright light, a loud sound, and a voice, indicating a new scene. The time relation is unknown as the text",
+       "order: No time statement provided, but the scene follows the previous scene in reading order."
+      ]
+     },
+     {
+      "prior_loop_segments": []
+     }
+    ],
+    "3": [
+     {
+      "block": 2,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces a new scene with the subway stopping, the door opening, and characters interacting, which is a different place and action co",
+       "order: The first scene sets up the context of the first appearance of Dokkaebi, while the second scene describes the protagonis"
+      ]
+     },
+     {
+      "block": 49,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces a new scene with different people on stage (Yoo Sangah-ssi) and a new action (someone raising their hand to ask a question),",
+       "order: Scene 2 continues the narrative of the subway incident and the protagonist's reaction to the situation."
+      ]
+     },
+     {
+      "block": 53,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces a new character (Han Myungoh) and describes a different action (offering money) in a different context, indicating a scene c",
+       "order: Scene 3 introduces Department Head Han Myungoh and the unfolding of the situation with the money offer."
+      ]
+     },
+     {
+      "block": 56,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces a new dialogue and perspective, indicating a shift in scene and characters.",
+       "order: Scene 4 continues the dialogue between the protagonist and Department Head Han Myungoh, focusing on the exchange of mone"
+      ]
+     },
+     {
+      "prior_loop_segments": []
+     }
+    ],
+    "24": [
+     {
+      "block": 18,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point describes a new scene where the box stops trembling and the characters open it, indicating a transition from the previous action of rec"
+      ]
+     },
+     {
+      "block": 23,
+      "source": "implicit:llm",
+      "type": "LORE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces lore about the sword and its history, which is a shift in focus from the immediate action to background information, indicat",
+       "order: The characters look around and decide to open the item, continuing the sequence of events."
+      ]
+     },
+     {
+      "block": 33,
+      "source": "implicit:llm",
+      "type": "LORE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces lore about star relics, which is a new scene of exposition rather than continuing the action.",
+       "order: The item's description and effects are revealed, following the decision to open it."
+      ]
+     },
+     {
+      "block": 149,
+      "source": "implicit:llm",
+      "type": "LORE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces a new system or lore element (constellations and scenario recommendations) that is not part of the previous scene's narrativ",
+       "order: The constellation recommendations and their observations are presented, continuing the narrative progression."
+      ]
+     },
+     {
+      "prior_loop_segments": []
+     }
+    ],
+    "33": [
+     {
+      "block": 82,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces new dialogue and interactions with the Landlord Alliance, indicating a new scene. The mention of 'yesterday' in the text aft"
+      ]
+     },
+     {
+      "block": 109,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces new characters (Yoo Joonghyuk) and a new location (Chungmuro's hidden dungeon), indicating a new scene. The story-time relat",
+       "order: No time statement, but the scene follows SCENE 1 in reading order."
+      ]
+     },
+     {
+      "block": 115,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces new characters (Lee Jihye), new locations (Gong Pildu's party), and a new action (shattering Gong Pildu's party), indicating",
+       "order: No time statement, but the scene follows SCENE 2 in reading order."
+      ]
+     },
+     {
+      "block": 131,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces a hypothetical scenario where the boy is alive and interacting with the characters, indicating a shift in time and context."
+      ]
+     },
+     {
+      "prior_loop_segments": []
+     }
+    ]
+   }
+  },
+  {
+   "novel": "pride-and-prejudice",
+   "base_rate": 0.102,
+   "high_threshold": 0.5613,
+   "conventions": [
+    {
+     "id": "short:w2-3|title|none|alone",
+     "support": 3,
+     "hits": 1,
+     "hit_rate": 0.333,
+     "lift": 3.26,
+     "accepted": false,
+     "strength": "weak",
+     "reason": "lift 3.26 / hit_rate 0.333 below thresholds"
+    },
+    {
+     "id": "short:w4-8|sentence|none|alone",
+     "support": 10,
+     "hits": 2,
+     "hit_rate": 0.2,
+     "lift": 1.96,
+     "accepted": false,
+     "strength": "weak",
+     "reason": "lift 1.96 / hit_rate 0.2 below thresholds"
+    },
+    {
+     "id": "opener:Ps|w4-8",
+     "support": 5,
+     "hits": 1,
+     "hit_rate": 0.2,
+     "lift": 1.96,
+     "accepted": false,
+     "strength": "weak",
+     "reason": "lift 1.96 / hit_rate 0.2 below thresholds"
+    },
+    {
+     "id": "struct:NON_DIEGETIC",
+     "support": 5,
+     "hits": 1,
+     "hit_rate": 0.2,
+     "lift": 1.96,
+     "accepted": false,
+     "strength": "weak",
+     "reason": "lift 1.96 / hit_rate 0.2 below thresholds"
+    },
+    {
+     "id": "short:w2-3|sentence|none|alone",
+     "support": 11,
+     "hits": 2,
+     "hit_rate": 0.182,
+     "lift": 1.78,
+     "accepted": false,
+     "strength": "weak",
+     "reason": "lift 1.78 / hit_rate 0.182 below thresholds"
+    }
+   ],
+   "results": {
+    "score_top6pct": {
+     "all": {
+      "tp": 1,
+      "fp": 11,
+      "fn": 5,
+      "precision": 0.083,
+      "recall": 0.167,
+      "f1": 0.111
+     },
+     "learned_range": {
+      "tp": 0,
+      "fp": 8,
+      "fn": 4,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+     },
+     "held_out": {
+      "tp": 1,
+      "fp": 3,
+      "fn": 1,
+      "precision": 0.25,
+      "recall": 0.5,
+      "f1": 0.333
+     }
+    },
+    "induced_strong": {
+     "all": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 6,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+     },
+     "learned_range": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 4,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+     },
+     "held_out": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 2,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+     }
+    },
+    "full": {
+     "all": {
+      "tp": 1,
+      "fp": 20,
+      "fn": 5,
+      "precision": 0.048,
+      "recall": 0.167,
+      "f1": 0.074
+     },
+     "learned_range": {
+      "tp": 0,
+      "fp": 13,
+      "fn": 4,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+     },
+     "held_out": {
+      "tp": 1,
+      "fp": 7,
+      "fn": 1,
+      "precision": 0.125,
+      "recall": 0.5,
+      "f1": 0.2
+     }
+    }
+   },
+   "predictions": {
+    "score_top6pct": {
+     "3": [
+      4
+     ],
+     "4": [
+      11
+     ],
+     "6": [
+      1,
+      8,
+      51
+     ],
+     "7": [
+      2,
+      6,
+      31
+     ],
+     "12": [
+      6
+     ],
+     "22": [
+      6
+     ],
+     "40": [
+      26,
+      31
+     ]
+    },
+    "induced_strong": {
+     "3": [],
+     "4": [],
+     "6": [],
+     "7": [],
+     "12": [],
+     "22": [],
+     "40": []
+    },
+    "full": {
+     "3": [
+      4,
+      13,
+      19,
+      24
+     ],
+     "4": [
+      9,
+      11
+     ],
+     "6": [
+      1,
+      8,
+      16,
+      51
+     ],
+     "7": [
+      2,
+      6,
+      31,
+      42
+     ],
+     "12": [
+      6
+     ],
+     "22": [
+      1,
+      6,
+      11,
+      15
+     ],
+     "40": [
+      7,
+      20,
+      26,
+      31
+     ]
+    }
+   },
+   "labels": {
+    "3": [
+     {
+      "block": 4,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces a new scene with Mr. Bingley and his party arriving at the assembly, which is a different place and time relative to the pre"
+      ]
+     },
+     {
+      "block": 13,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces a new scene with different characters (Mr. Darcy and Elizabeth) and a different action (a dance and conversation), indicatin",
+       "order: This scene describes the arrival of Mr. Bingley and his party, which is a subsequent event to the previous scene."
+      ]
+     },
+     {
+      "block": 19,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "SAME",
+      "conf": 0.9,
+      "why": [
+       "The text after the point describes a different location (the Bennet family's home) and different characters (the Bennet family) compared to the text before the "
+      ]
+     },
+     {
+      "block": 24,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces a new character (Lizzy) and continues a conversation that was previously interrupted, indicating a shift in scene and charac",
+       "order: This scene describes Mr. Darcy's interaction with Elizabeth and Jane, which occurs during the ball."
+      ]
+     },
+     {
+      "prior_loop_segments": []
+     }
+    ],
+    "4": [
+     {
+      "block": 9,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces new characters (Miss Bingley) and places (Netherfield) not present in the text before the point. The conversation shifts to ",
+       "order: The conversation between Jane and Elizabeth occurs first, followed by Elizabeth's response to Jane's comments about Mr. "
+      ]
+     },
+     {
+      "block": 11,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces new characters (Darcy, Hurst, Miss Bingley) and places (Netherfield) not present in the text before the point, indicating a ",
+       "order: Elizabeth's thoughts about Miss Bingley's behavior follow her conversation with Jane."
+      ]
+     },
+     {
+      "prior_loop_segments": []
+     }
+    ],
+    "6": [
+     {
+      "block": 1,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces a new dialogue between Charlotte and Eliza, indicating a shift in scene and characters, with no continuous action or place.",
+       "order: No time markers or loops indicated."
+      ]
+     },
+     {
+      "block": 8,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces a new character, Charlotte, and shifts to a different conversation, indicating a scene change.",
+       "order: No time markers or loops indicated."
+      ]
+     },
+     {
+      "block": 16,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces new characters (Miss Lucas, Elizabeth) and a new interaction, indicating a scene change. The story-time relation is unknown ",
+       "order: No time markers or loops indicated."
+      ]
+     },
+     {
+      "block": 51,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces new characters (Miss Elizabeth Bennet) and a new location (Pemberley), indicating a scene change.",
+       "order: No time markers or loops indicated."
+      ]
+     },
+     {
+      "prior_loop_segments": []
+     }
+    ],
+    "7": [
+     {
+      "block": 2,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces a new location (Longbourn) and new characters (Catherine, Lydia), indicating a scene change. The story-time relation is unkn",
+       "order: The text describes the village of Longbourn and the activities of the Bennet sisters, which follows the introduction of "
+      ]
+     },
+     {
+      "block": 6,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces new characters (Catherine, Lydia, Captain Carter) and places (London) not present in the text before the point. The mention ",
+       "order: Scene 2 continues the conversation between Mrs. Bennet, Catherine, and Lydia, which follows Scene 1's description of the"
+      ]
+     },
+     {
+      "block": 31,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 1.0,
+      "why": [
+       "The text after the point describes a new scene that occurs the next morning, indicating a time jump and a change in location and characters."
+      ]
+     },
+     {
+      "block": 42,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces new characters (Catherine, Lydia, Mary) and a new location (Meryton), indicating a scene change.",
+       "order: Scene 4 describes the group's journey to Meryton, which follows Scene 3's events."
+      ]
+     },
+     {
+      "prior_loop_segments": []
+     }
+    ],
+    "12": [
+     {
+      "block": 6,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.95,
+      "why": [
+       "The text after the point introduces new characters (Catherine, Lydia, Forster) and a different setting (the regiment), indicating a new scene. The mention of 's"
+      ]
+     },
+     {
+      "prior_loop_segments": []
+     }
+    ],
+    "22": [
+     {
+      "block": 1,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces a new scene involving Mr. Collins and Charlotte Lucas, with no continuous action from the previous text.",
+       "order: Scene 1 follows Scene 0 in the narrative."
+      ]
+     },
+     {
+      "block": 6,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces new characters (Mrs. Bennet, Mr. Collins) and locations (Longbourn, St. James\u2019s) not present in the text before the point. T",
+       "order: Scene 2 follows Scene 1 in the narrative."
+      ]
+     },
+     {
+      "block": 11,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces new dialogue and shifts to a different location (Hertfordshire) and characters (Elizabeth), indicating a new scene.",
+       "order: Scene 3 follows Scene 2 in the narrative."
+      ]
+     },
+     {
+      "block": 15,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces a new scene with different characters and a new event, indicating a scene change.",
+       "order: Scene 4 follows Scene 3 in the narrative."
+      ]
+     },
+     {
+      "prior_loop_segments": []
+     }
+    ],
+    "40": [
+     {
+      "block": 7,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point refers to events happening 'the very next day', indicating a shift in time relative to the text before the point."
+      ]
+     },
+     {
+      "block": 20,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces a new conversation between Miss Bennet and Elizabeth, indicating a shift in scene. The dialogue suggests a new interaction r",
+       "order: Scene 2 follows Scene 1 in the narrative."
+      ]
+     },
+     {
+      "block": 26,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces a new scene with Mrs. Bennet and Lizzy, indicating a shift in location and characters. The mention of 'one day' and the new "
+      ]
+     },
+     {
+      "block": 31,
+      "source": "implicit:llm",
+      "type": "NEW_SCENE",
+      "time": "LATER",
+      "conf": 0.9,
+      "why": [
+       "The text after the point introduces new characters (Collinses, Charlotte) and places (Longbourn) not present in the text before the point, indicating a scene ch",
+       "order: Scene 4 follows Scene 3 in the narrative."
+      ]
+     },
+     {
+      "prior_loop_segments": []
+     }
+    ]
+   }
+  }
+ ]
+}

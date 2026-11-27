@@ -16,6 +16,12 @@ from echotales.pipeline.segment.detect import (
 )
 from echotales.pipeline.segment.llm_pass import needs_llm_pass, propose_boundaries
 from echotales.pipeline.segment.markers import LAYER_FOR_ENTRY, Marker, MarkerKind
+from echotales.pipeline.segment.scenes import (
+    SceneCutConfig,
+    analyse_chapter_scenes,
+    apply_cuts_to_segments,
+    save_scene_cuts,
+)
 
 
 @dataclass(slots=True)
@@ -27,6 +33,7 @@ class SegmentReport:
     timelines: set[str] = field(default_factory=set)
     time_skips: int = 0
     llm_calls: int = 0
+    scene_cuts: int = 0
 
     def summary(self) -> str:
         counts = ", ".join(f"{k}={v}" for k, v in sorted(self.by_type.items()))
@@ -34,7 +41,7 @@ class SegmentReport:
             f"{self.novel_id}: {self.segments} segments over {self.chapters} chapters\n"
             f"  by type: {counts}\n"
             f"  timelines: {len(self.timelines)}  time skips: {self.time_skips}"
-            f"  llm calls: {self.llm_calls}"
+            f"  llm calls: {self.llm_calls}  scene cuts: {self.scene_cuts}"
         )
 
 
@@ -53,15 +60,22 @@ def segment_novel(
     router: LLMRouter | None = None,
     use_llm: bool = False,
     commit_every: int = 25,
+    scene_cuts: SceneCutConfig | None = None,
 ) -> SegmentReport:
     """Segment every ingested chapter of a novel.
 
     `use_llm` gates the fallback pass. Off by default so the deterministic path
     stays runnable and reproducible on its own -- and because the rules already
     resolve the formulaic transitions this genre relies on.
+
+    `scene_cuts` (off unless `enabled`) additionally splits MAIN segments at
+    scene cuts learned per novel (`segment/induce.py`, `segment/scenes.py`).
+    It stays opt-in because every later stage keys mentions to segment ids,
+    and splitting changes those ids; run it before mention extraction.
     """
     report = SegmentReport(novel_id=novel_id)
     pending: list[NarrativeSegment] = []
+    scene_ctx = _scene_context(novel_id, store, scene_cuts) if scene_cuts and scene_cuts.enabled else None
 
     for i, chapter in enumerate(store.iter_chapters(novel_id), start=1):
         segments = segment_chapter(chapter)
@@ -71,6 +85,22 @@ def segment_novel(
             if needs_llm_pass(markers, threshold=PROMOTION_THRESHOLD):
                 report.llm_calls += 1
                 segments = _merge_llm_proposals(chapter, segments, router)
+
+        if scene_ctx is not None:
+            analysis = analyse_chapter_scenes(
+                chapter,
+                scene_ctx["conventions"],
+                llm=scene_cuts.llm,
+                nlp=scene_ctx["nlp"],
+                topic=scene_ctx["topic"],
+                max_implicit=scene_cuts.max_implicit_per_chapter,
+                method=scene_cuts.method,
+                embedder=scene_cuts.embedder,
+                place_params=scene_cuts.place_params,
+            )
+            segments = apply_cuts_to_segments(chapter, segments, analysis)
+            save_scene_cuts(store, novel_id, analysis)
+            report.scene_cuts += len(analysis.cuts)
 
         pending.extend(segments)
         report.chapters += 1
@@ -93,6 +123,28 @@ def segment_novel(
         store.add_segments(pending)
     store.conn.commit()
     return report
+
+
+def _scene_context(novel_id: str, store: Store, cfg: SceneCutConfig) -> dict:
+    """Load this novel's induced conventions, inducing and saving them on first use."""
+    from echotales.pipeline.segment.discontinuity import TopicModel, analyse_blocks, load_nlp
+    from echotales.pipeline.segment.induce import (
+        conventions_path,
+        induce_conventions,
+        load_conventions,
+        save_conventions,
+    )
+
+    nlp = load_nlp()
+    learn = [c for c in store.iter_chapters(novel_id) if c.number <= cfg.learn_chapters]
+    topic = TopicModel().fit([sig.terms for c in learn for sig in analyse_blocks(c, None, nlp).values()])
+    path = conventions_path(novel_id, cfg.conventions_dir)
+    if path.exists():
+        conventions = load_conventions(path)
+    else:
+        conventions = induce_conventions(novel_id, learn, llm=cfg.llm, nlp=nlp, topic=topic)
+        save_conventions(conventions, path)
+    return {"conventions": conventions, "nlp": nlp, "topic": topic}
 
 
 def _merge_llm_proposals(

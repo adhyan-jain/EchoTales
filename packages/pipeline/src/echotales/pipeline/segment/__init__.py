@@ -28,7 +28,9 @@ from echotales.pipeline.segment.markers import (
     MarkerSet,
     find_markers,
 )
+from echotales.pipeline.segment.presence import present_cast
 from echotales.pipeline.segment.runner import SegmentReport, segment_novel
+from echotales.pipeline.segment.scenes import SceneAnalysis, SceneCutConfig, analyse_chapter_scenes
 
 __all__ = [
     "DEFAULT_MARKER_SET",
@@ -41,11 +43,15 @@ __all__ = [
     "Marker",
     "MarkerKind",
     "MarkerSet",
+    "SceneAnalysis",
+    "SceneCutConfig",
     "SegmentReport",
     "SegmentationResponse",
+    "analyse_chapter_scenes",
     "find_markers",
     "find_time_skips",
     "needs_llm_pass",
+    "present_cast",
     "propose_boundaries",
     "scan_chapter",
     "segment_chapter",

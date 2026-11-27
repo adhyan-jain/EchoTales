@@ -1,0 +1,93 @@
+{
+ "model": "qwen3:8b",
+ "cuts": [
+  {
+   "block": 31,
+   "source": "implicit:llm",
+   "type": "NEW_SCENE",
+   "time": "LATER",
+   "confidence": 0.9,
+   "why": [
+    "The text after the point describes a completely different location (Qing Mao Mountain), time (late in the night), and context (spring rain) compared to the text",
+    "order: Scene 1 happens after Scene 0 as it describes a different setting and time."
+   ]
+  },
+  {
+   "block": 35,
+   "source": "implicit:llm",
+   "type": "NEW_SCENE",
+   "time": "LATER",
+   "confidence": 0.9,
+   "why": [
+    "The text after the point introduces a new location (Gu Yue Village) and a new event (a grand ceremony), indicating a scene change.",
+    "order: Scene 2 happens after Scene 1 as it describes the village and a ceremony."
+   ]
+  },
+  {
+   "block": 49,
+   "source": "implicit:llm",
+   "type": "NEW_SCENE",
+   "time": "LATER",
+   "confidence": 0.9,
+   "why": [
+    "The text after the point introduces new characters and places, and shifts to a different conversation about a specific individual, indicating a new scene.",
+    "order: Scene 3 happens after Scene 2 as it continues the discussion about the geniuses."
+   ]
+  },
+  {
+   "block": 73,
+   "source": "implicit:llm",
+   "type": "NEW_SCENE",
+   "time": "LATER",
+   "confidence": 0.9,
+   "why": [
+    "The text after the point describes a new location (the corridor and window) and a different time (spring rain), indicating a scene change with a later story tim"
+   ]
+  }
+ ],
+ "prior_loop_segments": [
+  4
+ ],
+ "presence": {
+  "0-30": {
+   "present": [
+    "reverend-insanity:self:476821534c"
+   ],
+   "referenced": []
+  },
+  "31-79": {
+   "present": [
+    "unresolved:gu yue clan head",
+    "reverend-insanity:self:60117b7f5a",
+    "unresolved:clan head",
+    "reverend-insanity:title:head_of_gu"
+   ],
+   "referenced": [
+    "unresolved:bai ning bing",
+    "unresolved:this one",
+    "reverend-insanity:self:476821534c"
+   ]
+  },
+  "80-91": {
+   "present": [
+    "reverend-insanity:self:476821534c"
+   ],
+   "referenced": []
+  }
+ },
+ "checks": {
+  "cut_31": true,
+  "cut_80": false,
+  "0-30: Fang Yuan present": true,
+  "31-79: clan head present": true,
+  "31-79: Fang Yuan NOT present": true,
+  "31-79: Fang Yuan referenced": true,
+  "31-79: Bai Ning Bing referenced": true,
+  "31-79: Bai Ning Bing NOT present": true,
+  "31-79: Fang Zhi referenced": false,
+  "31-79: Fang Zhi NOT present": false,
+  "80-91: Fang Yuan present": true
+ },
+ "passed": 8,
+ "total": 11
+}
