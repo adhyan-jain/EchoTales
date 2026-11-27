@@ -117,3 +117,39 @@ same-place merge (see `llm_segment.py`); that version was started as `v2_run2` (
 3. Run the RI ch1 check with the model; check prior-loop on segment 0 (needs the order pass over a multi-window chapter, `resolve_story_order`).
 4. Add unit tests with a fake LLM for `llm_segment`, `combine_llm_cuts`, the presence fix, embedder fallback; run the full suite (baseline ~3210) and ruff.
 5. Fill in the v2 tables here and the RI ch1 verdict.
+
+# v2.1 (2026-11-28): HANDOFF, GPU-blocked, no accuracy numbers yet
+
+Branch `worktree-agent-a93507cfba5b73f84`. Nothing below is a result unless a number is given.
+
+## Done
+- **New cutter, `segment/place_tags.py`:** the model tags each non-heading block (windows of 25, 35 words shown, num_ctx 4096,
+  qwen3:8b stays 100% GPU) with `place`, `time_shift` (SAME/LATER/EARLIER) and `time_anchor`, reusing the previous place string
+  while unchanged. Code then decides cuts: place distance across a block (mean over 3 blocks each side; nomic embedding, or token
+  Jaccard when no embedder), peak picking, threshold, `min_gap`, optional cap = `cap_rate` x blocks (per-novel learned prior), and a
+  time-jump score. `scenes_from_tags` returns `LLMScene`s so `combine_llm_cuts`, prior-loop and presence code are unchanged.
+  `SceneCutConfig.method` now defaults to `"place_tags"` (`place_params` optional); `runner.py` passes method/embedder/params through.
+  Not implemented: approach 2 (constrained top-K choice); try it if the tag cutter fails the learn split.
+- **Gold:** 60 cuts over 5 novels (RI, LotM, ORV, P&P, A Study in Scarlet). Scarlet read in full (14 chapters, second pass over every
+  cut/ambiguous boundary); `learn_max` in the gold file makes Scarlet learn on chapters 1-7, held-out 8-14 (Part II, new place and time).
+  P&P gained 5 chapters of candidate-level labels. Script: `scripts/eval/segment_gold_add2.py`.
+- **Scripts:** `segment_tag_run.py` (tags gold chapters into `data/scratch/segment/tagcache/<model>/`, GPU lock held per chapter),
+  `segment_tag_tune.py` (grid search on LEARN chapters from the caches, then `--split held --params`; reports false cuts on the labelled
+  hard `negatives` as `hard_negative_false_cuts`; embedding and token distance both run).
+- **Tests:** `packages/pipeline/tests/test_scene_v2.py` (21, fake LLM: llm_segment merge, combine_llm_cuts, place tags, embedder
+  fallback, presence heuristic and parser). Ruff clean.
+
+## Why no numbers
+The shared GPU lock was contended by 3 other agents; a chapter took 7-13 minutes mostly waiting (RI ch1-5 tagged, 5 of ~50 learn
+chapters). Scratch DBs are not in git: copy `data/scratch/segment/` from the previous worktree. Only RI ch1 was inspected: qwen3:8b
+tagged blocks 0-30 place "unknown", found the cut at 31, MISSED 79 (kept the same mountain), and marked LATER on many blocks, so
+expect `time_weight` to tune to about 0 and the prompt to need the withheld-identity / parallel-action rule made stronger (or approach 2).
+
+## Remaining (in order)
+1. `PYTHONPATH=packages/core/src:packages/pipeline/src python scripts/eval/segment_tag_run.py --model qwen3:8b --split learn` (resumes).
+2. `segment_tag_tune.py --models qwen3:8b --split learn`; fix the prompt on learn chapters only.
+3. Tag `--split held`, then `segment_tag_tune.py --split held --params <best>`; gemma2:9b only when `ollama ps` shows 100% GPU at
+   num_ctx 4096 (it spilled 9-21% to CPU). Write `data/eval/segment/scene_induction_v2.json`.
+4. RI ch1 check: `segment_ri_ch1_check.py` still uses the v1 call; pass `method="place_tags"` and `place_params`; expect cuts {31, 79},
+   prior loop on segment 0, ritual cast. Worktrees have no `.env`: CLI runs need `ECHOTALES_MODEL_BACKEND=ollama ECHOTALES_LLM_MODE=local`.
+5. Fill the v2 per-novel, model-comparison and RI ch1 tables.
