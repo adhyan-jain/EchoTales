@@ -1,0 +1,215 @@
+{
+  "schema": 1,
+  "novel_id": "reverend-insanity",
+  "learned_chapters": [
+    1.0,
+    2.0,
+    3.0,
+    4.0,
+    5.0,
+    6.0,
+    7.0,
+    8.0,
+    9.0,
+    10.0
+  ],
+  "base_rate": 0.1,
+  "high_threshold": 0.4706,
+  "params": {
+    "min_support": 3,
+    "min_lift": 2.5,
+    "strong_hit_rate": 0.5,
+    "high_quantile": 0.9
+  },
+  "candidate_threshold": 0.276,
+  "conventions": [
+    {
+      "id": "short:w4-8|sentence|none|alone",
+      "view": "short",
+      "key": "w4-8|sentence|none|alone",
+      "support": 11,
+      "hits": 0,
+      "hit_rate": 0.0,
+      "lift": 0.0,
+      "mean_score": 0.146,
+      "strength": "weak",
+      "examples": [
+        {
+          "chapter": 6.0,
+          "block": 53,
+          "score": 0.241,
+          "anchor": "“A grade, really an A"
+        },
+        {
+          "chapter": 8.0,
+          "block": 34,
+          "score": 0.175,
+          "anchor": "It was hard to adapt."
+        },
+        {
+          "chapter": 2.0,
+          "block": 51,
+          "score": 0.157,
+          "anchor": "Did he hate it?"
+        },
+        {
+          "chapter": 6.0,
+          "block": 17,
+          "score": 0.157,
+          "anchor": "“Could the results be wrong?”"
+        },
+        {
+          "chapter": 7.0,
+          "block": 14,
+          "score": 0.155,
+          "anchor": "“Look, he’s still sleeping,” someone"
+        }
+      ],
+      "llm": null,
+      "accepted": false,
+      "reason": "lift 0.0 / hit_rate 0.0 below thresholds"
+    },
+    {
+      "id": "short:w4-8|sentence|none|inline",
+      "view": "short",
+      "key": "w4-8|sentence|none|inline",
+      "support": 4,
+      "hits": 0,
+      "hit_rate": 0.0,
+      "lift": 0.0,
+      "mean_score": 0.161,
+      "strength": "weak",
+      "examples": [
+        {
+          "chapter": 4.0,
+          "block": 10,
+          "score": 0.17,
+          "anchor": "“It really is beautiful!”"
+        },
+        {
+          "chapter": 5.0,
+          "block": 34,
+          "score": 0.159,
+          "anchor": "The Awakening Ceremony was a"
+        },
+        {
+          "chapter": 5.0,
+          "block": 35,
+          "score": 0.159,
+          "anchor": "This was the hope to"
+        },
+        {
+          "chapter": 1.0,
+          "block": 69,
+          "score": 0.156,
+          "anchor": "“We wouldn’t dare, we wouldn’t"
+        }
+      ],
+      "llm": null,
+      "accepted": false,
+      "reason": "lift 0.0 / hit_rate 0.0 below thresholds"
+    },
+    {
+      "id": "short:w0|none|none|alone",
+      "view": "short",
+      "key": "w0|none|none|alone",
+      "support": 3,
+      "hits": 0,
+      "hit_rate": 0.0,
+      "lift": 0.0,
+      "mean_score": 0.252,
+      "strength": "weak",
+      "examples": [
+        {
+          "chapter": 5.0,
+          "block": 27,
+          "score": 0.454,
+          "anchor": "24, 25, 26… 27."
+        },
+        {
+          "chapter": 10.0,
+          "block": 25,
+          "score": 0.182,
+          "anchor": "1%, 2%, 3%…"
+        },
+        {
+          "chapter": 10.0,
+          "block": 22,
+          "score": 0.119,
+          "anchor": "1%, 2%, 3%… 8%, 9%,"
+        }
+      ],
+      "llm": null,
+      "accepted": false,
+      "reason": "lift 0.0 / hit_rate 0.0 below thresholds"
+    },
+    {
+      "id": "struct:NON_DIEGETIC",
+      "view": "struct",
+      "key": "NON_DIEGETIC",
+      "support": 3,
+      "hits": 0,
+      "hit_rate": 0.0,
+      "lift": 0.0,
+      "mean_score": 0.19,
+      "strength": "weak",
+      "examples": [
+        {
+          "chapter": 9.0,
+          "block": 40,
+          "score": 0.227,
+          "anchor": "* * *"
+        },
+        {
+          "chapter": 3.0,
+          "block": 51,
+          "score": 0.184,
+          "anchor": "* * *"
+        },
+        {
+          "chapter": 7.0,
+          "block": 44,
+          "score": 0.159,
+          "anchor": "* * *"
+        }
+      ],
+      "llm": null,
+      "accepted": false,
+      "reason": "lift 0.0 / hit_rate 0.0 below thresholds"
+    },
+    {
+      "id": "symbol:* * *",
+      "view": "symbol",
+      "key": "* * *",
+      "support": 3,
+      "hits": 0,
+      "hit_rate": 0.0,
+      "lift": 0.0,
+      "mean_score": 0.19,
+      "strength": "weak",
+      "examples": [
+        {
+          "chapter": 9.0,
+          "block": 40,
+          "score": 0.227,
+          "anchor": "* * *"
+        },
+        {
+          "chapter": 3.0,
+          "block": 51,
+          "score": 0.184,
+          "anchor": "* * *"
+        },
+        {
+          "chapter": 7.0,
+          "block": 44,
+          "score": 0.159,
+          "anchor": "* * *"
+        }
+      ],
+      "llm": null,
+      "accepted": false,
+      "reason": "lift 0.0 / hit_rate 0.0 below thresholds"
+    }
+  ]
+}

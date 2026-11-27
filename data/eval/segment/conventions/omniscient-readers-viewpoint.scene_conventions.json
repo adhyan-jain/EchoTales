@@ -1,0 +1,1367 @@
+{
+  "schema": 1,
+  "novel_id": "omniscient-readers-viewpoint",
+  "learned_chapters": [
+    1.0,
+    2.0,
+    3.0,
+    4.0,
+    5.0,
+    6.0,
+    7.0,
+    8.0,
+    9.0,
+    10.0
+  ],
+  "base_rate": 0.101,
+  "high_threshold": 0.4621,
+  "params": {
+    "min_support": 3,
+    "min_lift": 2.5,
+    "strong_hit_rate": 0.5,
+    "high_quantile": 0.9
+  },
+  "candidate_threshold": 0.2518,
+  "conventions": [
+    {
+      "id": "short:w4-8|title|none|inline",
+      "view": "short",
+      "key": "w4-8|title|none|inline",
+      "support": 3,
+      "hits": 2,
+      "hit_rate": 0.667,
+      "lift": 6.6,
+      "mean_score": 0.402,
+      "strength": "strong",
+      "examples": [
+        {
+          "chapter": 7.0,
+          "block": 68,
+          "score": 0.574,
+          "anchor": "1. Abyssal Black Flame Dragon"
+        },
+        {
+          "chapter": 10.0,
+          "block": 59,
+          "score": 0.476,
+          "anchor": "2. Steel Sword Lee Hyunsung"
+        },
+        {
+          "chapter": 10.0,
+          "block": 58,
+          "score": 0.156,
+          "anchor": "1. The Delusion Demon Kim"
+        }
+      ],
+      "llm": {
+        "asked": 3,
+        "yes": 0,
+        "reasons": [
+          "The text after the block is a continuation of the same scene, listing options ra",
+          "The text after the block continues the same context of listing characters with t",
+          "The text after the block is a continuation of the same scene, listing bookmarks "
+        ]
+      },
+      "accepted": false,
+      "reason": "vetoed by model (0/3 examples are scene changes)"
+    },
+    {
+      "id": "short:w1|title|org|alone",
+      "view": "short",
+      "key": "w1|title|org|alone",
+      "support": 3,
+      "hits": 1,
+      "hit_rate": 0.333,
+      "lift": 3.3,
+      "mean_score": 0.384,
+      "strength": "weak",
+      "examples": [
+        {
+          "chapter": 9.0,
+          "block": 92,
+          "score": 0.537,
+          "anchor": "\"Z-Zombies?\""
+        },
+        {
+          "chapter": 10.0,
+          "block": 40,
+          "score": 0.355,
+          "anchor": "\"Kyah?\""
+        },
+        {
+          "chapter": 9.0,
+          "block": 68,
+          "score": 0.259,
+          "anchor": "\"U-Understood!\""
+        }
+      ],
+      "llm": null,
+      "accepted": false,
+      "reason": "lift 3.3 / hit_rate 0.333 below thresholds"
+    },
+    {
+      "id": "opener:Ps|w31+",
+      "view": "opener",
+      "key": "Ps|w31+",
+      "support": 9,
+      "hits": 2,
+      "hit_rate": 0.222,
+      "lift": 2.2,
+      "mean_score": 0.325,
+      "strength": "weak",
+      "examples": [
+        {
+          "chapter": 7.0,
+          "block": 49,
+          "score": 0.792,
+          "anchor": "[Hrmm, release? Haven't you looked"
+        },
+        {
+          "chapter": 7.0,
+          "block": 55,
+          "score": 0.665,
+          "anchor": "[Hmm, my words are just"
+        },
+        {
+          "chapter": 7.0,
+          "block": 53,
+          "score": 0.33,
+          "anchor": "[Hmm, everybody has confused expressions."
+        },
+        {
+          "chapter": 7.0,
+          "block": 51,
+          "score": 0.291,
+          "anchor": "[Now now, shouldn't there be"
+        },
+        {
+          "chapter": 5.0,
+          "block": 10,
+          "score": 0.287,
+          "anchor": "「 He saw people gathered"
+        }
+      ],
+      "llm": null,
+      "accepted": false,
+      "reason": "lift 2.2 / hit_rate 0.222 below thresholds"
+    },
+    {
+      "id": "short:w1|title|place|alone",
+      "view": "short",
+      "key": "w1|title|place|alone",
+      "support": 5,
+      "hits": 1,
+      "hit_rate": 0.2,
+      "lift": 1.98,
+      "mean_score": 0.362,
+      "strength": "weak",
+      "examples": [
+        {
+          "chapter": 9.0,
+          "block": 101,
+          "score": 0.653,
+          "anchor": "Kwaaaaang!"
+        },
+        {
+          "chapter": 8.0,
+          "block": 73,
+          "score": 0.462,
+          "anchor": "Kuuong!"
+        },
+        {
+          "chapter": 10.0,
+          "block": 31,
+          "score": 0.455,
+          "anchor": "\"Kuweeok?\""
+        },
+        {
+          "chapter": 6.0,
+          "block": 120,
+          "score": 0.157,
+          "anchor": "Kakakang!"
+        },
+        {
+          "chapter": 8.0,
+          "block": 76,
+          "score": 0.083,
+          "anchor": "Kuuong!"
+        }
+      ],
+      "llm": null,
+      "accepted": false,
+      "reason": "lift 1.98 / hit_rate 0.2 below thresholds"
+    },
+    {
+      "id": "short:w4-8|title|none|alone",
+      "view": "short",
+      "key": "w4-8|title|none|alone",
+      "support": 5,
+      "hits": 1,
+      "hit_rate": 0.2,
+      "lift": 1.98,
+      "mean_score": 0.279,
+      "strength": "weak",
+      "examples": [
+        {
+          "chapter": 6.0,
+          "block": 24,
+          "score": 0.567,
+          "anchor": "Exclusive Attributes: Chuunibyou¹ (General)"
+        },
+        {
+          "chapter": 9.0,
+          "block": 31,
+          "score": 0.227,
+          "anchor": "Stigma: Great Mountain Push Lv."
+        },
+        {
+          "chapter": 9.0,
+          "block": 109,
+          "score": 0.217,
+          "anchor": "[Deus Ex Machina – Even"
+        },
+        {
+          "chapter": 6.0,
+          "block": 107,
+          "score": 0.204,
+          "anchor": "[Physique Lv. 1 -> Physique"
+        },
+        {
+          "chapter": 4.0,
+          "block": 30,
+          "score": 0.178,
+          "anchor": "「 Steel Sword Lee Hyunsung."
+        }
+      ],
+      "llm": null,
+      "accepted": false,
+      "reason": "lift 1.98 / hit_rate 0.2 below thresholds"
+    },
+    {
+      "id": "opener:Po|w31+",
+      "view": "opener",
+      "key": "Po|w31+",
+      "support": 35,
+      "hits": 5,
+      "hit_rate": 0.143,
+      "lift": 1.41,
+      "mean_score": 0.25,
+      "strength": "weak",
+      "examples": [
+        {
+          "chapter": 8.0,
+          "block": 64,
+          "score": 0.677,
+          "anchor": "\"T-The line has been dead"
+        },
+        {
+          "chapter": 9.0,
+          "block": 76,
+          "score": 0.634,
+          "anchor": "\"Ah, what is that?\" At"
+        },
+        {
+          "chapter": 10.0,
+          "block": 17,
+          "score": 0.589,
+          "anchor": "…Indeed. Planning to leave me?"
+        },
+        {
+          "chapter": 9.0,
+          "block": 41,
+          "score": 0.567,
+          "anchor": "\"Haaap!\" Lee Hyunsung's biceps swelled"
+        },
+        {
+          "chapter": 6.0,
+          "block": 81,
+          "score": 0.534,
+          "anchor": "\"Haha, I knew you would"
+        }
+      ],
+      "llm": null,
+      "accepted": false,
+      "reason": "lift 1.41 / hit_rate 0.143 below thresholds"
+    },
+    {
+      "id": "opener:Pd|w9-30",
+      "view": "opener",
+      "key": "Pd|w9-30",
+      "support": 14,
+      "hits": 2,
+      "hit_rate": 0.143,
+      "lift": 1.41,
+      "mean_score": 0.208,
+      "strength": "weak",
+      "examples": [
+        {
+          "chapter": 4.0,
+          "block": 42,
+          "score": 0.754,
+          "anchor": "–To all my fellow citizens,"
+        },
+        {
+          "chapter": 2.0,
+          "block": 89,
+          "score": 0.625,
+          "anchor": "–Reader-nim³, my novel will become"
+        },
+        {
+          "chapter": 1.0,
+          "block": 40,
+          "score": 0.346,
+          "anchor": "–tls123: I would like to"
+        },
+        {
+          "chapter": 4.0,
+          "block": 28,
+          "score": 0.162,
+          "anchor": "–A level 1 national disaster"
+        },
+        {
+          "chapter": 1.0,
+          "block": 45,
+          "score": 0.162,
+          "anchor": "–Kim Dokja: Wow, really? When"
+        }
+      ],
+      "llm": null,
+      "accepted": false,
+      "reason": "lift 1.41 / hit_rate 0.143 below thresholds"
+    },
+    {
+      "id": "opener:Po|w2-3",
+      "view": "opener",
+      "key": "Po|w2-3",
+      "support": 50,
+      "hits": 7,
+      "hit_rate": 0.14,
+      "lift": 1.39,
+      "mean_score": 0.225,
+      "strength": "weak",
+      "examples": [
+        {
+          "chapter": 7.0,
+          "block": 2,
+          "score": 0.796,
+          "anchor": "\"Oh my god…\""
+        },
+        {
+          "chapter": 9.0,
+          "block": 51,
+          "score": 0.766,
+          "anchor": "\"I understand.\""
+        },
+        {
+          "chapter": 4.0,
+          "block": 51,
+          "score": 0.55,
+          "anchor": "\"Uwaaaaack! What?\""
+        },
+        {
+          "chapter": 9.0,
+          "block": 22,
+          "score": 0.544,
+          "anchor": "\"Huh? \"Skill…\""
+        },
+        {
+          "chapter": 7.0,
+          "block": 24,
+          "score": 0.532,
+          "anchor": "\"That, I…\""
+        }
+      ],
+      "llm": null,
+      "accepted": false,
+      "reason": "lift 1.39 / hit_rate 0.14 below thresholds"
+    },
+    {
+      "id": "short:w2-3|title|none|alone",
+      "view": "short",
+      "key": "w2-3|title|none|alone",
+      "support": 23,
+      "hits": 3,
+      "hit_rate": 0.13,
+      "lift": 1.29,
+      "mean_score": 0.242,
+      "strength": "weak",
+      "examples": [
+        {
+          "chapter": 4.0,
+          "block": 51,
+          "score": 0.55,
+          "anchor": "\"Uwaaaaack! What?\""
+        },
+        {
+          "chapter": 9.0,
+          "block": 22,
+          "score": 0.544,
+          "anchor": "\"Huh? \"Skill…\""
+        },
+        {
+          "chapter": 7.0,
+          "block": 24,
+          "score": 0.532,
+          "anchor": "\"That, I…\""
+        },
+        {
+          "chapter": 6.0,
+          "block": 56,
+          "score": 0.448,
+          "anchor": "[Blackening Lv.1]"
+        },
+        {
+          "chapter": 2.0,
+          "block": 30,
+          "score": 0.408,
+          "anchor": "\"Ah, I…\""
+        }
+      ],
+      "llm": null,
+      "accepted": false,
+      "reason": "lift 1.29 / hit_rate 0.13 below thresholds"
+    },
+    {
+      "id": "short:w4-8|lower|none|inline",
+      "view": "short",
+      "key": "w4-8|lower|none|inline",
+      "support": 8,
+      "hits": 1,
+      "hit_rate": 0.125,
+      "lift": 1.24,
+      "mean_score": 0.203,
+      "strength": "weak",
+      "examples": [
+        {
+          "chapter": 10.0,
+          "block": 64,
+          "score": 0.58,
+          "anchor": "「Hahahaha! I'm full of strength!"
+        },
+        {
+          "chapter": 6.0,
+          "block": 106,
+          "score": 0.193,
+          "anchor": "[2,700 coins have been invested"
+        },
+        {
+          "chapter": 2.0,
+          "block": 106,
+          "score": 0.166,
+          "anchor": "–E-Everyone run away… Run…!"
+        },
+        {
+          "chapter": 10.0,
+          "block": 66,
+          "score": 0.163,
+          "anchor": "「A new world requires new"
+        },
+        {
+          "chapter": 7.0,
+          "block": 66,
+          "score": 0.162,
+          "anchor": "–Please select your sponsor"
+        }
+      ],
+      "llm": null,
+      "accepted": false,
+      "reason": "lift 1.24 / hit_rate 0.125 below thresholds"
+    },
+    {
+      "id": "short:w2-3|sentence|none|alone",
+      "view": "short",
+      "key": "w2-3|sentence|none|alone",
+      "support": 36,
+      "hits": 4,
+      "hit_rate": 0.111,
+      "lift": 1.1,
+      "mean_score": 0.219,
+      "strength": "weak",
+      "examples": [
+        {
+          "chapter": 7.0,
+          "block": 2,
+          "score": 0.796,
+          "anchor": "\"Oh my god…\""
+        },
+        {
+          "chapter": 9.0,
+          "block": 51,
+          "score": 0.766,
+          "anchor": "\"I understand.\""
+        },
+        {
+          "chapter": 2.0,
+          "block": 81,
+          "score": 0.482,
+          "anchor": "\"A Dokja's life…\""
+        },
+        {
+          "chapter": 4.0,
+          "block": 75,
+          "score": 0.479,
+          "anchor": "\"W-What is this?\""
+        },
+        {
+          "chapter": 7.0,
+          "block": 74,
+          "score": 0.356,
+          "anchor": "Let's see."
+        }
+      ],
+      "llm": null,
+      "accepted": false,
+      "reason": "lift 1.1 / hit_rate 0.111 below thresholds"
+    },
+    {
+      "id": "opener:Po|w1",
+      "view": "opener",
+      "key": "Po|w1",
+      "support": 38,
+      "hits": 4,
+      "hit_rate": 0.105,
+      "lift": 1.04,
+      "mean_score": 0.216,
+      "strength": "weak",
+      "examples": [
+        {
+          "chapter": 9.0,
+          "block": 92,
+          "score": 0.537,
+          "anchor": "\"Z-Zombies?\""
+        },
+        {
+          "chapter": 10.0,
+          "block": 83,
+          "score": 0.503,
+          "anchor": "\"Kuwoooook!\""
+        },
+        {
+          "chapter": 2.0,
+          "block": 74,
+          "score": 0.487,
+          "anchor": "\"Pardon?\""
+        },
+        {
+          "chapter": 5.0,
+          "block": 69,
+          "score": 0.475,
+          "anchor": "\"…Dokja-ssi?\""
+        },
+        {
+          "chapter": 3.0,
+          "block": 52,
+          "score": 0.457,
+          "anchor": "\"…Right.\""
+        }
+      ],
+      "llm": null,
+      "accepted": false,
+      "reason": "lift 1.04 / hit_rate 0.105 below thresholds"
+    },
+    {
+      "id": "short:w4-8|lower|none|alone",
+      "view": "short",
+      "key": "w4-8|lower|none|alone",
+      "support": 12,
+      "hits": 1,
+      "hit_rate": 0.083,
+      "lift": 0.82,
+      "mean_score": 0.2,
+      "strength": "weak",
+      "examples": [
+        {
+          "chapter": 7.0,
+          "block": 17,
+          "score": 0.512,
+          "anchor": "\"…Dokja-ssi? Are you okay?\""
+        },
+        {
+          "chapter": 1.0,
+          "block": 47,
+          "score": 0.366,
+          "anchor": "–tls123: The monetization starts tomorrow."
+        },
+        {
+          "chapter": 8.0,
+          "block": 12,
+          "score": 0.275,
+          "anchor": "[200 coins have been sponsored.]"
+        },
+        {
+          "chapter": 10.0,
+          "block": 16,
+          "score": 0.221,
+          "anchor": "[100 coins have been sponsored.]"
+        },
+        {
+          "chapter": 10.0,
+          "block": 65,
+          "score": 0.164,
+          "anchor": "「Die! Die! Die! Die!」"
+        }
+      ],
+      "llm": null,
+      "accepted": false,
+      "reason": "lift 0.82 / hit_rate 0.083 below thresholds"
+    },
+    {
+      "id": "short:w4-8|sentence|none|inline",
+      "view": "short",
+      "key": "w4-8|sentence|none|inline",
+      "support": 56,
+      "hits": 4,
+      "hit_rate": 0.071,
+      "lift": 0.71,
+      "mean_score": 0.204,
+      "strength": "weak",
+      "examples": [
+        {
+          "chapter": 9.0,
+          "block": 23,
+          "score": 0.544,
+          "anchor": "I quietly activated Character List."
+        },
+        {
+          "chapter": 9.0,
+          "block": 45,
+          "score": 0.51,
+          "anchor": "\"That's it! It is really"
+        },
+        {
+          "chapter": 9.0,
+          "block": 28,
+          "score": 0.489,
+          "anchor": "Sponsor: Master of Steel."
+        },
+        {
+          "chapter": 9.0,
+          "block": 58,
+          "score": 0.478,
+          "anchor": "[The second scenario has arrived!]"
+        },
+        {
+          "chapter": 6.0,
+          "block": 93,
+          "score": 0.389,
+          "anchor": "[You have killed a living"
+        }
+      ],
+      "llm": null,
+      "accepted": false,
+      "reason": "lift 0.71 / hit_rate 0.071 below thresholds"
+    },
+    {
+      "id": "short:w1|lower|none|alone",
+      "view": "short",
+      "key": "w1|lower|none|alone",
+      "support": 14,
+      "hits": 1,
+      "hit_rate": 0.071,
+      "lift": 0.71,
+      "mean_score": 0.19,
+      "strength": "weak",
+      "examples": [
+        {
+          "chapter": 5.0,
+          "block": 69,
+          "score": 0.475,
+          "anchor": "\"…Dokja-ssi?\""
+        },
+        {
+          "chapter": 3.0,
+          "block": 52,
+          "score": 0.457,
+          "anchor": "\"…Right.\""
+        },
+        {
+          "chapter": 8.0,
+          "block": 27,
+          "score": 0.25,
+          "anchor": "\"…Yes.\""
+        },
+        {
+          "chapter": 10.0,
+          "block": 53,
+          "score": 0.247,
+          "anchor": "…Bookmark?"
+        },
+        {
+          "chapter": 9.0,
+          "block": 103,
+          "score": 0.224,
+          "anchor": "\"…Dok…ssi…kay?\""
+        }
+      ],
+      "llm": null,
+      "accepted": false,
+      "reason": "lift 0.71 / hit_rate 0.071 below thresholds"
+    },
+    {
+      "id": "opener:Po|w9-30",
+      "view": "opener",
+      "key": "Po|w9-30",
+      "support": 100,
+      "hits": 7,
+      "hit_rate": 0.07,
+      "lift": 0.69,
+      "mean_score": 0.199,
+      "strength": "weak",
+      "examples": [
+        {
+          "chapter": 4.0,
+          "block": 45,
+          "score": 0.562,
+          "anchor": "\"But where it the president?"
+        },
+        {
+          "chapter": 6.0,
+          "block": 105,
+          "score": 0.512,
+          "anchor": "\"No, it is you who"
+        },
+        {
+          "chapter": 10.0,
+          "block": 11,
+          "score": 0.507,
+          "anchor": "\"Yoo Sangah-ssi, immediately―\" I felt"
+        },
+        {
+          "chapter": 2.0,
+          "block": 37,
+          "score": 0.494,
+          "anchor": "\"I've read a lot of"
+        },
+        {
+          "chapter": 2.0,
+          "block": 75,
+          "score": 0.487,
+          "anchor": "\"Even if you tell me"
+        }
+      ],
+      "llm": null,
+      "accepted": false,
+      "reason": "lift 0.69 / hit_rate 0.07 below thresholds"
+    },
+    {
+      "id": "opener:Ps|w4-8",
+      "view": "opener",
+      "key": "Ps|w4-8",
+      "support": 80,
+      "hits": 5,
+      "hit_rate": 0.062,
+      "lift": 0.62,
+      "mean_score": 0.197,
+      "strength": "weak",
+      "examples": [
+        {
+          "chapter": 9.0,
+          "block": 106,
+          "score": 0.784,
+          "anchor": "[Someone has received the favour"
+        },
+        {
+          "chapter": 6.0,
+          "block": 143,
+          "score": 0.597,
+          "anchor": "[You have killed 124 living"
+        },
+        {
+          "chapter": 10.0,
+          "block": 64,
+          "score": 0.58,
+          "anchor": "「Hahahaha! I'm full of strength!"
+        },
+        {
+          "chapter": 10.0,
+          "block": 68,
+          "score": 0.573,
+          "anchor": "[The number one bookmark has"
+        },
+        {
+          "chapter": 9.0,
+          "block": 58,
+          "score": 0.478,
+          "anchor": "[The second scenario has arrived!]"
+        }
+      ],
+      "llm": null,
+      "accepted": false,
+      "reason": "lift 0.62 / hit_rate 0.062 below thresholds"
+    },
+    {
+      "id": "short:w1|title|none|alone",
+      "view": "short",
+      "key": "w1|title|none|alone",
+      "support": 32,
+      "hits": 2,
+      "hit_rate": 0.062,
+      "lift": 0.62,
+      "mean_score": 0.19,
+      "strength": "weak",
+      "examples": [
+        {
+          "chapter": 10.0,
+          "block": 83,
+          "score": 0.503,
+          "anchor": "\"Kuwoooook!\""
+        },
+        {
+          "chapter": 2.0,
+          "block": 74,
+          "score": 0.487,
+          "anchor": "\"Pardon?\""
+        },
+        {
+          "chapter": 2.0,
+          "block": 18,
+          "score": 0.37,
+          "anchor": "Bicycle."
+        },
+        {
+          "chapter": 8.0,
+          "block": 81,
+          "score": 0.317,
+          "anchor": "\"Huh?\""
+        },
+        {
+          "chapter": 6.0,
+          "block": 152,
+          "score": 0.287,
+          "anchor": "Kkiiik."
+        }
+      ],
+      "llm": null,
+      "accepted": false,
+      "reason": "lift 0.62 / hit_rate 0.062 below thresholds"
+    },
+    {
+      "id": "opener:Po|w4-8",
+      "view": "opener",
+      "key": "Po|w4-8",
+      "support": 98,
+      "hits": 6,
+      "hit_rate": 0.061,
+      "lift": 0.61,
+      "mean_score": 0.187,
+      "strength": "weak",
+      "examples": [
+        {
+          "chapter": 7.0,
+          "block": 58,
+          "score": 0.637,
+          "anchor": "\"I don't know even if"
+        },
+        {
+          "chapter": 7.0,
+          "block": 17,
+          "score": 0.512,
+          "anchor": "\"…Dokja-ssi? Are you okay?\""
+        },
+        {
+          "chapter": 9.0,
+          "block": 45,
+          "score": 0.51,
+          "anchor": "\"That's it! It is really"
+        },
+        {
+          "chapter": 4.0,
+          "block": 87,
+          "score": 0.503,
+          "anchor": "\"Shit! What is this?\""
+        },
+        {
+          "chapter": 9.0,
+          "block": 111,
+          "score": 0.496,
+          "anchor": "\"Dokja-ssi. This, in my head,"
+        }
+      ],
+      "llm": null,
+      "accepted": false,
+      "reason": "lift 0.61 / hit_rate 0.061 below thresholds"
+    },
+    {
+      "id": "opener:Ps|w9-30",
+      "view": "opener",
+      "key": "Ps|w9-30",
+      "support": 72,
+      "hits": 4,
+      "hit_rate": 0.056,
+      "lift": 0.55,
+      "mean_score": 0.199,
+      "strength": "weak",
+      "examples": [
+        {
+          "chapter": 10.0,
+          "block": 14,
+          "score": 0.596,
+          "anchor": "[The constellation 'Secretive Plotter' admires"
+        },
+        {
+          "chapter": 8.0,
+          "block": 14,
+          "score": 0.565,
+          "anchor": "[The constellation 'Prisoner of the"
+        },
+        {
+          "chapter": 5.0,
+          "block": 48,
+          "score": 0.524,
+          "anchor": "「If there is no killing"
+        },
+        {
+          "chapter": 7.0,
+          "block": 33,
+          "score": 0.479,
+          "anchor": "[The number of survivors is"
+        },
+        {
+          "chapter": 5.0,
+          "block": 17,
+          "score": 0.436,
+          "anchor": "「 He looked through the"
+        }
+      ],
+      "llm": null,
+      "accepted": false,
+      "reason": "lift 0.55 / hit_rate 0.056 below thresholds"
+    },
+    {
+      "id": "short:w2-3|sentence|none|inline",
+      "view": "short",
+      "key": "w2-3|sentence|none|inline",
+      "support": 18,
+      "hits": 1,
+      "hit_rate": 0.056,
+      "lift": 0.55,
+      "mean_score": 0.183,
+      "strength": "weak",
+      "examples": [
+        {
+          "chapter": 9.0,
+          "block": 63,
+          "score": 0.631,
+          "anchor": "Time Limit: 20 minutes."
+        },
+        {
+          "chapter": 3.0,
+          "block": 79,
+          "score": 0.299,
+          "anchor": "Time Limit: 30 minutes"
+        },
+        {
+          "chapter": 9.0,
+          "block": 70,
+          "score": 0.261,
+          "anchor": "\"Dokja-ssi, come quickly!\""
+        },
+        {
+          "chapter": 9.0,
+          "block": 64,
+          "score": 0.235,
+          "anchor": "Compensation: 200 coins."
+        },
+        {
+          "chapter": 9.0,
+          "block": 27,
+          "score": 0.234,
+          "anchor": "Age: 28 years old."
+        }
+      ],
+      "llm": null,
+      "accepted": false,
+      "reason": "lift 0.55 / hit_rate 0.056 below thresholds"
+    },
+    {
+      "id": "short:w4-8|sentence|none|alone",
+      "view": "short",
+      "key": "w4-8|sentence|none|alone",
+      "support": 79,
+      "hits": 4,
+      "hit_rate": 0.051,
+      "lift": 0.5,
+      "mean_score": 0.188,
+      "strength": "weak",
+      "examples": [
+        {
+          "chapter": 6.0,
+          "block": 143,
+          "score": 0.597,
+          "anchor": "[You have killed 124 living"
+        },
+        {
+          "chapter": 4.0,
+          "block": 87,
+          "score": 0.503,
+          "anchor": "\"Shit! What is this?\""
+        },
+        {
+          "chapter": 9.0,
+          "block": 111,
+          "score": 0.496,
+          "anchor": "\"Dokja-ssi. This, in my head,"
+        },
+        {
+          "chapter": 4.0,
+          "block": 32,
+          "score": 0.495,
+          "anchor": "\"Soldier-nim! What is happening?\""
+        },
+        {
+          "chapter": 5.0,
+          "block": 27,
+          "score": 0.415,
+          "anchor": "\"S-Save me. Save me…!\""
+        }
+      ],
+      "llm": null,
+      "accepted": false,
+      "reason": "lift 0.5 / hit_rate 0.051 below thresholds"
+    },
+    {
+      "id": "opener:Ps|w2-3",
+      "view": "opener",
+      "key": "Ps|w2-3",
+      "support": 14,
+      "hits": 0,
+      "hit_rate": 0.0,
+      "lift": 0.0,
+      "mean_score": 0.197,
+      "strength": "weak",
+      "examples": [
+        {
+          "chapter": 6.0,
+          "block": 56,
+          "score": 0.448,
+          "anchor": "[Blackening Lv.1]"
+        },
+        {
+          "chapter": 6.0,
+          "block": 20,
+          "score": 0.282,
+          "anchor": "[Character Summary]"
+        },
+        {
+          "chapter": 10.0,
+          "block": 96,
+          "score": 0.268,
+          "anchor": "[Character Summary]"
+        },
+        {
+          "chapter": 9.0,
+          "block": 25,
+          "score": 0.234,
+          "anchor": "[Character Summary]"
+        },
+        {
+          "chapter": 9.0,
+          "block": 19,
+          "score": 0.183,
+          "anchor": "[Coins Possessed: 4700 C]"
+        }
+      ],
+      "llm": null,
+      "accepted": false,
+      "reason": "lift 0.0 / hit_rate 0.0 below thresholds"
+    },
+    {
+      "id": "opener:Pd|w4-8",
+      "view": "opener",
+      "key": "Pd|w4-8",
+      "support": 11,
+      "hits": 0,
+      "hit_rate": 0.0,
+      "lift": 0.0,
+      "mean_score": 0.188,
+      "strength": "weak",
+      "examples": [
+        {
+          "chapter": 1.0,
+          "block": 44,
+          "score": 0.372,
+          "anchor": "–tls123: Ah, right. I got"
+        },
+        {
+          "chapter": 1.0,
+          "block": 47,
+          "score": 0.366,
+          "anchor": "–tls123: The monetization starts tomorrow."
+        },
+        {
+          "chapter": 2.0,
+          "block": 106,
+          "score": 0.166,
+          "anchor": "–E-Everyone run away… Run…!"
+        },
+        {
+          "chapter": 7.0,
+          "block": 66,
+          "score": 0.162,
+          "anchor": "–Please select your sponsor"
+        },
+        {
+          "chapter": 7.0,
+          "block": 67,
+          "score": 0.157,
+          "anchor": "–Your chosen sponsor will be"
+        }
+      ],
+      "llm": null,
+      "accepted": false,
+      "reason": "lift 0.0 / hit_rate 0.0 below thresholds"
+    },
+    {
+      "id": "short:w2-3|title|none|inline",
+      "view": "short",
+      "key": "w2-3|title|none|inline",
+      "support": 11,
+      "hits": 0,
+      "hit_rate": 0.0,
+      "lift": 0.0,
+      "mean_score": 0.157,
+      "strength": "weak",
+      "examples": [
+        {
+          "chapter": 6.0,
+          "block": 21,
+          "score": 0.282,
+          "anchor": "Name: Kim Namwoon."
+        },
+        {
+          "chapter": 10.0,
+          "block": 97,
+          "score": 0.268,
+          "anchor": "Name: Yoo Joonghyuk."
+        },
+        {
+          "chapter": 9.0,
+          "block": 26,
+          "score": 0.234,
+          "anchor": "Name: Lee Hyunsung"
+        },
+        {
+          "chapter": 5.0,
+          "block": 73,
+          "score": 0.188,
+          "anchor": "\"Ack! What?\""
+        },
+        {
+          "chapter": 9.0,
+          "block": 60,
+          "score": 0.159,
+          "anchor": "Category: Sub"
+        }
+      ],
+      "llm": null,
+      "accepted": false,
+      "reason": "lift 0.0 / hit_rate 0.0 below thresholds"
+    },
+    {
+      "id": "opener:Ps|w1",
+      "view": "opener",
+      "key": "Ps|w1",
+      "support": 6,
+      "hits": 0,
+      "hit_rate": 0.0,
+      "lift": 0.0,
+      "mean_score": 0.131,
+      "strength": "weak",
+      "examples": [
+        {
+          "chapter": 6.0,
+          "block": 83,
+          "score": 0.178,
+          "anchor": "「Heart. 」"
+        },
+        {
+          "chapter": 3.0,
+          "block": 9,
+          "score": 0.168,
+          "anchor": "「&아#@!&아#@! …」"
+        },
+        {
+          "chapter": 2.0,
+          "block": 90,
+          "score": 0.155,
+          "anchor": "[1 attachment.]"
+        },
+        {
+          "chapter": 4.0,
+          "block": 90,
+          "score": 0.155,
+          "anchor": "[1 attachment.]"
+        },
+        {
+          "chapter": 3.0,
+          "block": 19,
+          "score": 0.065,
+          "anchor": "[…Huh?]"
+        }
+      ],
+      "llm": null,
+      "accepted": false,
+      "reason": "lift 0.0 / hit_rate 0.0 below thresholds"
+    },
+    {
+      "id": "short:w2-3|lower|none|alone",
+      "view": "short",
+      "key": "w2-3|lower|none|alone",
+      "support": 6,
+      "hits": 0,
+      "hit_rate": 0.0,
+      "lift": 0.0,
+      "mean_score": 0.188,
+      "strength": "weak",
+      "examples": [
+        {
+          "chapter": 9.0,
+          "block": 38,
+          "score": 0.28,
+          "anchor": "\"…Will that work?\""
+        },
+        {
+          "chapter": 9.0,
+          "block": 99,
+          "score": 0.221,
+          "anchor": "\"…Everybody get down.\""
+        },
+        {
+          "chapter": 5.0,
+          "block": 19,
+          "score": 0.17,
+          "anchor": "…Me as well."
+        },
+        {
+          "chapter": 6.0,
+          "block": 73,
+          "score": 0.157,
+          "anchor": "「Right eye. 」"
+        },
+        {
+          "chapter": 1.0,
+          "block": 31,
+          "score": 0.156,
+          "anchor": "–tls123: Thank you."
+        }
+      ],
+      "llm": null,
+      "accepted": false,
+      "reason": "lift 0.0 / hit_rate 0.0 below thresholds"
+    },
+    {
+      "id": "struct:SYSTEM_WINDOW",
+      "view": "struct",
+      "key": "SYSTEM_WINDOW",
+      "support": 5,
+      "hits": 0,
+      "hit_rate": 0.0,
+      "lift": 0.0,
+      "mean_score": 0.165,
+      "strength": "weak",
+      "examples": [
+        {
+          "chapter": 10.0,
+          "block": 70,
+          "score": 0.23,
+          "anchor": "[Activation Time: One minute.]"
+        },
+        {
+          "chapter": 6.0,
+          "block": 144,
+          "score": 0.192,
+          "anchor": "[Kill History: One grasshopper, 123"
+        },
+        {
+          "chapter": 9.0,
+          "block": 19,
+          "score": 0.183,
+          "anchor": "[Coins Possessed: 4700 C]"
+        },
+        {
+          "chapter": 10.0,
+          "block": 55,
+          "score": 0.162,
+          "anchor": "[Available Bookmark Slots: 3]"
+        },
+        {
+          "chapter": 9.0,
+          "block": 85,
+          "score": 0.058,
+          "anchor": "[Scenario difficulty: E -> D]"
+        }
+      ],
+      "llm": null,
+      "accepted": false,
+      "reason": "lift 0.0 / hit_rate 0.0 below thresholds"
+    },
+    {
+      "id": "short:w1|lower|time|alone",
+      "view": "short",
+      "key": "w1|lower|time|alone",
+      "support": 3,
+      "hits": 0,
+      "hit_rate": 0.0,
+      "lift": 0.0,
+      "mean_score": 0.16,
+      "strength": "weak",
+      "examples": [
+        {
+          "chapter": 6.0,
+          "block": 131,
+          "score": 0.161,
+          "anchor": "20 seconds."
+        },
+        {
+          "chapter": 6.0,
+          "block": 134,
+          "score": 0.16,
+          "anchor": "10 seconds."
+        },
+        {
+          "chapter": 6.0,
+          "block": 128,
+          "score": 0.159,
+          "anchor": "25 seconds."
+        }
+      ],
+      "llm": null,
+      "accepted": false,
+      "reason": "lift 0.0 / hit_rate 0.0 below thresholds"
+    },
+    {
+      "id": "symbol:\"…\"",
+      "view": "symbol",
+      "key": "\"…\"",
+      "support": 3,
+      "hits": 0,
+      "hit_rate": 0.0,
+      "lift": 0.0,
+      "mean_score": 0.216,
+      "strength": "weak",
+      "examples": [
+        {
+          "chapter": 8.0,
+          "block": 51,
+          "score": 0.239,
+          "anchor": "\"…\""
+        },
+        {
+          "chapter": 6.0,
+          "block": 46,
+          "score": 0.238,
+          "anchor": "\"…\""
+        },
+        {
+          "chapter": 8.0,
+          "block": 43,
+          "score": 0.172,
+          "anchor": "\"…\""
+        }
+      ],
+      "llm": null,
+      "accepted": false,
+      "reason": "lift 0.0 / hit_rate 0.0 below thresholds"
+    }
+  ]
+}

@@ -1,0 +1,333 @@
+{
+  "schema": 1,
+  "novel_id": "lord-of-the-mysteries",
+  "learned_chapters": [
+    1.0,
+    2.0,
+    3.0,
+    4.0,
+    5.0,
+    6.0,
+    7.0,
+    8.0,
+    9.0,
+    10.0
+  ],
+  "base_rate": 0.1,
+  "high_threshold": 0.4969,
+  "params": {
+    "min_support": 3,
+    "min_lift": 2.5,
+    "strong_hit_rate": 0.5,
+    "high_quantile": 0.9
+  },
+  "candidate_threshold": 0.3029,
+  "conventions": [
+    {
+      "id": "symbol:...",
+      "view": "symbol",
+      "key": "...",
+      "support": 14,
+      "hits": 4,
+      "hit_rate": 0.286,
+      "lift": 2.85,
+      "mean_score": 0.38,
+      "strength": "weak",
+      "examples": [
+        {
+          "chapter": 8.0,
+          "block": 77,
+          "score": 0.665,
+          "anchor": "..."
+        },
+        {
+          "chapter": 5.0,
+          "block": 49,
+          "score": 0.647,
+          "anchor": "..."
+        },
+        {
+          "chapter": 8.0,
+          "block": 42,
+          "score": 0.568,
+          "anchor": "..."
+        },
+        {
+          "chapter": 5.0,
+          "block": 83,
+          "score": 0.5,
+          "anchor": "..."
+        },
+        {
+          "chapter": 4.0,
+          "block": 39,
+          "score": 0.465,
+          "anchor": "..."
+        }
+      ],
+      "llm": {
+        "asked": 3,
+        "yes": 3,
+        "reasons": [
+          "The text after the block introduces a new location (Imperial naval base, Pritz H",
+          "The text after the block describes Zhou Mingrui translating incantations and pla",
+          "The text after the block introduces a new location (Empress Borough, Backlund, c"
+        ]
+      },
+      "accepted": true,
+      "reason": "stats + model (3/3)"
+    },
+    {
+      "id": "short:w2-3|title|none|alone",
+      "view": "short",
+      "key": "w2-3|title|none|alone",
+      "support": 5,
+      "hits": 1,
+      "hit_rate": 0.2,
+      "lift": 2.0,
+      "mean_score": 0.288,
+      "strength": "weak",
+      "examples": [
+        {
+          "chapter": 8.0,
+          "block": 115,
+          "score": 0.507,
+          "anchor": "Boom! Boom! Boom!"
+        },
+        {
+          "chapter": 9.0,
+          "block": 11,
+          "score": 0.388,
+          "anchor": "Groan! Groan!"
+        },
+        {
+          "chapter": 2.0,
+          "block": 25,
+          "score": 0.226,
+          "anchor": "Clink! Clang!"
+        },
+        {
+          "chapter": 7.0,
+          "block": 41,
+          "score": 0.168,
+          "anchor": "“The Hanged Man.”"
+        },
+        {
+          "chapter": 4.0,
+          "block": 37,
+          "score": 0.152,
+          "anchor": "“Conch! Conch! Conch!”"
+        }
+      ],
+      "llm": null,
+      "accepted": false,
+      "reason": "lift 2.0 / hit_rate 0.2 below thresholds"
+    },
+    {
+      "id": "short:w4-8|sentence|none|alone",
+      "view": "short",
+      "key": "w4-8|sentence|none|alone",
+      "support": 29,
+      "hits": 3,
+      "hit_rate": 0.103,
+      "lift": 1.03,
+      "mean_score": 0.258,
+      "strength": "weak",
+      "examples": [
+        {
+          "chapter": 6.0,
+          "block": 38,
+          "score": 0.824,
+          "anchor": "“Are you from Loen?"
+        },
+        {
+          "chapter": 7.0,
+          "block": 8,
+          "score": 0.79,
+          "anchor": "“Continue, the both of you.”"
+        },
+        {
+          "chapter": 1.0,
+          "block": 9,
+          "score": 0.67,
+          "anchor": "And it’s really painful!"
+        },
+        {
+          "chapter": 7.0,
+          "block": 36,
+          "score": 0.477,
+          "anchor": "Her tone slowly turned joyous."
+        },
+        {
+          "chapter": 2.0,
+          "block": 54,
+          "score": 0.355,
+          "anchor": "Where did the gun come"
+        }
+      ],
+      "llm": null,
+      "accepted": false,
+      "reason": "lift 1.03 / hit_rate 0.103 below thresholds"
+    },
+    {
+      "id": "short:w4-8|sentence|none|inline",
+      "view": "short",
+      "key": "w4-8|sentence|none|inline",
+      "support": 14,
+      "hits": 0,
+      "hit_rate": 0.0,
+      "lift": 0.0,
+      "mean_score": 0.193,
+      "strength": "weak",
+      "examples": [
+        {
+          "chapter": 7.0,
+          "block": 46,
+          "score": 0.422,
+          "anchor": "“Thank you!” Audrey was clearly"
+        },
+        {
+          "chapter": 10.0,
+          "block": 35,
+          "score": 0.395,
+          "anchor": "“Killed?” Klein had a vague"
+        },
+        {
+          "chapter": 10.0,
+          "block": 48,
+          "score": 0.225,
+          "anchor": "Damn! I forgot to hide"
+        },
+        {
+          "chapter": 3.0,
+          "block": 22,
+          "score": 0.221,
+          "anchor": "This was a semi-regulated item!"
+        },
+        {
+          "chapter": 7.0,
+          "block": 47,
+          "score": 0.21,
+          "anchor": "Following that, she looked at"
+        }
+      ],
+      "llm": null,
+      "accepted": false,
+      "reason": "lift 0.0 / hit_rate 0.0 below thresholds"
+    },
+    {
+      "id": "short:w1|title|none|alone",
+      "view": "short",
+      "key": "w1|title|none|alone",
+      "support": 11,
+      "hits": 0,
+      "hit_rate": 0.0,
+      "lift": 0.0,
+      "mean_score": 0.152,
+      "strength": "weak",
+      "examples": [
+        {
+          "chapter": 9.0,
+          "block": 78,
+          "score": 0.391,
+          "anchor": "Knock!"
+        },
+        {
+          "chapter": 2.0,
+          "block": 72,
+          "score": 0.234,
+          "anchor": "Transmigration!"
+        },
+        {
+          "chapter": 8.0,
+          "block": 112,
+          "score": 0.187,
+          "anchor": "Honk!"
+        },
+        {
+          "chapter": 9.0,
+          "block": 82,
+          "score": 0.152,
+          "anchor": "Knock!"
+        },
+        {
+          "chapter": 9.0,
+          "block": 35,
+          "score": 0.152,
+          "anchor": "Ffffffff!"
+        }
+      ],
+      "llm": null,
+      "accepted": false,
+      "reason": "lift 0.0 / hit_rate 0.0 below thresholds"
+    },
+    {
+      "id": "short:w2-3|sentence|none|alone",
+      "view": "short",
+      "key": "w2-3|sentence|none|alone",
+      "support": 3,
+      "hits": 0,
+      "hit_rate": 0.0,
+      "lift": 0.0,
+      "mean_score": 0.189,
+      "strength": "weak",
+      "examples": [
+        {
+          "chapter": 5.0,
+          "block": 86,
+          "score": 0.222,
+          "anchor": "“Mirror, mirror, awaken..."
+        },
+        {
+          "chapter": 8.0,
+          "block": 83,
+          "score": 0.182,
+          "anchor": "“Oh, m’lord.”"
+        },
+        {
+          "chapter": 6.0,
+          "block": 11,
+          "score": 0.162,
+          "anchor": "How inconceivable!"
+        }
+      ],
+      "llm": null,
+      "accepted": false,
+      "reason": "lift 0.0 / hit_rate 0.0 below thresholds"
+    },
+    {
+      "id": "short:w2-3|sentence|none|inline",
+      "view": "short",
+      "key": "w2-3|sentence|none|inline",
+      "support": 3,
+      "hits": 0,
+      "hit_rate": 0.0,
+      "lift": 0.0,
+      "mean_score": 0.242,
+      "strength": "weak",
+      "examples": [
+        {
+          "chapter": 9.0,
+          "block": 79,
+          "score": 0.391,
+          "anchor": "Knock, knock!"
+        },
+        {
+          "chapter": 8.0,
+          "block": 84,
+          "score": 0.182,
+          "anchor": "“An ironclad warship!”"
+        },
+        {
+          "chapter": 9.0,
+          "block": 83,
+          "score": 0.152,
+          "anchor": "Knock, knock!"
+        }
+      ],
+      "llm": null,
+      "accepted": false,
+      "reason": "lift 0.0 / hit_rate 0.0 below thresholds"
+    }
+  ]
+}

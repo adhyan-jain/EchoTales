@@ -1,0 +1,264 @@
+{
+ "_note": "SILVER gold: scene boundaries drafted by reading the text (Claude, 2026-11-27), not human-verified. cut = index of the first block of the new scene; ambiguous = a defensible cut that is neither rewarded nor penalised. Anchors are the first <=5 words of the block; source texts are not stored. Pride and Prejudice is public domain.",
+ "novels": {
+  "reverend-insanity": {
+   "1": {
+    "cuts": [
+     {
+      "block": 31,
+      "anchor": "The spring rain quietly rained"
+     },
+     {
+      "block": 80,
+      "anchor": "“Gu Yue Village, this is"
+     }
+    ],
+    "ambiguous": [],
+    "n_blocks": 92
+   },
+   "2": {
+    "cuts": [],
+    "ambiguous": [],
+    "n_blocks": 63
+   },
+   "3": {
+    "cuts": [],
+    "ambiguous": [
+     29
+    ],
+    "n_blocks": 53
+   },
+   "5": {
+    "cuts": [
+     {
+      "block": 5,
+      "anchor": "One of the oldest legends"
+     },
+     {
+      "block": 23,
+      "anchor": "At this moment, the Hope"
+     }
+    ],
+    "ambiguous": [],
+    "n_blocks": 36
+   },
+   "21": {
+    "cuts": [
+     {
+      "block": 37,
+      "anchor": "The Mo branch family home."
+     },
+     {
+      "block": 43,
+      "anchor": "Almost at the same time,"
+     }
+    ],
+    "ambiguous": [
+     29,
+     32
+    ],
+    "n_blocks": 52
+   },
+   "45": {
+    "cuts": [
+     {
+      "block": 33,
+      "anchor": "“One more cup!”"
+     }
+    ],
+    "ambiguous": [],
+    "n_blocks": 82
+   }
+  },
+  "lord-of-the-mysteries": {
+   "1": {
+    "cuts": [],
+    "ambiguous": [],
+    "n_blocks": 73
+   },
+   "2": {
+    "cuts": [],
+    "ambiguous": [],
+    "n_blocks": 76
+   },
+   "3": {
+    "cuts": [],
+    "ambiguous": [
+     8
+    ],
+    "n_blocks": 69
+   },
+   "4": {
+    "cuts": [],
+    "ambiguous": [],
+    "n_blocks": 101
+   },
+   "7": {
+    "cuts": [
+     {
+      "block": 66,
+      "anchor": "As for Zhou Mingrui, he"
+     }
+    ],
+    "ambiguous": [
+     78
+    ],
+    "n_blocks": 83
+   },
+   "8": {
+    "cuts": [
+     {
+      "block": 43,
+      "anchor": "Empress Borough, Backlund, capital of"
+     },
+     {
+      "block": 78,
+      "anchor": "The Imperial naval base, Pritz"
+     }
+    ],
+    "ambiguous": [],
+    "n_blocks": 124
+   },
+   "26": {
+    "cuts": [],
+    "ambiguous": [
+     45
+    ],
+    "n_blocks": 85
+   },
+   "36": {
+    "cuts": [
+     {
+      "block": 53,
+      "anchor": "The curtains were drawn as"
+     },
+     {
+      "block": 59,
+      "anchor": "Audrey Hall looked at herself"
+     },
+     {
+      "block": 74,
+      "anchor": "In an underground basement lit"
+     }
+    ],
+    "ambiguous": [],
+    "n_blocks": 81
+   }
+  },
+  "omniscient-readers-viewpoint": {
+   "2": {
+    "cuts": [
+     {
+      "block": 11,
+      "anchor": "In a noisy subway, I"
+     }
+    ],
+    "ambiguous": [],
+    "n_blocks": 116
+   },
+   "3": {
+    "cuts": [],
+    "ambiguous": [],
+    "n_blocks": 85
+   },
+   "24": {
+    "cuts": [
+     {
+      "block": 101,
+      "anchor": "[…You did such great things"
+     }
+    ],
+    "ambiguous": [
+     114
+    ],
+    "n_blocks": 154
+   },
+   "33": {
+    "cuts": [
+     {
+      "block": 79,
+      "anchor": "I walked up the stairs"
+     }
+    ],
+    "ambiguous": [],
+    "n_blocks": 165
+   }
+  },
+  "pride-and-prejudice": {
+   "3": {
+    "cuts": [
+     {
+      "block": 2,
+      "anchor": "In a few days Mr."
+     },
+     {
+      "block": 6,
+      "anchor": "being gone to London only"
+     },
+     {
+      "block": 20,
+      "anchor": "“Oh, my dear Mr. Bennet,”"
+     }
+    ],
+    "ambiguous": [
+     19
+    ],
+    "n_blocks": 25
+   },
+   "4": {
+    "cuts": [],
+    "ambiguous": [],
+    "n_blocks": 16
+   },
+   "6": {
+    "cuts": [],
+    "ambiguous": [
+     11
+    ],
+    "n_blocks": 55
+   },
+   "7": {
+    "cuts": [
+     {
+      "block": 46,
+      "anchor": "She was shown into the"
+     }
+    ],
+    "ambiguous": [],
+    "n_blocks": 51
+   },
+   "12": {
+    "cuts": [
+     {
+      "block": 4,
+      "anchor": "On Sunday, after morning service,"
+     }
+    ],
+    "ambiguous": [
+     5
+    ],
+    "n_blocks": 7
+   },
+   "22": {
+    "cuts": [],
+    "ambiguous": [
+     7,
+     15
+    ],
+    "n_blocks": 22
+   },
+   "40": {
+    "cuts": [
+     {
+      "block": 26,
+      "anchor": "“Well, Lizzy,” said Mrs. Bennet,"
+     }
+    ],
+    "ambiguous": [
+     25
+    ],
+    "n_blocks": 36
+   }
+  }
+ }
+}

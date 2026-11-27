@@ -1,0 +1,291 @@
+{
+  "schema": 1,
+  "novel_id": "pride-and-prejudice",
+  "learned_chapters": [
+    1.0,
+    2.0,
+    3.0,
+    4.0,
+    5.0,
+    6.0,
+    7.0,
+    8.0,
+    9.0,
+    10.0
+  ],
+  "base_rate": 0.102,
+  "high_threshold": 0.5613,
+  "params": {
+    "min_support": 3,
+    "min_lift": 2.5,
+    "strong_hit_rate": 0.5,
+    "high_quantile": 0.9
+  },
+  "candidate_threshold": 0.3273,
+  "conventions": [
+    {
+      "id": "short:w2-3|title|none|alone",
+      "view": "short",
+      "key": "w2-3|title|none|alone",
+      "support": 3,
+      "hits": 1,
+      "hit_rate": 0.333,
+      "lift": 3.26,
+      "mean_score": 0.315,
+      "strength": "weak",
+      "examples": [
+        {
+          "chapter": 6.0,
+          "block": 50,
+          "score": 0.642,
+          "anchor": "“Miss Elizabeth Bennet.”"
+        },
+        {
+          "chapter": 4.0,
+          "block": 5,
+          "score": 0.233,
+          "anchor": "“Dear Lizzy!”"
+        },
+        {
+          "chapter": 1.0,
+          "block": 36,
+          "score": 0.072,
+          "anchor": "Mr. & Mrs. Bennet"
+        }
+      ],
+      "llm": null,
+      "accepted": false,
+      "reason": "lift 3.26 / hit_rate 0.333 below thresholds"
+    },
+    {
+      "id": "short:w4-8|sentence|none|alone",
+      "view": "short",
+      "key": "w4-8|sentence|none|alone",
+      "support": 10,
+      "hits": 2,
+      "hit_rate": 0.2,
+      "lift": 1.96,
+      "mean_score": 0.311,
+      "strength": "weak",
+      "examples": [
+        {
+          "chapter": 8.0,
+          "block": 33,
+          "score": 0.731,
+          "anchor": "“I wish it may.”"
+        },
+        {
+          "chapter": 10.0,
+          "block": 56,
+          "score": 0.729,
+          "anchor": "[Copyright 1894 by George Allen.]"
+        },
+        {
+          "chapter": 9.0,
+          "block": 27,
+          "score": 0.327,
+          "anchor": "“Did Charlotte dine with you?”"
+        },
+        {
+          "chapter": 8.0,
+          "block": 36,
+          "score": 0.25,
+          "anchor": "“I am talking of possibilities,"
+        },
+        {
+          "chapter": 5.0,
+          "block": 11,
+          "score": 0.248,
+          "anchor": "[Copyright 1894 by George Allen.]"
+        }
+      ],
+      "llm": null,
+      "accepted": false,
+      "reason": "lift 1.96 / hit_rate 0.2 below thresholds"
+    },
+    {
+      "id": "opener:Ps|w4-8",
+      "view": "opener",
+      "key": "Ps|w4-8",
+      "support": 5,
+      "hits": 1,
+      "hit_rate": 0.2,
+      "lift": 1.96,
+      "mean_score": 0.348,
+      "strength": "weak",
+      "examples": [
+        {
+          "chapter": 10.0,
+          "block": 56,
+          "score": 0.729,
+          "anchor": "[Copyright 1894 by George Allen.]"
+        },
+        {
+          "chapter": 3.0,
+          "block": 5,
+          "score": 0.297,
+          "anchor": "[Copyright 1894 by George Allen.]"
+        },
+        {
+          "chapter": 1.0,
+          "block": 9,
+          "score": 0.271,
+          "anchor": "[Copyright 1894 by George Allen.]"
+        },
+        {
+          "chapter": 5.0,
+          "block": 11,
+          "score": 0.248,
+          "anchor": "[Copyright 1894 by George Allen.]"
+        },
+        {
+          "chapter": 3.0,
+          "block": 16,
+          "score": 0.198,
+          "anchor": "[Copyright 1894 by George Allen.]"
+        }
+      ],
+      "llm": null,
+      "accepted": false,
+      "reason": "lift 1.96 / hit_rate 0.2 below thresholds"
+    },
+    {
+      "id": "struct:NON_DIEGETIC",
+      "view": "struct",
+      "key": "NON_DIEGETIC",
+      "support": 5,
+      "hits": 1,
+      "hit_rate": 0.2,
+      "lift": 1.96,
+      "mean_score": 0.348,
+      "strength": "weak",
+      "examples": [
+        {
+          "chapter": 10.0,
+          "block": 56,
+          "score": 0.729,
+          "anchor": "[Copyright 1894 by George Allen.]"
+        },
+        {
+          "chapter": 3.0,
+          "block": 5,
+          "score": 0.297,
+          "anchor": "[Copyright 1894 by George Allen.]"
+        },
+        {
+          "chapter": 1.0,
+          "block": 9,
+          "score": 0.271,
+          "anchor": "[Copyright 1894 by George Allen.]"
+        },
+        {
+          "chapter": 5.0,
+          "block": 11,
+          "score": 0.248,
+          "anchor": "[Copyright 1894 by George Allen.]"
+        },
+        {
+          "chapter": 3.0,
+          "block": 16,
+          "score": 0.198,
+          "anchor": "[Copyright 1894 by George Allen.]"
+        }
+      ],
+      "llm": null,
+      "accepted": false,
+      "reason": "lift 1.96 / hit_rate 0.2 below thresholds"
+    },
+    {
+      "id": "short:w2-3|sentence|none|alone",
+      "view": "short",
+      "key": "w2-3|sentence|none|alone",
+      "support": 11,
+      "hits": 2,
+      "hit_rate": 0.182,
+      "lift": 1.78,
+      "mean_score": 0.293,
+      "strength": "weak",
+      "examples": [
+        {
+          "chapter": 7.0,
+          "block": 16,
+          "score": 0.697,
+          "anchor": "“My dear friend,"
+        },
+        {
+          "chapter": 2.0,
+          "block": 10,
+          "score": 0.635,
+          "anchor": "“To-morrow fortnight.”"
+        },
+        {
+          "chapter": 7.0,
+          "block": 32,
+          "score": 0.328,
+          "anchor": "“My dearest Lizzie,"
+        },
+        {
+          "chapter": 6.0,
+          "block": 35,
+          "score": 0.279,
+          "anchor": "Mr. Darcy bowed."
+        },
+        {
+          "chapter": 7.0,
+          "block": 27,
+          "score": 0.231,
+          "anchor": "Cheerful prognostics"
+        }
+      ],
+      "llm": null,
+      "accepted": false,
+      "reason": "lift 1.78 / hit_rate 0.182 below thresholds"
+    },
+    {
+      "id": "short:w4-8|sentence|none|inline",
+      "view": "short",
+      "key": "w4-8|sentence|none|inline",
+      "support": 10,
+      "hits": 1,
+      "hit_rate": 0.1,
+      "lift": 0.98,
+      "mean_score": 0.267,
+      "strength": "weak",
+      "examples": [
+        {
+          "chapter": 3.0,
+          "block": 4,
+          "score": 0.643,
+          "anchor": "“When the Party entered”"
+        },
+        {
+          "chapter": 10.0,
+          "block": 55,
+          "score": 0.322,
+          "anchor": "“No, no; stay where you"
+        },
+        {
+          "chapter": 3.0,
+          "block": 5,
+          "score": 0.297,
+          "anchor": "[Copyright 1894 by George Allen.]"
+        },
+        {
+          "chapter": 1.0,
+          "block": 9,
+          "score": 0.271,
+          "anchor": "[Copyright 1894 by George Allen.]"
+        },
+        {
+          "chapter": 5.0,
+          "block": 10,
+          "score": 0.235,
+          "anchor": "“Without once opening his lips”"
+        }
+      ],
+      "llm": null,
+      "accepted": false,
+      "reason": "lift 0.98 / hit_rate 0.1 below thresholds"
+    }
+  ]
+}
