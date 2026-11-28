@@ -99,13 +99,13 @@ def test_outline_is_cached_and_a_failed_chunk_is_not() -> None:
 def test_validate_starts_drops_out_of_range_first_and_duplicates() -> None:
     lines = [OutlineLine(b) for b in range(5, 25)]
     starts = [SceneStart(block=20, reason="b"), SceneStart(block=5), SceneStart(block=99), SceneStart(block=20), SceneStart(block=12, reason="a")]
-    assert validate_starts(starts, lines) == [(12, "a"), (20, "b")]
+    assert validate_starts(starts, lines) == [(12, "a", 3), (20, "b", 3)]
 
 
 def test_segment_outline_returns_validated_starts_and_survives_a_failure() -> None:
     ch = _chapter(20)
     lines = [OutlineLine(i, "Ann") for i in range(20)]
-    assert segment_outline(ch, lines, FakeLLM(_echo_outline)) == [(10, "other people elsewhere")]
+    assert segment_outline(ch, lines, FakeLLM(_echo_outline)) == [(10, "other people elsewhere", 3)]
 
     def boom(request, schema):
         raise RuntimeError("down")

@@ -26,7 +26,7 @@ from echotales.pipeline.segment.judge import story_blocks
 from pydantic import BaseModel, Field
 
 OUTLINE_VERSION = "o1"
-SEGMENT_VERSION = "s1"
+SEGMENT_VERSION = "s3"
 #: Words of each block shown to the outline model, and the per-call budget (words of block text, and blocks).
 BLOCK_WORDS = 50
 CHUNK_WORDS = 800
@@ -34,6 +34,9 @@ CHUNK_BLOCKS = 24
 #: Estimated token budget of the numbered outline in the segmentation call; the 4096 context also holds the
 #: instructions, the schema and the answer.
 OUTLINE_TOKEN_BUDGET = 2600
+#: Opening words of each block kept in the outline line. Narration states a change in its first words ("At the very
+#: same moment,", "The next morning") and the compressed who/where/when line loses them. 0 turns it off.
+LEAD_WORDS = 7
 
 OUTLINE_SYSTEM = (
     "You condense a chapter of a translated novel into one very short line per numbered block. For every block give "
@@ -52,7 +55,10 @@ SEGMENT_SYSTEM = (
     "change. A new speaker, a new topic, a change of mood, a flashback inside a conversation or a missing 'where' "
     "is NOT a change. A parallel action 'at the same moment' somewhere else with other people IS a change, and so "
     "is a stated jump such as 'the next morning' or 'three days later'. When unsure, do not mark a change. "
-    "Answer with the block number where each new scene starts (never the first block) and a one-line reason."
+    "Answer with the block number where each new scene starts (never the first block), a confidence from 1 to 5 "
+    "(5: the narration clearly leaves the place and the people, or states a jump in time; 3: probably; 1: a guess) "
+    "and a one-line reason. Most chapters are ONE scene or two: when nothing in the outline clearly leaves the "
+    "place and the people, answer an empty list. Never mark a start just because the speaker changes."
 )
 
 
@@ -69,6 +75,7 @@ class OutlineAnswer(BaseModel):
 
 class SceneStart(BaseModel):
     block: int = Field(description="number of the first block of a new scene")
+    confidence: int = Field(default=3, description="1 (a guess) to 5 (certain)")
     reason: str = Field(default="", description="one short sentence")
 
 
@@ -82,9 +89,8 @@ class OutlineLine:
     who: str = ""
     where: str = ""
     when: str = ""
-
-    def text(self) -> str:
-        return " | ".join((self.who, self.where, self.when)).rstrip(" |")
+    #: First words of the block itself, filled by `outline_chapter` (not by the model).
+    lead: str = ""
 
 
 def _clip(text: str, n: int) -> str:
@@ -160,7 +166,7 @@ class OutlineCache:
     def put(self, novel: str, chapter: float, lines: list[OutlineLine]) -> None:
         p = self.path(novel, chapter)
         p.parent.mkdir(parents=True, exist_ok=True)
-        p.write_text(json.dumps([asdict(x) for x in lines]))
+        p.write_text(json.dumps([{k: v for k, v in asdict(x).items() if k != "lead"} for x in lines]))
 
 
 def outline_chapter(
@@ -175,7 +181,7 @@ def outline_chapter(
     if cache is not None:
         hit = cache.get(novel_id, chapter.number)
         if hit is not None:
-            return hit
+            return fill_lead(hit, chapter)
     text = {b.index: b.text for b in chapter.blocks}
     blocks = story_blocks(chapter)
     got: dict[int, OutlineLine] = {}
@@ -195,8 +201,16 @@ def outline_chapter(
             if it.n in chunk and it.n not in got:
                 got[it.n] = OutlineLine(it.n, _short(it.who, 40), _short(it.where, 30), _short(it.when, 30))
     lines = [got.get(b, OutlineLine(b)) for b in blocks]
+    fill_lead(lines, chapter)
     if cache is not None and ok:
         cache.put(novel_id, chapter.number, lines)
+    return lines
+
+
+def fill_lead(lines: list[OutlineLine], chapter: Chapter) -> list[OutlineLine]:
+    text = {b.index: b.text for b in chapter.blocks}
+    for ln in lines:
+        ln.lead = " ".join(text.get(ln.block, "").split()[:LEAD_WORDS])
     return lines
 
 
@@ -209,13 +223,16 @@ def _est_tokens(s: str) -> int:
     return int(len(s) / 3.2) + 1
 
 
-def outline_prompt(lines: list[OutlineLine]) -> str:
-    """The whole numbered outline. Over budget (very long chapters) the fields are trimmed, then runs merged."""
-    for who_n, keep_when in ((3, True), (2, True), (2, False)):
+def outline_prompt(lines: list[OutlineLine], lead_words: int | None = None) -> str:
+    """The whole numbered outline. Over budget (very long chapters) the opening words go first, then fields, then runs."""
+    lead_words = LEAD_WORDS if lead_words is None else lead_words
+    for lead_n, who_n, keep_when in ((lead_words, 3, True), (0, 3, True), (0, 2, True), (0, 2, False)):
         rows = []
         for ln in lines:
             who = ", ".join(ln.who.split(",")[:who_n]).strip()
-            rows.append(f"{ln.block} | " + " | ".join(x for x in (who, ln.where, ln.when if keep_when else "") if x))
+            lead = " ".join(ln.lead.split()[:lead_n])
+            parts = [x for x in (who, ln.where, ln.when if keep_when else "") if x]
+            rows.append(f"{ln.block} | " + (f'"{lead}" ' if lead else "") + ("| " if lead and parts else "") + " | ".join(parts))
         if _est_tokens("\n".join(rows)) <= OUTLINE_TOKEN_BUDGET:
             break
     else:
@@ -236,36 +253,36 @@ def _merge_runs(lines: list[OutlineLine]) -> list[str]:
     return rows
 
 
-def validate_starts(starts: list[SceneStart], lines: list[OutlineLine]) -> list[tuple[int, str]]:
-    """Scene starts that are real outline blocks (not the first), sorted and unique; others are dropped."""
+def validate_starts(starts: list[SceneStart], lines: list[OutlineLine]) -> list[tuple[int, str, int]]:
+    """(block, reason, confidence) of scene starts that are real outline blocks (not the first), sorted and unique."""
     valid = {ln.block for ln in lines}
     if not valid:
         return []
     first = min(valid)
-    out: dict[int, str] = {}
+    out: dict[int, tuple[str, int]] = {}
     for s in starts:
         if s.block in valid and s.block != first and s.block not in out:
-            out[s.block] = s.reason.strip()[:160]
-    return sorted(out.items())
+            out[s.block] = (s.reason.strip()[:160], min(5, max(1, s.confidence)))
+    return [(b, r, c) for b, (r, c) in sorted(out.items())]
 
 
 class SegmentCache:
     def __init__(self, root: Path | str, model: str) -> None:
-        self.dir = Path(root) / f"{model.replace(':', '_')}_{OUTLINE_VERSION}_{SEGMENT_VERSION}"
+        self.dir = Path(root) / f"{model.replace(':', '_')}_{OUTLINE_VERSION}_{SEGMENT_VERSION}_l{LEAD_WORDS}"
 
     def path(self, novel: str, chapter: float) -> Path:
         return self.dir / f"{novel}_{chapter:g}.json"
 
-    def get(self, novel: str, chapter: float) -> list[tuple[int, str]] | None:
+    def get(self, novel: str, chapter: float) -> list[tuple[int, str, int]] | None:
         p = self.path(novel, chapter)
         if not p.exists():
             return None
         try:
-            return [(int(a), str(b)) for a, b in json.loads(p.read_text())]
+            return [(int(a), str(b), int(c)) for a, b, c in json.loads(p.read_text())]
         except (OSError, ValueError, TypeError):
             return None
 
-    def put(self, novel: str, chapter: float, starts: list[tuple[int, str]]) -> None:
+    def put(self, novel: str, chapter: float, starts: list[tuple[int, str, int]]) -> None:
         p = self.path(novel, chapter)
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_text(json.dumps(starts))
@@ -278,8 +295,8 @@ def segment_outline(
     *,
     novel_id: str = "",
     cache: SegmentCache | None = None,
-) -> list[tuple[int, str]]:
-    """(scene start block, reason) pairs from one call over the whole outline; [] means one scene."""
+) -> list[tuple[int, str, int]]:
+    """(scene start block, reason, confidence) from one call over the whole outline; [] means one scene."""
     if cache is not None:
         hit = cache.get(novel_id, chapter.number)
         if hit is not None:

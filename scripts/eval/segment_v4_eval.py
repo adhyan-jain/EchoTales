@@ -23,6 +23,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from echotales.core.store import Store
 from echotales.pipeline.llm.ollama import OllamaProvider
+from echotales.pipeline.segment import outline
 from echotales.pipeline.segment.cast import (
     FusionParams,
     block_casts,
@@ -92,7 +93,7 @@ def cmd_outline(a, meta, stores):
             lines = outline_chapter(chap, llm, novel_id=novel, hints=name_hints(chap, ments, spans, labels), cache=oc)
             t1 = time.time()
             starts = [] if a.outline_only else segment_outline(chap, lines, llm, novel_id=novel, cache=sc)
-        print(f"{novel}:{ch} blocks={len(lines)} outline={t1 - t0:.0f}s seg={time.time() - t1:.0f}s starts={[s for s, _ in starts]}", flush=True)
+        print(f"{novel}:{ch} blocks={len(lines)} outline={t1 - t0:.0f}s seg={time.time() - t1:.0f}s starts={[(s, c) for s, _, c in starts]}", flush=True)
 
 
 def gold_sets(meta, stores, novel, ch):
@@ -120,8 +121,7 @@ class Data:
             casts = block_casts(chap, ments, spans)
             self.rows.append({
                 "novel": novel, "ch": ch, "chap": chap,
-                "outline": sorted({canonical_position(chap, b) for b, _ in starts}),
-                "reasons": dict(starts),
+                "starts": [(canonical_position(chap, b), c) for b, _, c in starts],
                 "scores": {k: cast_scores(chap, casts, k) for k in K_GRID},
                 "seps": separator_positions(chap),
             })
@@ -133,7 +133,8 @@ class Data:
             chap, g, amb, neg = gold_sets(meta, STORES, r["novel"], r["ch"])
             if g is None:
                 continue
-            pred = {canonical_position(chap, b) for b in fuse(chap, r["outline"], r["scores"][params.cast_k], r["seps"], params)}
+            out = sorted({b for b, c in r["starts"] if c >= params.conf_min})
+            pred = {canonical_position(chap, b) for b in fuse(chap, out, r["scores"][params.cast_k], r["seps"], params)}
             pred = {x for x in pred if x not in (amb - g)}
             p = per.setdefault(r["novel"], [0, 0, 0])
             p[0] += len(g & pred)
@@ -149,14 +150,14 @@ STORES = {}
 
 
 def grid():
-    for g in (1, 3, 5):
-        yield FusionParams("outline", min_gap=g)
+    for g, cm in itertools.product((1, 3, 5), (1, 3, 4, 5)):
+        yield FusionParams("outline", min_gap=g, conf_min=cm)
     for k, th, g in itertools.product(K_GRID, THETA_GRID, (3, 5, 8)):
         yield FusionParams("cast", k, th, min_gap=g)
-    for k, th, w, sep, g in itertools.product(K_GRID, THETA_GRID, (0, 2, 4), (True, False), (1, 3)):
-        yield FusionParams("and", k, th, w, sep, g)
-    for k, th, g in itertools.product(K_GRID, THETA_GRID, (1, 3)):
-        yield FusionParams("or", k, th, min_gap=g)
+    for k, th, w, sep, g, cm in itertools.product(K_GRID, THETA_GRID, (0, 2, 4), (True, False), (1, 3), (1, 3, 4, 5)):
+        yield FusionParams("and", k, th, w, sep, g, cm)
+    for k, th, g, cm in itertools.product(K_GRID, THETA_GRID, (1, 3), (1, 3, 4, 5)):
+        yield FusionParams("or", k, th, min_gap=g, conf_min=cm)
 
 
 def cmd_arms(a, meta, stores):
@@ -164,7 +165,7 @@ def cmd_arms(a, meta, stores):
     best: dict[str, tuple] = {}
     for p in grid():
         pooled, per, hn = data.score(meta, p)
-        key = (pooled["f1"], -p.min_gap, p.mode != "outline")  # ties go to the simpler setting
+        key = (pooled["f1"], -p.min_gap, -p.cast_k)  # ties go to the simpler setting
         if p.mode not in best or key > best[p.mode][0]:
             best[p.mode] = (key, p, pooled, per, hn)
     out = {}
@@ -204,10 +205,14 @@ def main():
     ap.add_argument("--model", default="qwen3:8b")
     ap.add_argument("--only")
     ap.add_argument("--outline-only", action="store_true")
+    ap.add_argument("--gold", default="original", choices=["original", "audited"])
     ap.add_argument("--fusion")
     ap.add_argument("--out")
+    ap.add_argument("--lead", type=int, default=None, help="opening words per block in the outline line (default: module value)")
     a = ap.parse_args()
-    meta, stores = load()
+    if a.lead is not None:
+        outline.LEAD_WORDS = a.lead
+    meta, stores = load(AUDITED if a.gold == "audited" else GOLD)
     STORES.update(stores)
     {"outline": cmd_outline, "arms": cmd_arms, "report": cmd_report}[a.cmd](a, meta, stores)
 

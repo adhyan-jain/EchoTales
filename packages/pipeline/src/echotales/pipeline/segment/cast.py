@@ -146,6 +146,8 @@ class FusionParams:
     window: int = 2
     use_sep: bool = True
     min_gap: int = 3
+    #: Outline cuts the model itself rated below this (1-5) are dropped before fusion.
+    conf_min: int = 1
 
 
 def fuse(
