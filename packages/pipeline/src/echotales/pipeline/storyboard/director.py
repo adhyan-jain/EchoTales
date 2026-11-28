@@ -30,6 +30,14 @@ from echotales.pipeline.llm.base import LLMError, LLMParseError
 from echotales.pipeline.llm.tasks import Task
 from echotales.pipeline.paths import DATA_ROOT, storyboard_path
 from echotales.pipeline.storyboard import prompts as sbp
+from echotales.pipeline.storyboard.cards import (
+    ANSWER_RESERVE,
+    CONTEXT_TOKENS,
+    Card,
+    build_cards,
+    estimate_tokens,
+    future_brief_block,
+)
 from echotales.pipeline.storyboard.inputs import (
     ChapterInput,
     Line,
@@ -49,7 +57,6 @@ from echotales.pipeline.storyboard.plan_schema import (
     LWindow,
 )
 from echotales.pipeline.storyboard.prompts import PROMPT_VERSION, fewshot_digest
-from echotales.pipeline.storyboard.stage_scenes import scenes_from_analysis
 from echotales.pipeline.storyboard.schema import (
     CastMember,
     Layer,
@@ -62,13 +69,19 @@ from echotales.pipeline.storyboard.schema import (
     Shot,
     Storyboard,
 )
+from echotales.pipeline.storyboard.stage_scenes import scenes_from_analysis
 from echotales.pipeline.storyboard.validators import (
     CUT_SIGNAL_PURPOSES,
+    EVIDENCE_PREFIXES,
+    FORESHADOW_BEATS,
     SPEECH_KINDS,
     Report,
     WPanel,
     audit,
+    audit_v2,
+    panel_duration,
     repair,
+    repair_v2,
 )
 
 #: A cut the model proposes inside a scene is trusted only when both halves are at least this long: one flagged block in
@@ -85,6 +98,25 @@ class _Raw:
     scene: Scene
     plan: LWindow
     cut_ok: set[str]
+
+
+@dataclass(slots=True)
+class _Know:
+    """Per-chapter knowledge the prompt is built from: cards by scene start block, and the future brief."""
+
+    cards: dict[int, list[Card]]
+    brief: dict | None
+
+
+#: The lookahead is two blocks of at most this many words: enough to show the model who a "pair of eyes" turns out to be
+#: (RI ch1 block 79 -> 80) without spending the window's budget on text it must not draw.
+LOOKAHEAD_BLOCKS = 2
+LOOKAHEAD_WORDS = 35
+
+
+def _lookahead(inp: ChapterInput, b1: int) -> str:
+    nxt = [b for b in inp.block_ids if b > b1][:LOOKAHEAD_BLOCKS]
+    return "\n".join(f"[b{b}] " + " ".join(inp.blocks[b].split()[:LOOKAHEAD_WORDS]) for b in nxt)
 
 
 def set_model(model: str) -> None:
@@ -161,7 +193,8 @@ def _ask(client, inp: ChapterInput, prompt: str, schema, system: str, report: Re
 
 
 def _plan_range(
-    client, inp: ChapterInput, sc: Scene, rng: tuple[int, int], carry: str, first: bool, opens_cut: bool, report: Report
+    client, inp: ChapterInput, sc: Scene, rng: tuple[int, int], carry: str, first: bool, opens_cut: bool, report: Report,
+    know: _Know | None = None,
 ) -> LWindow:
     """One window's panel plan. On an unparseable answer the window is bisected and each half re-planned: qwen3:8b on RI
     ch1 blocks 31-44 ran to its token cap inside one string twice (186 s, no plan), where a half-size window answers."""
@@ -185,9 +218,22 @@ def _plan_range(
         scene_line += (
             " THE PASSAGE OPENS WITH A CUT into this scene: begin with a time_place_card, a transition or an establishing panel."
         )
+        if sc.cut_signal == "match":
+            scene_line += " The cut is a MATCH: a simultaneous scene elsewhere; begin with a transition panel, cut_signal match."
+    extra: dict = {}
+    if know is not None:
+        extra = {
+            "cards": know.cards.get(sc.block_from, []),
+            "brief_block": future_brief_block(know.brief, sc, inp),
+            "lookahead": _lookahead(inp, b1),
+            "budget_tokens": CONTEXT_TOKENS - ANSWER_RESERVE - estimate_tokens(sbp.SYSTEM),
+        }
     prompt = sbp.build_prompt(
         inp, lines, in_play, present_names, ref_names, chapter_start=first, fixed_presence=True, carry=carry, scene_line=scene_line,
+        **extra,
     )
+    if extra and sbp.last_assembly["dropped"]:
+        report.note("prompt_budget", "optional prompt parts dropped", f"b{b0}-{b1}: {', '.join(sbp.last_assembly['dropped'])}")
     try:
         plan = _ask(client, inp, prompt, LWindow, sbp.SYSTEM, report)
         if plan.panels:
@@ -204,8 +250,8 @@ def _plan_range(
     if len(story) >= 6:
         mid = story[len(story) // 2]
         report.note("llm_bisect", "window re-planned in halves", f"blocks {b0}-{b1}: {str(err)[:80]}")
-        left = _plan_range(client, inp, sc, (b0, story[story.index(mid) - 1]), carry, first, opens_cut, report)
-        right = _plan_range(client, inp, sc, (mid, b1), _carry(left, 0), False, False, report)
+        left = _plan_range(client, inp, sc, (b0, story[story.index(mid) - 1]), carry, first, opens_cut, report, know)
+        right = _plan_range(client, inp, sc, (mid, b1), _carry(left, 0), False, False, report, know)
         return LWindow(panels=[*left.panels, *right.panels], cut_lines=[*left.cut_lines, *right.cut_lines])
     report.llm_failures += 1
     report.note("llm_failure", "fallback plan used", f"blocks {b0}-{b1}: {str(err)[:120]}")
@@ -385,13 +431,13 @@ def _segment_for(store: Store, inp: ChapterInput, sc: Scene, seg_id: str) -> Seg
 # plans -> panels
 # ---------------------------------------------------------------------------------------------------------------------
 
-_THOUGHT_OK = {LetterKind.THOUGHT, LetterKind.MEMORY}
-_NARR_OK = {LetterKind.NARRATION, LetterKind.MEMORY, LetterKind.POEM, LetterKind.THOUGHT}
+_THOUGHT_OK = {LetterKind.THOUGHT, LetterKind.MEMORY, LetterKind.SCREEN, LetterKind.POEM}
+_NARR_OK = {LetterKind.NARRATION, LetterKind.MEMORY, LetterKind.POEM, LetterKind.THOUGHT, LetterKind.SCREEN}
 
 
 def _fix_kind(ln: Line, kind: LetterKind, rep: Report) -> LetterKind:
     if ln.kind == "speech":
-        ok = kind in SPEECH_KINDS or kind is LetterKind.POEM
+        ok = kind in SPEECH_KINDS or kind in (LetterKind.POEM, LetterKind.SCREEN)
         want = kind if ok else LetterKind.SPEECH
     elif ln.kind == "thought":
         ok = kind in _THOUGHT_OK
@@ -452,7 +498,8 @@ def _resolve_cast(names: list[str], seg: Segment, inp: ChapterInput, store: Stor
 
 
 def _convert(
-    store: Store, inp: ChapterInput, raws: list[_Raw], segments: list[Segment], report: Report
+    store: Store, inp: ChapterInput, raws: list[_Raw], segments: list[Segment], report: Report,
+    cards: dict[str, list[Card]] | None = None,
 ) -> tuple[list[WPanel], set[str]]:
     by_id = {ln.id: ln for ln in inp.lines}
     used: set[str] = set()
@@ -530,18 +577,32 @@ def _convert(
                         cast.append(m)
                 if cast:
                     report.conversion["cast_from_visual"] += 1
+            if lp.purpose is Purpose.REFERENCED_INSET:
+                cast = [_with_card_look(m, (cards or {}).get(seg.segment_id, [])) for m in cast]
             invented = lp.invented or (not any(lt.source_span_id for lt in letters) and not blocks)
-            wps.append(
-                WPanel(
-                    Panel(
-                        panel_id="", segment_id=seg.segment_id, layer=lp.layer, purpose=lp.purpose, shape=lp.shape,
-                        shot=lp.shot, cast=cast, visual=lp.visual.strip(), letters=letters, source_blocks=blocks,
-                        invented=invented, invented_reason=lp.reason.strip() if invented else "",
-                    ),
-                    peak=lp.peak, window=r.idx,
-                )
+            reason = lp.reason.strip()
+            if invented and lp.evidence.strip() and not reason.lower().startswith(EVIDENCE_PREFIXES):
+                reason = f"{reason} [{lp.evidence.strip()}]".strip()
+            beat = lp.beat.strip().lower()
+            if beat not in FORESHADOW_BEATS:
+                beat = ""
+            panel = Panel(
+                panel_id="", segment_id=seg.segment_id, layer=lp.layer, purpose=lp.purpose, shape=lp.shape,
+                shot=lp.shot, cast=cast, visual=lp.visual.strip(), letters=letters, source_blocks=blocks,
+                invented=invented, invented_reason=reason if invented else "", emotion=lp.emotion.strip().lower(),
+                withheld=lp.withheld, cut_signal="match" if lp.cut_signal.strip().lower() == "match" else "", beat=beat,
             )
+            panel.duration_s = panel_duration(panel)
+            wps.append(WPanel(panel, peak=lp.peak, window=r.idx))
     return wps, cut_ok
+
+
+def _with_card_look(m: CastMember, cards: list[Card]) -> CastMember:
+    """An inset is drawn from the person's card look, so the picture carries the dossier's age and dress, not a guess."""
+    card = next((c for c in cards if c.entity_id == m.entity_id), None)
+    if card is None or not card.look:
+        return m
+    return m.model_copy(update={"look": card.look, "look_source": card.look_source or "bible"})
 
 
 def lines_in_window(inp: ChapterInput, b0: int, b1: int) -> list[Line]:
@@ -560,6 +621,15 @@ def _seg_index(segments: list[Segment], block: int) -> int:
 # ---------------------------------------------------------------------------------------------------------------------
 
 
+def _load_brief(store: Store, novel_id: str, chapter: float) -> dict | None:
+    from echotales.pipeline.knowledge.future_brief import load_brief
+
+    try:
+        return load_brief(store, novel_id, chapter)
+    except Exception:  # no brief built for this novel: cards still work, only the matters-later hints are missing
+        return None
+
+
 def _stage_scenes(store: Store, inp: ChapterInput, analysis) -> list[Scene] | None:  # type: ignore[no-untyped-def]
     """Scenes from the segment stage when it has run for this chapter (an explicit analysis wins over the stored one)."""
     if analysis is None:
@@ -569,7 +639,7 @@ def _stage_scenes(store: Store, inp: ChapterInput, analysis) -> list[Scene] | No
             analysis = load_scene_cuts(store, inp.novel_id, inp.chapter)
         except Exception:  # the stage is optional; the v1 scene pass is the fallback
             analysis = None
-    if analysis is None or not getattr(analysis, "cuts", None) and not getattr(analysis, "prior_loop_segments", None):
+    if analysis is None or (not getattr(analysis, "cuts", None) and not getattr(analysis, "prior_loop_segments", None)):
         return None
     return scenes_from_analysis(inp, analysis)
 
@@ -586,23 +656,27 @@ def build_storyboard(
     for sc in scenes:
         _scene_presence(store, client, inp, sc, report)
     say(f"  {len(scenes)} scenes: " + ", ".join(f"b{sc.block_from}-{sc.block_to}" for sc in scenes))
+    brief = _load_brief(store, novel_id, chapter)
+    know = _Know({sc.block_from: build_cards(store, inp, sc, brief) for sc in scenes}, brief)
     raws: list[_Raw] = []
     carry, n_panels = "", 0
     for si, sc in enumerate(scenes):
         for wi, rng in enumerate(windows(inp, sc)):
             t0 = time.perf_counter()
-            plan = _plan_range(client, inp, sc, rng, carry, not raws, si > 0 and wi == 0, report)
+            plan = _plan_range(client, inp, sc, rng, carry, not raws, si > 0 and wi == 0, report, know)
             say(f"  window b{rng[0]}-{rng[1]}: {len(plan.panels)} panels ({time.perf_counter() - t0:.0f}s)")
             raws.append(_Raw(len(raws), rng, sc, plan, {c.ref for c in plan.cut_lines if c.reason.strip()}))
             n_panels += len(plan.panels)
             carry = _carry(plan, n_panels)
 
     segments = [_segment_for(store, inp, sc, f"{novel_id}:{chapter:g}:seg{i}") for i, sc in enumerate(scenes)]
-    wps, cut_ok = _convert(store, inp, raws, segments, report)
+    seg_cards = {seg.segment_id: know.cards.get(sc.block_from, []) for seg, sc in zip(segments, scenes, strict=True)}
+    wps, cut_ok = _convert(store, inp, raws, segments, report, seg_cards)
 
-    report.before = audit(wps, segments, inp, cut_ok)
+    report.before = audit(wps, segments, inp, cut_ok) + audit_v2(wps, segments, inp, seg_cards, brief)
     wps = repair(wps, segments, inp, cut_ok, report)
-    report.after = audit(wps, segments, inp, cut_ok)
+    wps = repair_v2(wps, segments, inp, seg_cards, brief, report)
+    report.after = audit(wps, segments, inp, cut_ok) + audit_v2(wps, segments, inp, seg_cards, brief)
 
     panels: list[Panel] = []
     for n, w in enumerate(wps):

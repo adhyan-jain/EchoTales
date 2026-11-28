@@ -15,7 +15,6 @@ from __future__ import annotations
 import math
 import re
 from dataclasses import dataclass, field
-from typing import Any
 
 from echotales.core.store import Store
 from echotales.pipeline.storyboard.inputs import ChapterInput, RosterEntry, Scene, look_for

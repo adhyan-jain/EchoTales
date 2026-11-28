@@ -511,3 +511,226 @@ def _individualise_crowd(w: WPanel, seg: Segment, count: dict[str, int], report:
     p.visual = f"{name} calls out"
     p.invented, p.invented_reason = True, "one face from the crowd carrying an existing unattributed line"
     report.note("crowd_line_not_individualised", "crowd individual made", f"{name} b{p.source_blocks}")
+
+
+# ---------------------------------------------------------------------------------------------------------------------
+# director v2 rules (sb-5). Kept apart from `audit`/`repair` so the v1 counts in STORYBOARD_DIRECTOR.md stay comparable:
+# the v2 director runs v1 first and these after, and `Report.before/after` carry both sets of counters.
+# ---------------------------------------------------------------------------------------------------------------------
+
+EVIDENCE_PREFIXES = ("text:", "dossier:", "brief:")
+FORESHADOW_BEATS = {"foreshadow", "curiosity"}
+#: Layers a panel may take inside a scene of another layer: a picture within the scene (a dream, a memory), never a
+#: relabelling of the scene itself. v1 plans on RI ch1 drew the prior-loop cliff on `present` and the reborn timeline on
+#: `past`.
+SUB_LAYERS = {Layer.DREAM, Layer.MEMORY, Layer.LORE, Layer.IMAGINED}
+#: A cold open that is not a hero shot: sound effects, a card on black, or a close detail (RI v1 opened on the hero).
+COLD_OPEN_SHOTS = {Shot.INSERT, Shot.EXTREME_CLOSE}
+BALLOON_KINDS = SPEECH_KINDS | {LetterKind.THOUGHT, LetterKind.MEMORY, LetterKind.NARRATION}
+MIN_SHARED_FORESHADOW_TOKENS = 2
+#: Seconds per word and floor/ceiling for a panel's hold; derived from lettering so a long exchange is not flashed past.
+READ_SECONDS_PER_WORD = 0.34
+HOLD_FLOOR_S = 1.6
+HOLD_CEIL_S = 9.0
+
+
+def panel_duration(p: Panel) -> float:
+    words = sum(len(lt.text.split()) for lt in p.letters if lt.kind is not LetterKind.SFX)
+    return round(min(HOLD_CEIL_S, max(HOLD_FLOOR_S, 1.0 + words * READ_SECONDS_PER_WORD)), 2)
+
+
+def _cold_open_ok(p: Panel) -> bool:
+    return p.purpose is Purpose.COLD_OPEN and (
+        any(lt.kind is LetterKind.SFX for lt in p.letters) or p.shape is Shape.TEXT_ONLY or p.shot in COLD_OPEN_SHOTS
+    )
+
+
+def _person_cast(p: Panel) -> list[CastMember]:
+    return [m for m in p.cast if not _is_crowd(m)]
+
+
+def _later_only_tokens(brief: dict | None, chapter_text: str) -> list[set[str]]:
+    """Content words of each brief setup's later sentence that the chapter never uses: a panel built from them depicts
+    the later event instead of emphasising this chapter's text."""
+    have = _content_tokens(chapter_text)
+    out = []
+    for e in (brief or {}).get("entities", []):
+        for s in e.get("setups", []):
+            toks = _content_tokens(s.get("later", "")) - have
+            if toks:
+                out.append(toks)
+    return out
+
+
+def audit_v2(wps: list[WPanel], segments: list[Segment], inp: ChapterInput, cards: dict[str, list], brief: dict | None) -> Counter:
+    """Violations of the director v2 rules. `cards` maps segment id to its knowledge cards."""
+    c: Counter = Counter()
+    panels = [w.panel for w in wps]
+    chapter_text = " ".join(inp.blocks.values())
+    later_sets = _later_only_tokens(brief, chapter_text)
+    for p in panels:
+        seg = _panel_segment(p, segments)
+        present = _ids(seg.present_cast)
+        for m in p.cast:
+            if not _is_crowd(m) and m.entity_id not in present and not (
+                p.purpose is Purpose.REFERENCED_INSET and p.layer is Layer.IMAGINED
+            ):
+                c["cast_outside_present"] += 1
+        if p.layer is not seg.layer and p.layer not in SUB_LAYERS:
+            c["layer_mismatch"] += 1
+        if p.withheld:
+            if _person_cast(p):
+                c["withheld_has_cast"] += 1
+            if p.shot is not Shot.EXTREME_CLOSE:
+                c["withheld_not_ecu"] += 1
+        if p.invented and not p.invented_reason.lower().startswith(EVIDENCE_PREFIXES):
+            c["invented_no_evidence"] += 1
+        if not p.emotion:
+            c["emotion_missing"] += 1
+        if p.beat in FORESHADOW_BEATS:
+            if not p.source_blocks:
+                c["foreshadow_unanchored"] += 1
+            vis = _content_tokens(p.visual)
+            if any(len(vis & toks) >= MIN_SHARED_FORESHADOW_TOKENS for toks in later_sets):
+                c["foreshadow_depicts_later"] += 1
+        if p.purpose is Purpose.REFERENCED_INSET:
+            if any(lt.kind in BALLOON_KINDS for lt in p.letters):
+                c["inset_has_balloon"] += 1
+            for m in p.cast:
+                card = next((k for k in cards.get(seg.segment_id, []) if k.entity_id == m.entity_id), None)
+                if card is not None and card.look and m.look_source != "dossier" and card.look_source == "dossier":
+                    c["inset_look_not_dossier"] += 1
+    for i, w in enumerate(wps):
+        if w.panel.withheld and not any(
+            _person_cast(x.panel) and x.panel.source_blocks and max(x.panel.source_blocks) >= max(w.panel.source_blocks or [0])
+            for x in wps[i + 1 :]
+        ):
+            c["withheld_no_reveal"] += 1
+    if panels and not _cold_open_ok(panels[0]):
+        c["cold_open_hero"] += 1
+    for si, seg in enumerate(segments):
+        first = next((w.panel for w in wps if w.panel.segment_id == seg.segment_id), None)
+        if si and seg.cut_signal == "match" and not (first and first.purpose is Purpose.TRANSITION and first.cut_signal == "match"):
+            c["parallel_cut_unmatched"] += 1
+        for card in cards.get(seg.segment_id, []):
+            if card.status == "referenced" and card.matters_later and not any(
+                p.purpose is Purpose.REFERENCED_INSET and p.segment_id == seg.segment_id and any(m.entity_id == card.entity_id for m in p.cast)
+                for p in panels
+            ):
+                c["inset_missing"] += 1
+    if any(e.get("setups") for e in (brief or {}).get("entities", []) if e.get("matters_later")) and not any(
+        p.beat in FORESHADOW_BEATS for p in panels
+    ):
+        c["no_foreshadow"] += 1
+    return c
+
+
+def repair_v2(
+    wps: list[WPanel], segments: list[Segment], inp: ChapterInput, cards: dict[str, list], brief: dict | None, report: Report
+) -> list[WPanel]:
+    """Fix what a pure rule can fix after v1's repair: layers, withheld panels, the cold open, match cuts, missing insets,
+    citations. Emotion, a missing reveal and a missing foreshadow are reported only: no rule can supply them honestly."""
+    chapter_text = " ".join(inp.blocks.values())
+    later_sets = _later_only_tokens(brief, chapter_text)
+    for w in wps:
+        p = w.panel
+        seg = _panel_segment(p, segments)
+        if p.layer is not seg.layer and p.layer not in SUB_LAYERS:
+            report.note("layer_mismatch", "panel layer set to its scene's", f"{p.layer.value}->{seg.layer.value} {p.source_blocks[:1]}")
+            p.layer = seg.layer
+        if p.withheld:
+            if _person_cast(p):
+                report.note("withheld_has_cast", "cast removed from withheld panel", ", ".join(m.name for m in p.cast))
+                p.cast = [m for m in p.cast if _is_crowd(m)]
+            if p.shot is not Shot.EXTREME_CLOSE:
+                report.note("withheld_not_ecu", "shot set to extreme_close", p.shot.value)
+                p.shot = Shot.EXTREME_CLOSE
+        if p.beat in FORESHADOW_BEATS:
+            vis = _content_tokens(p.visual)
+            if not p.source_blocks or any(len(vis & toks) >= MIN_SHARED_FORESHADOW_TOKENS for toks in later_sets):
+                report.note("foreshadow_depicts_later", "beat cleared", f"{p.visual[:50]}")
+                p.beat = ""
+        if p.purpose is Purpose.REFERENCED_INSET:
+            for m in p.cast:
+                card = next((k for k in cards.get(seg.segment_id, []) if k.entity_id == m.entity_id), None)
+                if card is not None and card.look and m.look_source != "dossier" and card.look_source == "dossier":
+                    m.look, m.look_source = card.look, "dossier"
+                    report.note("inset_look_not_dossier", "dossier look attached", m.name)
+        if p.invented and not p.invented_reason.lower().startswith(EVIDENCE_PREFIXES):
+            cite = f"text:b{p.source_blocks[0] if p.source_blocks else seg.block_from}"
+            report.note("invented_no_evidence", "citation added", f"{cite}: {p.invented_reason[:40]}")
+            p.invented_reason = f"{cite} {p.invented_reason}".strip()
+
+    # --- cold open: a v1 hero hook is replaced, not kept beside the new one -----------------------------------------------
+    if wps and not _cold_open_ok(wps[0].panel):
+        first = wps[0].panel
+        seg = _panel_segment(first, segments)
+        v1_hook = first.purpose is Purpose.COLD_OPEN and first.invented_reason.startswith("hook before exposition")
+        if first.purpose is Purpose.COLD_OPEN and not v1_hook:
+            first.shot, first.shape, first.cast = Shot.EXTREME_CLOSE, Shape.BLEED, []
+            report.note("cold_open_hero", "cold open reshaped to a close detail", first.visual[:50])
+        else:
+            if v1_hook:
+                wps.pop(0)
+            cp = _new_panel(
+                seg, Purpose.COLD_OPEN, shape=Shape.TEXT_ONLY, shot=Shot.INSERT, visual="black frame, held in silence",
+                invented=True, invented_reason=f"text:b{seg.block_from} the chapter opens before anyone is shown",
+                source_blocks=[seg.block_from], emotion="dread",
+            )
+            wps.insert(0, WPanel(cp))
+            report.note("cold_open_hero", "black cold open inserted", f"b{seg.block_from}")
+
+    # --- parallel cut: a simultaneous scene is entered by a graphic match -----------------------------------------------
+    for si, seg in enumerate(segments):
+        if not si or seg.cut_signal != "match":
+            continue
+        idx = next((i for i, w in enumerate(wps) if w.panel.segment_id == seg.segment_id), None)
+        if idx is None:
+            continue
+        first = wps[idx].panel
+        if first.purpose is Purpose.TRANSITION and first.cut_signal == "match":
+            continue
+        if first.purpose in CUT_SIGNAL_PURPOSES and first.invented:
+            first.purpose, first.shape, first.cut_signal = Purpose.TRANSITION, Shape.WIDE, "match"
+            report.note("parallel_cut_unmatched", "cut panel made a match transition", seg.segment_id)
+        else:
+            tp = _new_panel(
+                seg, Purpose.TRANSITION, shape=Shape.WIDE, shot=Shot.WIDE, cut_signal="match",
+                visual="the new scene framed like the last picture of the scene before, same composition",
+                invented=True, invented_reason=f"text:b{seg.block_from} simultaneous scene entered by a match cut",
+                source_blocks=[seg.block_from],
+            )
+            wps.insert(idx, WPanel(tp))
+            report.note("parallel_cut_unmatched", "match transition inserted", seg.segment_id)
+
+    # --- referenced people the novel makes matter get one silent inset ---------------------------------------------------
+    for seg in segments:
+        for card in cards.get(seg.segment_id, []):
+            if card.status != "referenced" or not card.matters_later or not card.look:
+                continue
+            if any(w.panel.purpose is Purpose.REFERENCED_INSET and w.panel.segment_id == seg.segment_id
+                   and any(m.entity_id == card.entity_id for m in w.panel.cast) for w in wps):
+                continue
+            name_toks = {t for t in re.findall(r"[a-z]{3,}", card.name.lower())}
+            at = [i for i, w in enumerate(wps) if w.panel.segment_id == seg.segment_id]
+            if not at:
+                continue
+            hit = next(
+                (i for i in at if name_toks & {t for lt in wps[i].panel.letters for t in re.findall(r"[a-z]{3,}", lt.text.lower())}),
+                at[-1],
+            )
+            blocks = wps[hit].panel.source_blocks[:1] or [seg.block_from]
+            src = next((m for m in seg.referenced_cast if m.entity_id == card.entity_id), None)
+            member = (src.model_copy() if src else CastMember(entity_id=card.entity_id, name=card.name))
+            member.look, member.look_source = card.look, card.look_source or "bible"
+            ip = _new_panel(
+                seg, Purpose.REFERENCED_INSET, layer=Layer.IMAGINED, shape=Shape.INSET, shot=Shot.MEDIUM_CLOSE, cast=[member],
+                visual=f"{card.name}: {card.look}", invented=True, source_blocks=blocks,
+                invented_reason=f"dossier:{card.name} is only talked about here and matters later", emotion="curiosity",
+            )
+            wps.insert(hit + 1, WPanel(ip))
+            report.note("inset_missing", "silent inset inserted", card.name)
+
+    for w in wps:
+        w.panel.duration_s = panel_duration(w.panel)
+    return wps
