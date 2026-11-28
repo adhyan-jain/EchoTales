@@ -21,8 +21,9 @@ from pathlib import Path
 from echotales.core.store import Store
 from echotales.pipeline.llm.ollama import OllamaProvider
 from echotales.pipeline.segment.discontinuity import TopicModel, analyse_blocks, load_nlp
+from echotales.pipeline.segment.embed import get_embedder
 from echotales.pipeline.segment.induce import load_conventions
-from echotales.pipeline.segment.place_tags import PlaceCutParams
+from echotales.pipeline.segment.judge import CutRule
 from echotales.pipeline.segment.presence import present_cast
 from echotales.pipeline.segment.scenes import analyse_chapter_scenes
 
@@ -41,6 +42,7 @@ def main() -> None:
     ap.add_argument("--db", default="data/scratch/segment/ri_ch1.db")
     ap.add_argument("--conventions", default="data/eval/segment/conventions/reverend-insanity.scene_conventions.json")
     ap.add_argument("--model", default="qwen3:8b")
+    ap.add_argument("--rule", default="data/scratch/segment/v3_rule.json", help="rule chosen on the learn chapters")
     ap.add_argument("--out", default="data/eval/segment/ri_ch1_check.json")
     args = ap.parse_args()
 
@@ -50,11 +52,12 @@ def main() -> None:
     chapter = store.get_chapter(NOVEL, 1.0)
     cset = load_conventions(args.conventions)
     topic = TopicModel().fit([s.terms for s in analyse_blocks(chapter, None, nlp).values()])
-    # Parameters chosen on the learn chapters only (docs/results/SCENE_INDUCTION.md, v2.1 results): cut where the
-    # place changed and a time jump was flagged.
+    # v3: pairwise judge over candidate boundaries, rule chosen on the learn chapters only (never on this chapter).
+    rule = CutRule(**json.loads(Path(args.rule).read_text())["rule"])
     analysis = analyse_chapter_scenes(
         chapter, cset, mentions=store.get_mentions(NOVEL, 1.0), llm=llm, nlp=nlp, topic=topic,
-        method="place_tags", place_params=PlaceCutParams(both=True, min_gap=1),
+        method="judge", judge_rule=rule, judge_cache_dir="data/scratch/segment/judgecache", novel_id=NOVEL,
+        embedder=get_embedder(),
     )
     cuts = [
         {"block": c.block, "source": c.source, "type": c.cut_type.value, "time": c.time_relation.value,
@@ -65,29 +68,33 @@ def main() -> None:
 
     pres: dict[str, dict[str, list[str]]] = {}
     for lo, hi in SEGMENTS:
-        present, referenced = present_cast(store, NOVEL, 1.0, lo, hi, llm=llm)
+        present, referenced = present_cast(store, NOVEL, 1.0, lo, hi, llm=llm, require_quote=True)
         pres[f"{lo}-{hi}"] = {"present": present, "referenced": referenced}
+    names = {x.id: x.canonical_label.lower() for x in store.all_selves(NOVEL)}
+    p1_labels = sorted({names.get(i, i).lower() for i in pres["31-78"]["present"]})
     p0, p1, p2 = (pres[f"{lo}-{hi}"] for lo, hi in SEGMENTS)
     checks = {
         "cuts exactly {31, 79}": found == {31, 79},
         "0-30: Fang Yuan present": FANG_YUAN in p0["present"],
-        "31-78: clan head present": has(p1["present"], "clan head"),
+        "31-78: clan head present": has(p1["present"], "clan head") or any("clan head" in x for x in p1_labels),
+        "31-78: elders present": any("elder" in x for x in p1_labels),
+        "31-78: only clan head and elders present": all("clan head" in x or "elder" in x for x in p1_labels),
         "31-78: Fang Yuan NOT present": FANG_YUAN not in p1["present"],
         "31-78: Fang Yuan referenced": FANG_YUAN in p1["referenced"],
         "31-78: Bai Ning Bing referenced": has(p1["referenced"], "bai ning bing"),
         "31-78: Bai Ning Bing NOT present": not has(p1["present"], "bai ning bing"),
         "31-78: Fang Zhi referenced": FANG_ZHI in p1["referenced"],
         "31-78: Fang Zhi NOT present": FANG_ZHI not in p1["present"],
-        "prior-loop flag on segment 0 only": set(analysis.prior_loop_segments) == {0},
-        "cut 31 time relation EARLIER or UNKNOWN": any(
-            c["block"] == 31 and c["time"] in ("EARLIER", "UNKNOWN") for c in cuts
-        ),
+        "segment 0 layer = past (prior loop)": bool(analysis.time_labels) and analysis.time_labels[0].layer == "past"
+        and set(analysis.prior_loop_segments) == {0},
         "79-89: Fang Yuan present": FANG_YUAN in p2["present"],
     }
     out = {
         "model": args.model,
         "cuts": cuts,
         "prior_loop_segments": sorted(analysis.prior_loop_segments),
+        "time_labels": [{"segment": t.segment, "layer": t.layer, "relation": t.time_relation.value, "quote": t.quote, "verified": t.verified} for t in analysis.time_labels],
+        "present_labels_31_78": p1_labels,
         "presence": pres,
         "checks": checks,
         "passed": sum(checks.values()),

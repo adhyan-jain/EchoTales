@@ -25,10 +25,23 @@ from echotales.pipeline.segment.discontinuity import (
 )
 from echotales.pipeline.segment.implicit import propose_implicit_cuts, resolve_story_order
 from echotales.pipeline.segment.induce import ConventionSet, find_induced_cuts
+from echotales.pipeline.segment.judge import (
+    BoundaryJudgement,
+    CutRule,
+    JudgeCache,
+    candidate_boundaries,
+    decide_cuts,
+    judge_boundary,
+)
 from echotales.pipeline.segment.llm_segment import LLMScene, cut_type_for, segment_chapter_llm
 from echotales.pipeline.segment.place_tags import PlaceCutParams, scenes_from_tags, tag_chapter
+from echotales.pipeline.segment.storytime import prior_loop_segments, story_time_pass
 
 _ARTIFACT_PREFIX = "scene_cuts"
+
+#: Chosen on the learn chapters only (learn F1 0.172 over 26 gold cuts; docs/results/SCENE_INDUCTION.md, v3). Held-out F1 was
+#: 0.103, below v2.1, so `method="judge"` stays opt-in and `place_tags` remains the default method.
+DEFAULT_RULE = CutRule("place", False, False, False, True, 5)
 
 
 @dataclass(slots=True)
@@ -49,6 +62,10 @@ class SceneCutConfig:
     place_params: Any | None = None
     #: Embedding model for the topic feature; None keeps TF-IDF.
     embedder: Any | None = None
+    #: "judge" (v3) rule over the pairwise boundary judge's answers; None means `judge.DEFAULT_RULE`.
+    judge_rule: Any | None = None
+    #: Directory of cached judge answers (judge.JudgeCache); None means no cache.
+    judge_cache_dir: str | None = None
 
 
 @dataclass(slots=True)
@@ -58,6 +75,8 @@ class SceneAnalysis:
     #: Indices (reading order, from 0) of segments the story order pass called a prior loop.
     prior_loop_segments: set[int] = field(default_factory=set)
     boundaries: list[Boundary] = field(default_factory=list)
+    #: v3 story-time labels (layer, relation, verified quote) per segment in reading order; empty for other methods.
+    time_labels: list[Any] = field(default_factory=list)
 
 
 #: How far (in canonical boundary positions) an LLM scene start may sit from a scored boundary and still be
@@ -131,6 +150,9 @@ def analyse_chapter_scenes(
     method: str = "place_tags",
     embedder: Any | None = None,
     place_params: Any | None = None,
+    judge_rule: CutRule | None = None,
+    judge_cache_dir: str | None = None,
+    novel_id: str = "",
     llm_scenes: list[LLMScene] | None = None,
     accept_score: float | None = None,
 ) -> SceneAnalysis:
@@ -147,7 +169,15 @@ def analyse_chapter_scenes(
             else:
                 weak.add(c.block)
     prior: set[int] = set()
-    if method == "place_tags" and (llm is not None or llm_scenes is not None):
+    time_labels: list[Any] = []
+    if method == "judge" and llm is not None:
+        cuts_j, prior, time_labels = _judge_cuts(
+            chapter, boundaries, llm, mentions, nlp, judge_rule or DEFAULT_RULE, judge_cache_dir, novel_id
+        )
+        have = {c.block for c in cuts}
+        cuts += [c for c in cuts_j if c.block not in have]
+        cuts.sort(key=lambda c: c.block)
+    elif method == "place_tags" and (llm is not None or llm_scenes is not None):
         scenes = llm_scenes
         if scenes is None:
             scenes = scenes_from_tags(chapter, tag_chapter(chapter, llm), place_params or PlaceCutParams(), embedder)
@@ -180,7 +210,50 @@ def analyse_chapter_scenes(
         )
         cuts.sort(key=lambda c: c.block)
         prior = resolve_story_order(chapter, cuts, llm, nlp=nlp)
-    return SceneAnalysis(chapter=chapter.number, cuts=cuts, prior_loop_segments=prior, boundaries=boundaries)
+    return SceneAnalysis(
+        chapter=chapter.number, cuts=cuts, prior_loop_segments=prior, boundaries=boundaries, time_labels=time_labels
+    )
+
+
+def _judge_cuts(
+    chapter: Chapter,
+    boundaries: list[Boundary],
+    llm: Any,
+    mentions: list[Mention] | None,
+    nlp: Any | None,
+    rule: CutRule,
+    cache_dir: str | None,
+    novel_id: str,
+) -> tuple[list[SceneCut], set[int], list[Any]]:
+    """v3: candidates from every proposer, the pairwise judge, the learned rule, then the story-time pass."""
+    tags = tag_chapter(chapter, llm)
+    cands = candidate_boundaries(chapter, boundaries, tags)
+    cache = JudgeCache(cache_dir, getattr(llm, "model", "model")) if cache_dir else None
+    judged: list[BoundaryJudgement] = []
+    for c in cands:
+        j = judge_boundary(chapter, c.position, llm, novel_id=novel_id, mentions=mentions, cache=cache)
+        j.separator, j.sources = c.separator, sorted(c.sources)
+        judged.append(j)
+    by_block = {j.block: j for j in judged}
+    blocks = decide_cuts(judged, rule, chapter)
+    labels = story_time_pass(chapter, blocks, llm, nlp=nlp) if blocks else []
+    cuts: list[SceneCut] = []
+    for k, b in enumerate(blocks):
+        j = by_block[b]
+        lab = labels[k + 1] if k + 1 < len(labels) else None
+        rel = lab.time_relation if lab and lab.verified else TimeRelation.UNKNOWN
+        cuts.append(
+            SceneCut(
+                chapter=chapter.number,
+                block=b,
+                source="judge",
+                cut_type=CutType.NEW_SCENE,
+                time_relation=rel,
+                confidence=0.5 + 0.1 * min(4, (j.time_continuous == "no") + (j.same_location == "no") + (j.same_people_in_focus == "no") + 2 * j.separator),
+                evidence=[j.reason] if j.reason else [],
+            )
+        )
+    return cuts, prior_loop_segments(labels) if labels else set(), labels
 
 
 def prior_loops_from_scenes(chapter: Chapter, cuts: list[SceneCut], scenes: list[LLMScene]) -> set[int]:

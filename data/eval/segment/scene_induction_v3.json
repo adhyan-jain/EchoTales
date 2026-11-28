@@ -1,0 +1,448 @@
+{
+ "rule": {
+  "name": "place",
+  "use_separator": false,
+  "time_no": false,
+  "place_and_people": false,
+  "place_alone": true,
+  "min_gap": 5
+ },
+ "model": "qwen3:8b",
+ "learn": {
+  "pooled": {
+   "tp": 11,
+   "fp": 91,
+   "fn": 15,
+   "precision": 0.108,
+   "recall": 0.423,
+   "f1": 0.172
+  },
+  "per_novel": {
+   "reverend-insanity": {
+    "tp": 4,
+    "fp": 24,
+    "fn": 4,
+    "precision": 0.143,
+    "recall": 0.5,
+    "f1": 0.222
+   },
+   "lord-of-the-mysteries": {
+    "tp": 5,
+    "fp": 38,
+    "fn": 2,
+    "precision": 0.116,
+    "recall": 0.714,
+    "f1": 0.2
+   },
+   "omniscient-readers-viewpoint": {
+    "tp": 0,
+    "fp": 8,
+    "fn": 1,
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0
+   },
+   "pride-and-prejudice": {
+    "tp": 0,
+    "fp": 8,
+    "fn": 4,
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0
+   },
+   "a-study-in-scarlet": {
+    "tp": 2,
+    "fp": 13,
+    "fn": 4,
+    "precision": 0.133,
+    "recall": 0.333,
+    "f1": 0.19
+   }
+  },
+  "hard_negatives": 38,
+  "hard_negative_false_cuts": 3
+ },
+ "held": {
+  "pooled": {
+   "tp": 12,
+   "fp": 186,
+   "fn": 22,
+   "precision": 0.061,
+   "recall": 0.353,
+   "f1": 0.103
+  },
+  "per_novel": {
+   "reverend-insanity": {
+    "tp": 1,
+    "fp": 12,
+    "fn": 2,
+    "precision": 0.077,
+    "recall": 0.333,
+    "f1": 0.125
+   },
+   "lord-of-the-mysteries": {
+    "tp": 2,
+    "fp": 11,
+    "fn": 1,
+    "precision": 0.154,
+    "recall": 0.667,
+    "f1": 0.25
+   },
+   "omniscient-readers-viewpoint": {
+    "tp": 7,
+    "fp": 141,
+    "fn": 8,
+    "precision": 0.047,
+    "recall": 0.467,
+    "f1": 0.086
+   },
+   "pride-and-prejudice": {
+    "tp": 1,
+    "fp": 5,
+    "fn": 3,
+    "precision": 0.167,
+    "recall": 0.25,
+    "f1": 0.2
+   },
+   "a-study-in-scarlet": {
+    "tp": 1,
+    "fp": 17,
+    "fn": 8,
+    "precision": 0.056,
+    "recall": 0.111,
+    "f1": 0.074
+   }
+  },
+  "hard_negatives": 11,
+  "hard_negative_false_cuts": 2
+ },
+ "examples": {
+  "reverend-insanity": {
+   "false_positives": [
+    {
+     "chapter": "21",
+     "block": 2,
+     "anchor": "\u201cI have been cultivating hard",
+     "reason": "The after section shows Fang Zheng's internal monologue and emotions, continuing his focus from the before section, but the location shifts from the streets to his personal space.",
+     "judge": [
+      "no",
+      "no",
+      "yes"
+     ]
+    },
+    {
+     "chapter": "21",
+     "block": 28,
+     "anchor": "\u201cHow can it be like",
+     "reason": "The AFTER section shifts to a different person and location, indicating a scene break.",
+     "judge": [
+      "no",
+      "no",
+      "no"
+     ]
+    },
+    {
+     "chapter": "21",
+     "block": 36,
+     "anchor": "\u201cCould there have been a",
+     "reason": "The AFTER section shifts to a different location and focuses on different people.",
+     "judge": [
+      "no",
+      "no",
+      "no"
+     ]
+    }
+   ],
+   "false_negatives": [
+    {
+     "chapter": "21",
+     "block": 37,
+     "anchor": "The Mo branch family home.",
+     "reason": "The scene shifts to a different location and focuses on new characters.",
+     "judge": [
+      "no",
+      "no",
+      "no"
+     ]
+    },
+    {
+     "chapter": "21",
+     "block": 43,
+     "anchor": "Almost at the same time,",
+     "reason": "The scene shifts to a different location and focuses on different people.",
+     "judge": [
+      "no",
+      "no",
+      "no"
+     ]
+    }
+   ]
+  },
+  "lord-of-the-mysteries": {
+   "false_positives": [
+    {
+     "chapter": "26",
+     "block": 1,
+     "anchor": "Klein kept his back straight",
+     "reason": "The action moves from a corridor to a passageway and stairwell, indicating a change of location.",
+     "judge": [
+      "yes",
+      "no",
+      "yes"
+     ]
+    },
+    {
+     "chapter": "26",
+     "block": 9,
+     "anchor": "He did not turn towards",
+     "reason": "Klein continues his actions in a different location after the break.",
+     "judge": [
+      "no",
+      "no",
+      "yes"
+     ]
+    },
+    {
+     "chapter": "26",
+     "block": 38,
+     "anchor": "The two did not say",
+     "reason": "The action continues in the same moment with Klein as the focus, but the location shifts to the prayer hall.",
+     "judge": [
+      "yes",
+      "no",
+      "yes"
+     ]
+    }
+   ],
+   "false_negatives": [
+    {
+     "chapter": "36",
+     "block": 53,
+     "anchor": "The curtains were drawn as",
+     "reason": "Klein continues his actions in the same room after waking up.",
+     "judge": [
+      "yes",
+      "yes",
+      "yes"
+     ]
+    }
+   ]
+  },
+  "omniscient-readers-viewpoint": {
+   "false_positives": [
+    {
+     "chapter": "24",
+     "block": 2,
+     "anchor": "[Ah, no, why is this",
+     "reason": "The AFTER section introduces new characters and shifts to a different context, indicating a scene break.",
+     "judge": [
+      "no",
+      "no",
+      "no"
+     ]
+    },
+    {
+     "chapter": "24",
+     "block": 23,
+     "anchor": "By the way, it really",
+     "reason": "The AFTER section shifts to a different character and context, indicating a scene break.",
+     "judge": [
+      "no",
+      "no",
+      "no"
+     ]
+    },
+    {
+     "chapter": "24",
+     "block": 52,
+     "anchor": "All of a sudden, there",
+     "reason": "The scene shifts to a different location and focuses on different people.",
+     "judge": [
+      "no",
+      "no",
+      "no"
+     ]
+    }
+   ],
+   "false_negatives": [
+    {
+     "chapter": "24",
+     "block": 101,
+     "anchor": "[\u2026You did such great things",
+     "reason": "The dialogue continues in the same context and location with the same characters involved.",
+     "judge": [
+      "yes",
+      "yes",
+      "yes"
+     ]
+    },
+    {
+     "chapter": "33",
+     "block": 79,
+     "anchor": "I walked up the stairs",
+     "reason": "The action shifts to a different location and focuses on the narrator instead of the previously mentioned characters.",
+     "judge": [
+      "no",
+      "no",
+      "no"
+     ]
+    },
+    {
+     "chapter": "17",
+     "block": 97,
+     "anchor": "Geumho Station was originally a",
+     "reason": "The scene shifts to a different time and place with new characters and context.",
+     "judge": [
+      "no",
+      "no",
+      "no"
+     ]
+    }
+   ]
+  },
+  "pride-and-prejudice": {
+   "false_positives": [
+    {
+     "chapter": "12",
+     "block": 2,
+     "anchor": "The master of the house",
+     "reason": "The AFTER section shifts to different locations and focuses on different people compared to the BEFORE section.",
+     "judge": [
+      "no",
+      "no",
+      "no"
+     ]
+    },
+    {
+     "chapter": "22",
+     "block": 14,
+     "anchor": "With proper civilities, the ladies",
+     "reason": "The scene shifts to different characters and locations, indicating a break in the narrative focus.",
+     "judge": [
+      "no",
+      "no",
+      "no"
+     ]
+    },
+    {
+     "chapter": "13",
+     "block": 11,
+     "anchor": "\u201cWhy, indeed, he does seem",
+     "reason": "The after section shifts to a letter from Mr. Collins, indicating a change in location and focus.",
+     "judge": [
+      "no",
+      "no",
+      "no"
+     ]
+    }
+   ],
+   "false_negatives": [
+    {
+     "chapter": "12",
+     "block": 4,
+     "anchor": "On Sunday, after morning service,",
+     "reason": "The scene shifts to a different time and location with different people involved.",
+     "judge": [
+      "no",
+      "no",
+      "no"
+     ]
+    },
+    {
+     "chapter": "40",
+     "block": 26,
+     "anchor": "\u201cWell, Lizzy,\u201d said Mrs. Bennet,",
+     "reason": "The conversation shifts to Mrs. Bennet and her opinions, changing the focus from Elizabeth and Jane to Mrs. Bennet.",
+     "judge": [
+      "yes",
+      "yes",
+      "no"
+     ]
+    },
+    {
+     "chapter": "15",
+     "block": 10,
+     "anchor": "Mrs. Philips was always glad",
+     "reason": "The action shifts to Mrs. Philips's home and introduces new characters like Mr. Collins, indicating a change in location and focus.",
+     "judge": [
+      "no",
+      "no",
+      "no"
+     ]
+    }
+   ]
+  },
+  "a-study-in-scarlet": {
+   "false_positives": [
+    {
+     "chapter": "8",
+     "block": 2,
+     "anchor": "In the whole world there",
+     "reason": "The AFTER section shifts to a different location and focuses on a new solitary traveler, not the previously mentioned groups or people.",
+     "judge": [
+      "no",
+      "no",
+      "no"
+     ]
+    },
+    {
+     "chapter": "8",
+     "block": 15,
+     "anchor": "\u201cYou\u2019ll see prettier things than",
+     "reason": "The conversation shifts to a different location and different people.",
+     "judge": [
+      "no",
+      "no",
+      "no"
+     ]
+    },
+    {
+     "chapter": "8",
+     "block": 27,
+     "anchor": "\u201cI don\u2019t know\u2014not very long.\u201d",
+     "reason": "The scene shifts to a different location and focuses on different people.",
+     "judge": [
+      "no",
+      "no",
+      "no"
+     ]
+    }
+   ],
+   "false_negatives": [
+    {
+     "chapter": "8",
+     "block": 39,
+     "anchor": "At the head of the",
+     "reason": "The AFTER section shifts to a different location and focuses on a new group of people, indicating a scene break.",
+     "judge": [
+      "no",
+      "no",
+      "no"
+     ]
+    },
+    {
+     "chapter": "9",
+     "block": 7,
+     "anchor": "It was a warm June",
+     "reason": "The AFTER section shifts to a different location and focuses on Lucy encountering cattle, while the BEFORE section focuses on her growing up and the narrator's reflections.",
+     "judge": [
+      "no",
+      "no",
+      "no"
+     ]
+    },
+    {
+     "chapter": "9",
+     "block": 22,
+     "anchor": "It was a summer evening",
+     "reason": "The scene continues with Jefferson Hope and Lucy in the same location and focus.",
+     "judge": [
+      "yes",
+      "yes",
+      "yes"
+     ]
+    }
+   ]
+  }
+ }
+}

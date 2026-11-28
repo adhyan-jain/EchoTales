@@ -104,14 +104,14 @@ def tag_chapter(chapter: Chapter, llm: Any) -> list[TaggedBlock]:
         win = shown[lo : lo + TAG_WINDOW]
         lines = "\n".join(f"[{i}] {_clip(text[i], TAG_WORDS)}" for i in win)
         head = (
-            (
+
                 f"The previous block's place was: {prev_place}"
                 + (f"; time: {prev_anchor}" if prev_anchor else "")
                 + ".\n"
                 if prev_place
                 # p2 measured: "unknown (this is the start...)" was copied verbatim onto blocks 0-30 of RI ch1.
                 else "This is the start of the chapter: name the place from the text itself.\n"
-            )
+
         )
         prompt = f"{head}\n{lines}\n\nGive one entry for every block number above, in order."
         got: dict[int, BlockTag] = {}
