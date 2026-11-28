@@ -221,7 +221,7 @@ def _presence_store() -> Store:
         "The clan head knelt before the altar in the rain.",
         "“The boy Fang Yuan has great talent,” said the first elder.",
         "The elders murmured about Fang Yuan and what he might become.",
-        "The clan head listened without a word.",
+        "The clan head listened to the old servant without a word.",
     ]
     store.add_chapter(
         Chapter(

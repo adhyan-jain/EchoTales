@@ -204,7 +204,8 @@ def _heuristic(c: Candidate) -> bool:
 
 def _name_tokens(name: str) -> frozenset[str]:
     # "elders" and "elder" must meet; a plural -s is the only normalisation (no word list of titles or clans).
-    return frozenset(t[:-1] if len(t) > 3 and t.endswith("s") else t for t in re.findall(r"[a-z]+", name.lower()) if len(t) > 1)
+    # Digits stay in a token: ORV's "tls123" was cut to "tls" and matched nothing in the text.
+    return frozenset(t[:-1] if len(t) > 3 and t.endswith("s") else t for t in re.findall(r"[a-z0-9]+", name.lower()) if len(t) > 1)
 
 
 def outline_present_labels(outline: list[Any], lo: int, hi: int) -> list[tuple[int, str, frozenset[str]]]:
@@ -227,6 +228,40 @@ def outline_present_labels(outline: list[Any], lo: int, hi: int) -> list[tuple[i
 def _same_person(a: frozenset[str], b: frozenset[str]) -> bool:
     """One name's tokens contain the other's ("Fang Yuan" in "Gu Yue Fang Yuan")."""
     return bool(a) and bool(b) and (a <= b or b <= a)
+
+
+def _attested(toks: frozenset[str], texts: dict[int, str]) -> bool:
+    """Every token of an outline-only name occurs somewhere in the chapter text.
+
+    Chapter-wide, not the listing blocks: RI ch1 blocks 74-78 list "Gu Yue Bo", who is the clan head and is named in the
+    chapter, but not in those blocks.
+
+    ORV ch1: the outline's who-line holds "Narrator" for the first-person voice, which no block of the scene names. The
+    outline model's own role word is not a person the graph or the text knows, so it must not become an entity.
+    """
+    words: set[str] = set()
+    for t in texts.values():
+        words |= _name_tokens(t)
+    return toks <= words
+
+
+def _on_screen_only(surface: str, blocks: set[int], texts: dict[int, str]) -> bool:
+    """The name appears mostly as a message label ("-tls123: text", "Author: tls123"), not as someone acting in narration.
+
+    ORV ch1: tls123 speaks only through on-screen comments. A label at the start of a line, or the value of an "Author:" /
+    "Name:" label, is a typographic format, not a word list: the name is followed or preceded by a colon.
+    """
+    pat = re.escape(surface.strip())
+    label = other = 0
+    for b in blocks:
+        t = texts.get(b, "")
+        for m in re.finditer(pat, t, flags=re.IGNORECASE):
+            before, after = t[: m.start()].rstrip(" \t\u2013\u2014-\"'\u201c\u2018"), t[m.end() :]
+            if (not before and after.lstrip().startswith(":")) or before.endswith(":"):
+                label += 1
+            else:
+                other += 1
+    return label > 0 and label >= other
 
 
 #: A name the graph has no entity for is added to the present cast only when the outline lists it in this many blocks
@@ -261,7 +296,7 @@ def present_cast(
     the range; `llm` is then not used for the non-speakers.
     """
     candidates, texts = collect_candidates(store, novel_id, chapter, block_from, block_to)
-    if not candidates:
+    if not candidates and not outline:
         return [], []
     verdict: dict[str, bool] = {c.entity_id: _heuristic(c) for c in candidates}
     to_ask = [c for c in candidates if not c.speaks]
@@ -279,10 +314,10 @@ def present_cast(
                 key = " ".join(sorted(toks))
                 extra.setdefault(key, (surface, set()))[1].add(blk)
         for key, (surface, blocks) in extra.items():
-            if len(blocks) >= MIN_OUTLINE_BLOCKS:
+            if len(blocks) >= MIN_OUTLINE_BLOCKS and _attested(frozenset(key.split()), texts):
                 c = Candidate(entity_id=f"unresolved:{key}", label=surface, blocks=sorted(blocks))
                 candidates.append(c)
-                verdict[c.entity_id] = True
+                verdict[c.entity_id] = not _on_screen_only(surface, blocks, texts)
     elif llm is not None and to_ask:
         scene = "\n".join(f"[{i}] {texts[i]}" for i in range(block_from, block_to + 1) if i in texts)[:_MAX_SEGMENT_CHARS]
         art_id = f"{_CACHE_PREFIX}:{novel_id}:{chapter:g}:{block_from}-{block_to}:{_digest(to_ask, scene, require_quote)}"

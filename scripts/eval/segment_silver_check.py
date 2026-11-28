@@ -21,8 +21,10 @@ from echotales.pipeline.segment.presence import present_cast
 from echotales.pipeline.segment.scenes import analyse_chapter_scenes
 
 CASES = {
-    "lord-of-the-mysteries": ("data/gold/segment/lotm_ch1_silver.json", "klein", None),
-    "omniscient-readers-viewpoint": ("data/gold/segment/orv_ch1_silver.json", "kim dokja", "tls123"),
+    # LotM ch1 is the transmigrant Zhou Mingrui in Klein's body; the silver file names him as the same person, and the graph
+    # labels him by that name, so either label counts as Klein.
+    "lord-of-the-mysteries": ("data/gold/segment/lotm_ch1_silver.json", ("klein", "zhou mingrui"), None),
+    "omniscient-readers-viewpoint": ("data/gold/segment/orv_ch1_silver.json", ("kim dokja",), "tls123"),
 }
 
 
@@ -64,7 +66,7 @@ def main() -> None:
         rlabels = sorted({labels.get(i, i).lower() for i in referenced})
         checks = {
             "one scene, no cuts": not an.cuts,
-            f"{must_present} present": any(must_present in x for x in plabels),
+            f"{must_present[0]} present": any(n in x for x in plabels for n in must_present),
         }
         if referenced_only:
             checks[f"{referenced_only} referenced, not present"] = any(referenced_only in x for x in rlabels) and not any(referenced_only in x for x in plabels)
