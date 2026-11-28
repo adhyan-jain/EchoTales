@@ -79,8 +79,8 @@ def phase_prompts() -> None:
     rows = _prompts()
     (OUT / "prompts.json").write_text(json.dumps(rows, indent=1))
     for pid, r in rows.items():
-        print(f"== {pid}\n  A[{len(r['A']['positive'].split())}w]: {r['A']['positive'][:160]}...\n  B[{len(r['B']['positive'].split())}w] sections="
-              f"{[s[0] for s in r['B']['sections']]}\n  C: {r['C']['positive'][:160]}...")
+        print(f"== {pid}\n  A[{len(r['A']['positive'].split())}w]: {r['A']['positive'][:160]}...\n  B[{len(r['B2']['positive'].split())}w] sections="
+              f"{[s[0] for s in r['B2']['sections']]}\n  C: {r['C']['positive'][:160]}...")
 
 
 def _save(b64: str, path: Path) -> None:
@@ -97,9 +97,10 @@ def phase_zimage() -> None:
     rows = json.loads((OUT / "prompts.json").read_text())
     w = LocalZImageWorker()
     stats = {}
-    for arm in ("A", "B2"):
-        pids = list(rows)
-        reqs = [ImageWorkerRequest(prompt=rows[p][arm]["positive"], width=SIZE[0], height=SIZE[1], seed=seed_of(i)) for i, p in enumerate(pids)]
+    only = os.environ.get("ART_ONLY", "").split(",") if os.environ.get("ART_ONLY") else None  # re-render just these panels (and B2)
+    for arm in ("B2",) if only else ("A", "B2"):
+        pids = [p for p in rows if only is None or p in only]
+        reqs = [ImageWorkerRequest(prompt=rows[p][arm]["positive"], width=SIZE[0], height=SIZE[1], seed=seed_of(list(rows).index(p))) for p in pids]
         t = time.time()
         n0 = len(w.stats)
         resp = w.generate_many(reqs, [rows[p][arm]["sections"] for p in pids])

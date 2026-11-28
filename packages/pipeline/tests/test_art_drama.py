@@ -189,3 +189,11 @@ def test_fx_peak_lines_are_thicker_and_denser_and_vignette_stronger():
     peak = drama_fx.apply_panel_fx(img, base.model_copy(update={"purpose": "hero", "shape": "text_only"}), seed=1)
     calm = drama_fx.apply_panel_fx(img, base, seed=1)
     assert corner(peak) < corner(calm) - 10
+
+
+def test_people_free_panels_get_the_style_lead_without_the_people_clause():
+    for pid in ("p05_detonation", "p12_eyes", "p06_village"):
+        text = _drama(pid).positive
+        assert "mature faces" not in text and "hanfu robes" not in text, pid
+        assert text.startswith("Korean webtoon colour illustration")
+    assert "mature faces" in _drama("p01_hero").positive

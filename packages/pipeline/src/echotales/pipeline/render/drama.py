@@ -16,11 +16,13 @@ import copy
 import re
 from dataclasses import dataclass
 
+from echotales.pipeline.persona.genre import style_lead
 from echotales.pipeline.render.compiler import (
     _ADULT_FACE,
     AppearanceInText,
     CharacterBrief,
     CompiledPrompt,
+    OutputMode,
     PanelBrief,
     PromptSection,
     _compile_composed,
@@ -313,6 +315,11 @@ def compile_drama(brief: PanelBrief, panel: Panel, *, text: str = "") -> Compile
     for i, sec in enumerate(sections):
         if sec.label in by_name:
             sections[i] = PromptSection(sec.label, drama_identity_sentence(by_name[sec.label]))
+    if spec.people_free and sections and sections[0].label == "style":
+        # Round 2 render: with "no people" in the drama block, p05 (detonation) still drew a man in black. The genre lead's
+        # "realistic adult proportions and mature faces ... hanfu robes" is the people clause (`style_lead(people=...)`), and it is
+        # section 0, read first and fixedly; a panel with nobody in it gets the lead without it, as an insert already does.
+        sections[0] = PromptSection("style", style_lead(b.novel_id, people=False, look="bw" if b.mode is OutputMode.MANGA else "colour"))
     at = next((i for i, s in enumerate(sections) if s.label == "grade"), None)
     at = (at if at is not None else next((i for i, s in enumerate(sections) if s.label == "framing"), 0)) + 1
     sections.insert(at, drama)
