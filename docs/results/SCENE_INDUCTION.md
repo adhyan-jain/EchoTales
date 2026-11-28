@@ -418,3 +418,39 @@ held-out, qwen3:14b, gemma2:9b with raw text.
 `DEFAULT_OUTLINE_FUSION` set to the learn-chosen fusion, because held-out +-1 pooled F1 (.320) beats the previous default on the same chapters
 (.14) and the recorded v1 number. The model behind the call needs `num_ctx >= outline.V5_NUM_CTX` (12288) and about 65-75 s per
 chapter; the function-level default of `analyse_chapter_scenes` is unchanged. Presence from the outline is opt-in through the `outline=` argument.
+
+## v5b (2026-11-28): targeted fixes, qwen3:8b only, nothing else in the v5 call changed
+
+Code: `refine_cut` / `RefineCache` / `OutlineOptions.refine` (off) in `segment/outline.py`; `explicit_time_statements` and the one-answer-per-segment
+rule in `segment/storytime.py`; `_attested` / `_on_screen_only` in `segment/presence.py`; the LotM alias in `scripts/eval/segment_silver_check.py`.
+Raw numbers: `data/eval/segment/scene_induction_v5b_{learn,held}.json`, `ri_ch1_check_v5b.json`, `silver_ch1_check_v5b.json`. Held-out was run once.
+
+**1. Boundary refine (not adopted).** After fusion, a non-thinking 4-block call compares block c-1 and block c with their predecessors and moves
+the cut by at most one block. On the 34 learn chapters it moved 0 of 13 cuts (learn exact F1 .438 before and after, audited; +-1 .500; original
+gold .410 / .462 both ways), so it does not drop learn. It also left RI ch1 at 80: qwen3:8b without thinking calls block 79 ("At the very same
+moment, a pair of clear eyes ... looked at the same lights") a continuation of the clan head's scene, with three prompt wordings and a direct
+"which block is first" question. Held-out (once, report only): 1 of 19 cuts moved (ORV 32: 101 to 99), exact and +-1 F1 .320 before and after;
+original gold .302 both ways. Default stays off, so held-out numbers equal v5 (.320 audited, .302 original; exact equals +-1).
+
+**2. Prior loop.** v5 showed the story-time pass 8 "time statements" built from outline `when` fields ("late in the night", a name) with the
+first 40 words of the block, and the model chose segment 0 as the main line. Answer before: main 0, segment 1 memory/earlier ("memories of his
+previous life on Earth"), segment 2 past/earlier ("500 years ago"); prior loop {2}. Now every numeric DATE statement of the chapter is shown with
+the text around it and the segment it falls in, the system prompt says the main line is normally the segment the chapter ends on and can differ
+from the first, and a segment answered twice keeps its first verified answer (v5 let an unquoted "present" overwrite a quoted one). Answer after
+(same cuts 31 and 80, non-thinking, 4096 context): main 2, reason "I have been reborn, going back to the time of 500 years ago", segment 0
+past/earlier, quote "Demon, 300 years ago you insulted me"; prior loop {0}. The quote check was not rejecting a correct answer (it checks the
+quote is in the chapter text; its redundant second test was removed). Caveat: the "ends on its main line" default is a prior, measured on this
+one chapter; `prior_loop_segments` has no other gold.
+
+**3. Presence.** An outline-only name must be attested in the chapter text (every token occurs somewhere): "Narrator" is the outline model's role
+word, so it is dropped and never becomes `unresolved:narrator`; first-person Kim Dokja is present through the graph. "Gu Yue Bo" is dropped by the
+same rule (the text of RI ch1 never contains "Bo"; the outline took it from the hint names). A name that appears mostly as a message label
+("-tls123: ...", "Author: tls123") is on-screen only and goes to the referenced list; name tokens keep digits (they were cut to "tls"). The
+early return of `present_cast` for a chapter with no graph candidates no longer hides outline-only people. NOT fixed here, for the
+knowledge-base agent: RI ch1 31-78 lists both `reverend-insanity:title:head_of_gu` ("head of gu") and the outline-only "gu yue clan head" for the
+same person, so "only clan head and elders present" still fails by label; the clan head also exists as Gu Yue Bo in the hints.
+
+**4. Named checks (report only, frozen v5 call and fusion).** RI ch1 12 of 14 (v5 11 of 14): cuts {31, 80} not {31, 79} (fail); only clan head and
+elders present (fail, the duplicate above); segment 0 is the prior loop (now pass); the other 11 pass. LotM ch1: one scene, no cut (pass); Klein
+present (pass: the checker now accepts "zhou mingrui", the silver file's own name for Klein's transmigrated self, as Klein; the gold is
+unchanged). ORV ch1: one false cut at 32 (fail); Kim Dokja present (pass); tls123 referenced, not present (pass).

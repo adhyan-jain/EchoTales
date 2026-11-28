@@ -1,0 +1,102 @@
+{
+ "model": "qwen3:8b",
+ "cuts": [
+  {
+   "block": 31,
+   "source": "outline",
+   "type": "NEW_SCENE",
+   "time": "UNKNOWN",
+   "confidence": 0.8,
+   "why": [
+    "Location changes to Qing Mao Mountain with new characters (clan elders) and a ceremony"
+   ]
+  },
+  {
+   "block": 80,
+   "source": "outline",
+   "type": "NEW_SCENE",
+   "time": "UNKNOWN",
+   "confidence": 0.8,
+   "why": [
+    "Explicit time jump to 500 years ago with Fang Yuan's rebirth"
+   ]
+  }
+ ],
+ "prior_loop_segments": [
+  0
+ ],
+ "time_labels": [
+  {
+   "segment": 0,
+   "layer": "past",
+   "relation": "EARLIER",
+   "quote": "Demon, 300 years ago you insulted me, took away my body\u2019s purity, killed my entire family...",
+   "verified": true
+  },
+  {
+   "segment": 1,
+   "layer": "present",
+   "relation": "UNKNOWN",
+   "quote": "",
+   "verified": false
+  },
+  {
+   "segment": 2,
+   "layer": "present",
+   "relation": "UNKNOWN",
+   "quote": "",
+   "verified": false
+  }
+ ],
+ "present_labels_31_78": [
+  "head of gu",
+  "unresolved:elder",
+  "unresolved:gu yue clan head"
+ ],
+ "presence": {
+  "0-30": {
+   "present": [
+    "reverend-insanity:self:476821534c"
+   ],
+   "referenced": []
+  },
+  "31-78": {
+   "present": [
+    "unresolved:gu yue clan head",
+    "reverend-insanity:title:head_of_gu",
+    "unresolved:elder"
+   ],
+   "referenced": [
+    "unresolved:bai ning bing",
+    "reverend-insanity:self:60117b7f5a",
+    "unresolved:this one",
+    "reverend-insanity:self:476821534c",
+    "unresolved:clan head"
+   ]
+  },
+  "79-89": {
+   "present": [
+    "reverend-insanity:self:476821534c"
+   ],
+   "referenced": []
+  }
+ },
+ "checks": {
+  "cuts exactly {31, 79}": false,
+  "cut 31 time relation is not LATER": true,
+  "0-30: Fang Yuan present": true,
+  "31-78: clan head present": true,
+  "31-78: elders present": true,
+  "31-78: only clan head and elders present": false,
+  "31-78: Fang Yuan NOT present": true,
+  "31-78: Fang Yuan referenced": true,
+  "31-78: Bai Ning Bing referenced": true,
+  "31-78: Bai Ning Bing NOT present": true,
+  "31-78: Fang Zhi referenced": true,
+  "31-78: Fang Zhi NOT present": true,
+  "segment 0 layer = past (prior loop)": true,
+  "79-89: Fang Yuan present": true
+ },
+ "passed": 12,
+ "total": 14
+}
