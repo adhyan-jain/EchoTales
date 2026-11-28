@@ -23,6 +23,7 @@ from echotales.pipeline.llm.ollama import OllamaProvider
 from echotales.pipeline.segment.cast import FusionParams
 from echotales.pipeline.segment.discontinuity import TopicModel, analyse_blocks, load_nlp
 from echotales.pipeline.segment.induce import load_conventions
+from echotales.pipeline.segment.outline import OutlineCache, OutlineOptions, outline_chapter
 from echotales.pipeline.segment.presence import present_cast
 from echotales.pipeline.segment.scenes import analyse_chapter_scenes
 
@@ -44,6 +45,13 @@ def main() -> None:
     ap.add_argument("--fusion", required=True, help="v4 fusion file written by segment_v4_eval.py arms (learn-chosen)")
     ap.add_argument("--lead", type=int, default=7)
     ap.add_argument("--out", default="data/eval/segment/ri_ch1_check_v4.json")
+    ap.add_argument("--presence", default="llm", choices=["llm", "outline"], help="v5: outline = who-lines of the cached outline decide presence")
+    ap.add_argument("--think", action="store_true")
+    ap.add_argument("--raw-words", type=int, default=0)
+    ap.add_argument("--num-predict", type=int, default=300)
+    ap.add_argument("--ctx", type=int, default=4096)
+    ap.add_argument("--tag", default="")
+    ap.add_argument("--segment-model", default=None, help="model of the segmentation call when it differs from --model")
     args = ap.parse_args()
     from echotales.pipeline.segment import outline as outline_mod
 
@@ -51,6 +59,8 @@ def main() -> None:
 
     store = Store(args.db)
     llm = OllamaProvider(model=args.model, timeout=600.0, num_ctx=4096)
+    seg_llm = OllamaProvider(model=args.segment_model or args.model, timeout=1800.0, num_ctx=args.ctx) if (args.think or args.raw_words or args.segment_model) else None
+    options = OutlineOptions(think=args.think, max_tokens=args.num_predict, segment_llm=seg_llm, raw_words=args.raw_words, tag=args.tag)
     nlp = load_nlp()
     chapter = store.get_chapter(NOVEL, 1.0)
     cset = load_conventions(args.conventions)
@@ -61,7 +71,11 @@ def main() -> None:
         chapter, cset, mentions=store.get_mentions(NOVEL, 1.0), llm=llm, nlp=nlp, topic=topic,
         method="outline", outline_params=params, outline_cache_dir="data/scratch/segment/outlinecache", novel_id=NOVEL,
         spans=store.get_spans(NOVEL, 1.0), labels={x.id: x.canonical_label for x in store.all_selves(NOVEL)},
+        outline_options=options,
     )
+    lines = None
+    if args.presence == "outline":
+        lines = outline_chapter(chapter, llm, novel_id=NOVEL, cache=OutlineCache("data/scratch/segment/outlinecache", args.model))
     cuts = [
         {"block": c.block, "source": c.source, "type": c.cut_type.value, "time": c.time_relation.value,
          "confidence": c.confidence, "why": c.evidence}
@@ -71,7 +85,7 @@ def main() -> None:
 
     pres: dict[str, dict[str, list[str]]] = {}
     for lo, hi in SEGMENTS:
-        present, referenced = present_cast(store, NOVEL, 1.0, lo, hi, llm=llm, require_quote=True)
+        present, referenced = present_cast(store, NOVEL, 1.0, lo, hi, llm=llm, require_quote=True, outline=lines)
         pres[f"{lo}-{hi}"] = {"present": present, "referenced": referenced}
     names = {x.id: x.canonical_label.lower() for x in store.all_selves(NOVEL)}
     p1_labels = sorted({names.get(i, i).lower() for i in pres["31-78"]["present"]})

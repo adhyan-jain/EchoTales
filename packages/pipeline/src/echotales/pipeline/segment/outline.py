@@ -62,6 +62,34 @@ SEGMENT_SYSTEM = (
 )
 
 
+@dataclass(slots=True)
+class OutlineOptions:
+    """How the whole-chapter segmentation call runs (segment v5). The defaults are the v4 call."""
+
+    #: Let the model reason before answering; the call then goes out without a schema `format` (see llm/ollama.py).
+    think: bool = False
+    #: Output cap; with `think` it must also hold the reasoning trace (measured 3000-6500 tokens on qwen3:8b).
+    max_tokens: int = 300
+    #: A different (usually larger) model for this call only; the outline lines still come from the chapter model.
+    segment_llm: Any | None = None
+    #: Opening words of every block shown next to its outline line (0: the outline alone, as in v4). Needs a context
+    #: of 8192 or more; the words per block shrink until the prompt fits `RAW_TOKEN_BUDGET`.
+    raw_words: int = 0
+    #: Cache suffix separating configurations that share one outline cache.
+    tag: str = ""
+
+
+#: Context the segmentation model must be served with for `v5_options`: a prompt of up to ~5.5k tokens plus a reasoning
+#: trace of 3-6.5k tokens (qwen3:8b, 100% GPU at 12288 on the 8 GB development card, `ollama ps`).
+V5_NUM_CTX = 12288
+
+
+def v5_options(segment_llm: Any | None = None) -> OutlineOptions:
+    """The segment v5 call, chosen on the learn split (docs/results/SCENE_INDUCTION.md, v5): thinking on, the opening 40
+    words of every block next to its outline line. The provider behind the segmentation model needs `num_ctx=V5_NUM_CTX`."""
+    return OutlineOptions(think=True, max_tokens=6500, segment_llm=segment_llm, raw_words=40, tag="think_raw40")
+
+
 class OutlineItem(BaseModel):
     n: int = Field(description="block number")
     who: str = Field(default="", description="names of people who act or speak, comma separated")
@@ -240,6 +268,28 @@ def outline_prompt(lines: list[OutlineLine], lead_words: int | None = None) -> s
     return "\n".join(rows)
 
 
+#: Token budget of the outline-plus-text prompt (a context of 8192 also holds the instructions and the answer).
+RAW_TOKEN_BUDGET = 4800
+
+
+def raw_outline_prompt(lines: list[OutlineLine], chapter: Chapter, raw_words: int) -> str:
+    """Outline rows with the opening words of each block's own text, so the model reads the prose and not only the summary.
+
+    The summary line loses the narration's own markers ("the next morning", "in the meantime"); `LEAD_WORDS` kept 7 of them
+    and v4's cut-off there was the context. The words per block shrink (never the rows) until the prompt fits the budget.
+    """
+    text = {b.index: b.text for b in chapter.blocks}
+    for words in range(raw_words, 6, -4):
+        rows = []
+        for ln in lines:
+            fields = " | ".join(x for x in (", ".join(ln.who.split(",")[:3]).strip(), ln.where, ln.when) if x)
+            body = _clip(text.get(ln.block, ""), words)
+            rows.append(f"[{ln.block}] {body}" + (f"  <{fields}>" if fields else ""))
+        if _est_tokens("\n".join(rows)) <= RAW_TOKEN_BUDGET:
+            break
+    return "\n".join(rows)
+
+
 def _merge_runs(lines: list[OutlineLine]) -> list[str]:
     rows: list[str] = []
     i = 0
@@ -267,8 +317,9 @@ def validate_starts(starts: list[SceneStart], lines: list[OutlineLine]) -> list[
 
 
 class SegmentCache:
-    def __init__(self, root: Path | str, model: str) -> None:
-        self.dir = Path(root) / f"{model.replace(':', '_')}_{OUTLINE_VERSION}_{SEGMENT_VERSION}_l{LEAD_WORDS}"
+    def __init__(self, root: Path | str, model: str, tag: str = "") -> None:
+        # `tag` separates segmentation configurations (thinking on, raw text shown) that share one outline cache.
+        self.dir = Path(root) / (f"{model.replace(':', '_')}_{OUTLINE_VERSION}_{SEGMENT_VERSION}_l{LEAD_WORDS}" + (f"_{tag}" if tag else ""))
 
     def path(self, novel: str, chapter: float) -> Path:
         return self.dir / f"{novel}_{chapter:g}.json"
@@ -295,17 +346,28 @@ def segment_outline(
     *,
     novel_id: str = "",
     cache: SegmentCache | None = None,
+    think: bool = False,
+    max_tokens: int = 300,
+    raw_words: int = 0,
 ) -> list[tuple[int, str, int]]:
-    """(scene start block, reason, confidence) from one call over the whole outline; [] means one scene."""
+    """(scene start block, reason, confidence) from one call over the whole outline; [] means one scene.
+
+    `think` lets the model reason before it answers (v5, this call only); `max_tokens` must then also hold the trace,
+    otherwise the cap cuts the model off before the JSON and the chapter silently gets no cut.
+    """
     if cache is not None:
         hit = cache.get(novel_id, chapter.number)
         if hit is not None:
             return hit
     if len(lines) < 4:
         return []
-    prompt = f"CHAPTER OUTLINE (block | who | where | when):\n{outline_prompt(lines)}\n\nList the blocks where a new scene starts."
+    if raw_words:
+        prompt = f"CHAPTER (block number, opening words of the block, then <who | where | when>):\n{raw_outline_prompt(lines, chapter, raw_words)}\n\nList the blocks where a new scene starts."
+    else:
+        prompt = f"CHAPTER OUTLINE (block | who | where | when):\n{outline_prompt(lines)}\n\nList the blocks where a new scene starts."
     try:
-        res = llm.complete(LLMRequest(stage="scene_segment", prompt=prompt, system=SEGMENT_SYSTEM, max_tokens=300), SegmentAnswer)
+        req = LLMRequest(stage="scene_segment", prompt=prompt, system=SEGMENT_SYSTEM, max_tokens=max_tokens, extra={"think": True} if think else {})
+        res = llm.complete(req, SegmentAnswer)
     except Exception:  # an unreachable or malformed answer must not invent a cut
         return []
     starts = validate_starts(res.value.scene_starts, lines)

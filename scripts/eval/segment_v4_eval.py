@@ -39,6 +39,7 @@ from echotales.pipeline.segment.outline import (
     outline_chapter,
     segment_outline,
 )
+from echotales.pipeline.segment.scoring import score_cuts
 from segment_tag_tune import prf
 
 GOLD = "data/gold/segment/scene_boundaries.json"
@@ -110,9 +111,9 @@ def gold_sets(meta, stores, novel, ch):
 class Data:
     """Per (novel, chapter): story blocks, outline cuts, cast scores per K, separators, loaded once."""
 
-    def __init__(self, meta, stores, model, split, gold_meta=None):
+    def __init__(self, meta, stores, model, split, gold_meta=None, tag=""):
         self.rows = []
-        sc = SegmentCache(SCACHE, model)
+        sc = SegmentCache(SCACHE, model, tag)
         for novel, ch in chapters(meta, split):
             starts = sc.get(novel, float(ch))
             if starts is None:
@@ -126,7 +127,7 @@ class Data:
                 "seps": separator_positions(chap),
             })
 
-    def score(self, meta, params: FusionParams):
+    def score(self, meta, params: FusionParams, tol: int = 0):
         per: dict[str, list[int]] = {}
         hn = [0, 0]
         for r in self.rows:
@@ -135,13 +136,14 @@ class Data:
                 continue
             out = sorted({b for b, c in r["starts"] if c >= params.conf_min})
             pred = {canonical_position(chap, b) for b in fuse(chap, out, r["scores"][params.cast_k], r["seps"], params)}
-            pred = {x for x in pred if x not in (amb - g)}
+            # tol 0 is the v4 exact scorer; tol 1 is the one-to-one +-1 block metric added in v5 (segment/scoring.py).
+            tp, fp, fn = score_cuts(g, pred, tol, ignore=amb - g)
             p = per.setdefault(r["novel"], [0, 0, 0])
-            p[0] += len(g & pred)
-            p[1] += len(pred - g)
-            p[2] += len(g - pred)
+            p[0] += tp
+            p[1] += fp
+            p[2] += fn
             hn[0] += len(neg)
-            hn[1] += len(neg & pred)
+            hn[1] += len({x for x in pred if x in neg})
         tp, fp, fn = (sum(v[i] for v in per.values()) for i in range(3))
         return prf(tp, fp, fn), {n: prf(*v) for n, v in per.items()}, hn
 

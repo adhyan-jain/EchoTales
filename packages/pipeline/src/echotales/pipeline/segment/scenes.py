@@ -43,10 +43,12 @@ from echotales.pipeline.segment.judge import (
 from echotales.pipeline.segment.llm_segment import LLMScene, cut_type_for, segment_chapter_llm
 from echotales.pipeline.segment.outline import (
     OutlineCache,
+    OutlineOptions,
     SegmentCache,
     name_hints,
     outline_chapter,
     segment_outline,
+    v5_options,
 )
 from echotales.pipeline.segment.place_tags import PlaceCutParams, scenes_from_tags, tag_chapter
 from echotales.pipeline.segment.storytime import prior_loop_segments, story_time_pass
@@ -58,9 +60,10 @@ _ARTIFACT_PREFIX = "scene_cuts"
 DEFAULT_RULE = CutRule("place", False, False, False, True, 5)
 
 
-#: Outline cuts alone. The learn-chosen fusion (cast filter, `FusionParams("and", ...)` in data/eval/segment/scene_induction_v4_fusion_*.json)
-#: did not reach the target held-out and `method="outline"` is opt-in, so no tuned value is baked in (docs/results/SCENE_INDUCTION.md, v4).
-DEFAULT_OUTLINE_FUSION = FusionParams("outline", min_gap=3)
+#: Fusion of the outline cuts with the cast filter, chosen on the 34 learn chapters (audited gold, +-1 block, qwen3:8b with the
+#: v5 call; data/scratch/segment/v5_fusion_think_raw40_pm1.json): an outline cut stays only if the K=5 cast-bearing blocks
+#: before and after it share nobody (theta 1.0), or a separator sits at it. Held-out pooled F1 (+-1): see SCENE_INDUCTION.md, v5.
+DEFAULT_OUTLINE_FUSION = FusionParams("and", cast_k=5, theta=1.0, window=0, use_sep=True, min_gap=3, conf_min=1)
 
 
 @dataclass(slots=True)
@@ -74,9 +77,10 @@ class SceneCutConfig:
     #: Small local model for the implicit-cut and story-order passes. None means conventions only.
     llm: Any | None = None
     max_implicit_per_chapter: int = 4
-    #: "place_tags" (v2.1: the model tags each block with place and time, code decides the cuts),
-    #: "whole_chapter" (v2: the model lists the chapter's scenes; over-segments) or "per_boundary" (v1 judge).
-    method: str = "place_tags"
+    #: "outline" (v5, the default: whole-chapter outline, one thinking call, cast filter), "place_tags" (v2.1: the model tags
+    #: each block with place and time, code decides the cuts), "judge" (v3), "whole_chapter" (v2; over-segments) or
+    #: "per_boundary" (v1). Outline needs `llm`; without one only the learned conventions cut.
+    method: str = "outline"
     #: Tuned thresholds for "place_tags" (see place_tags.PlaceCutParams); None means the defaults.
     place_params: Any | None = None
     #: Embedding model for the topic feature; None keeps TF-IDF.
@@ -89,6 +93,9 @@ class SceneCutConfig:
     outline_params: Any | None = None
     #: Directory of cached outline lines and scene starts (outline.OutlineCache); None means no cache.
     outline_cache_dir: str | None = None
+    #: `outline.OutlineOptions` for the segmentation call (thinking, token cap, a separate model); None means `v5_options()`,
+    #: whose model must be served with num_ctx >= `outline.V5_NUM_CTX`.
+    outline_options: Any | None = None
 
 
 @dataclass(slots=True)
@@ -182,6 +189,7 @@ def analyse_chapter_scenes(
     labels: dict[str, str] | None = None,
     outline_params: FusionParams | None = None,
     outline_cache_dir: str | None = None,
+    outline_options: Any | None = None,
 ) -> SceneAnalysis:
     """Scene cuts for one chapter. `llm_scenes` lets a caller reuse a cached model pass (evaluation)."""
     boundaries = score_chapter(chapter, mentions, nlp=nlp, topic=topic, embedder=embedder)
@@ -199,7 +207,8 @@ def analyse_chapter_scenes(
     time_labels: list[Any] = []
     if method == "outline" and llm is not None:
         cuts_o, prior, time_labels = _outline_cuts(
-            chapter, llm, mentions, spans, labels, nlp, outline_params or DEFAULT_OUTLINE_FUSION, outline_cache_dir, novel_id
+            chapter, llm, mentions, spans, labels, nlp, outline_params or DEFAULT_OUTLINE_FUSION, outline_cache_dir, novel_id,
+            outline_options,
         )
         have = {c.block for c in cuts}
         cuts += [c for c in cuts_o if c.block not in have]
@@ -300,13 +309,18 @@ def _outline_cuts(
     params: FusionParams,
     cache_dir: str | None,
     novel_id: str,
+    options: OutlineOptions | None = None,
 ) -> tuple[list[SceneCut], set[int], list[Any]]:
-    """v4: whole-chapter outline, scene starts from one call, fused with cast continuity, then story time."""
-    model = getattr(llm, "model", "model")
-    oc = OutlineCache(cache_dir, model) if cache_dir else None
-    sc = SegmentCache(cache_dir, model) if cache_dir else None
+    """v4: whole-chapter outline, scene starts from one call, fused with cast continuity, then story time.
+
+    v5 `options`: the segmentation call may think and may use a larger model than the outline lines.
+    """
+    opt = options or v5_options()
+    seg_llm = opt.segment_llm or llm
+    oc = OutlineCache(cache_dir, getattr(llm, "model", "model")) if cache_dir else None
+    sc = SegmentCache(cache_dir, getattr(seg_llm, "model", "model"), opt.tag) if cache_dir else None
     lines = outline_chapter(chapter, llm, novel_id=novel_id, hints=name_hints(chapter, mentions, spans, labels), cache=oc)
-    starts = segment_outline(chapter, lines, llm, novel_id=novel_id, cache=sc)
+    starts = segment_outline(chapter, lines, seg_llm, novel_id=novel_id, cache=sc, think=opt.think, max_tokens=opt.max_tokens, raw_words=opt.raw_words)
     reasons = {canonical_position(chapter, b): why for b, why, conf in starts if conf >= params.conf_min}
     scores = cast_scores(chapter, block_casts(chapter, mentions, spans), params.cast_k)
     blocks = fuse(chapter, sorted(reasons), scores, separator_positions(chapter), params)
