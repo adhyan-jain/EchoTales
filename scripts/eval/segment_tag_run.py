@@ -18,13 +18,13 @@ from pathlib import Path
 
 from echotales.core.store import Store
 from echotales.pipeline.llm.ollama import OllamaProvider
-from echotales.pipeline.segment.place_tags import tag_chapter
+from echotales.pipeline.segment.place_tags import PROMPT_VERSION, tag_chapter
 
 CACHE = Path("data/scratch/segment/tagcache")
 
 
 def cache_path(model: str, novel: str, ch: str) -> Path:
-    return CACHE / model.replace(":", "_") / f"{novel}_{ch}.json"
+    return CACHE / f"{model.replace(':', '_')}_{PROMPT_VERSION}" / f"{novel}_{ch}.json"
 
 
 def main() -> None:
@@ -34,6 +34,7 @@ def main() -> None:
     ap.add_argument("--learn-chapters", type=int, default=10)
     ap.add_argument("--split", choices=["learn", "held", "all"], default="learn")
     ap.add_argument("--novels", nargs="*")
+    ap.add_argument("--chapters", nargs="*", help="only these chapter keys (default: whole split)")
     a = ap.parse_args()
     meta = json.loads(Path(a.gold).read_text())
     llm = OllamaProvider(model=a.model, timeout=600.0, num_ctx=4096)
@@ -42,6 +43,8 @@ def main() -> None:
             continue
         store = Store(meta["dbs"][novel])
         for ch in gold:
+            if a.chapters and ch not in a.chapters:
+                continue
             n = float(ch)
             lm = meta.get("learn_max", {}).get(novel, a.learn_chapters)
             if (a.split == "learn" and n > lm) or (a.split == "held" and n <= lm):

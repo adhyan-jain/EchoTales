@@ -15,6 +15,7 @@ import fcntl
 import itertools
 import json
 import sys
+from collections.abc import Callable
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
@@ -27,6 +28,7 @@ from echotales.pipeline.segment.place_tags import (
     PlaceCutParams,
     TaggedBlock,
     place_candidates,
+    rule_cuts,
     select_cuts,
 )
 from segment_tag_run import cache_path
@@ -54,7 +56,7 @@ def score(preds: dict, gold_by_novel: dict, chapters: dict, keep) -> dict:
     tp = fp = fn = hn_total = hn_hit = 0
     for (novel, ch), pred in preds.items():
         spec = gold_by_novel[novel][ch]
-        if not keep(float(ch)):
+        if not keep(novel, float(ch)):
             continue
         c = chapters[(novel, ch)]
         g = {canonical_position(c, x["block"]) for x in spec["cuts"]}
@@ -72,13 +74,13 @@ def score(preds: dict, gold_by_novel: dict, chapters: dict, keep) -> dict:
     return out
 
 
-def cap_rates(gold_by_novel: dict, chapters: dict, learn_n: int, mult: float) -> dict[str, float]:
+def cap_rates(gold_by_novel: dict, chapters: dict, learn_max: Callable[[str], float], mult: float) -> dict[str, float]:
     """Per novel: mult x learn-chapter gold cuts per block (the learned prior on cuts per chapter)."""
     out = {}
     for novel, gold in gold_by_novel.items():
         cuts = blocks = 0
         for ch, spec in gold.items():
-            if float(ch) <= learn_n:
+            if float(ch) <= learn_max(novel):
                 cuts += len(spec["cuts"])
                 blocks += spec.get("n_blocks") or len(chapters[(novel, ch)].blocks)
         out[novel] = mult * cuts / blocks if blocks else 0.0
@@ -101,16 +103,34 @@ def main() -> None:
     with open("/tmp/echotales-gpu.lock", "w") as lk:
         fcntl.flock(lk, fcntl.LOCK_EX)
         embedder = get_embedder()
+    # learn_max per novel (Scarlet learns on 1-7, ORV on 1-10 with chapters 2 and 3 labelled): tagging uses the same rule.
+    lmax = lambda novel: float(meta.get("learn_max", {}).get(novel, a.learn_chapters))  # noqa: E731
     keep = {
-        "learn": lambda n: n <= a.learn_chapters,
-        "held": lambda n: n > a.learn_chapters,
-        "all": lambda n: True,
+        "learn": lambda novel, n: n <= lmax(novel),
+        "held": lambda novel, n: n > lmax(novel),
+        "all": lambda novel, n: True,
     }[a.split]
     result: dict = {"split": a.split, "models": {}}
     for model in a.models:
         tags = {k: t for k in chapters if (t := load_tags(model, *k)) is not None}
-        for feat, emb in (("embed", embedder), ("tokens", None)):
+        for feat, emb in (("rule", None), ("embed", embedder), ("tokens", None)):
             if feat == "embed" and embedder is None:
+                continue
+            if feat == "rule":
+                # Place change AND flagged time jump (place_tags.rule_cuts); only min_gap is free.
+                gaps = [json.loads(Path(a.params).read_text())[model][feat]["min_gap"]] if a.params else [1, 3, 5, 8]
+                rows = []
+                for gap in gaps:
+                    par = PlaceCutParams(min_gap=gap, both=True)
+                    preds = {k: {canonical_position(chapters[k], c.block) for c in rule_cuts(chapters[k], t, par)} for k, t in tags.items()}
+                    rows.append(({"min_gap": gap}, score(preds, gold, chapters, keep), preds))
+                rows.sort(key=lambda r: -r[1]["f1"])
+                best = rows[0]
+                per_novel = {n: score({k: v for k, v in best[2].items() if k[0] == n}, gold, chapters, keep) for n in gold if any(k[0] == n for k in best[2])}
+                result["models"].setdefault(model, {})[feat] = {"params": best[0], "pooled": best[1], "per_novel": per_novel}
+                print(model, feat, a.split, best[0], best[1])
+                for n, s in per_novel.items():
+                    print("   ", n[:14], s)
                 continue
             # Embedding calls are cached in the embedder; the candidate lists do not depend on the threshold.
             cands = {k: {side: place_candidates(t, emb, side=side) for side in (2, 3)} for k, t in tags.items()}
@@ -120,7 +140,7 @@ def main() -> None:
                 grid = [(best_p["threshold"], best_p["time_weight"], best_p["side"], best_p["min_gap"], best_p["cap_mult"])]
             rows = []
             for thr, tw, side, gap, capm in grid:
-                rates = cap_rates(gold, chapters, a.learn_chapters, capm) if capm else {}
+                rates = cap_rates(gold, chapters, lmax, capm) if capm else {}
                 preds = {}
                 for k, t in tags.items():
                     cs = cands[k][side]

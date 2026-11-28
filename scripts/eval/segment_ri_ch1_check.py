@@ -1,4 +1,4 @@
-"""RI ch1 named check: the two unmarked cuts (blocks 31, 80) and who is present in each scene.
+"""RI ch1 named check: the two unmarked cuts (blocks 31, 79) and who is present in each scene.
 
 Usage, always under the GPU lock because the model is used for cuts and presence:
 
@@ -8,8 +8,8 @@ Usage, always under the GPU lock because the model is used for cuts and presence
 
 Reads a scratch copy of the RI ch1 DB (data/scratch/segment/ri_ch1.db), never data/db/.
 The expectations below are the Opus-verified reading of ch1 (docs/results/MANHWA_DIRECTING_PATTERNS.md):
-cuts before blocks 31 and 80; in 31-79 only the clan head and the elders are in the room, and Fang Yuan,
-Bai Ning Bing and Fang Zhi are only talked about; in 0-30 and 80-91 Fang Yuan is present.
+cuts before blocks 31 and 79 (owner gold data/gold/segment/ri_ch1_owner.json); in 31-79 only the clan head and the elders are in the room, and Fang Yuan,
+Bai Ning Bing and Fang Zhi are only talked about; in 0-30 and 79-89 Fang Yuan is present.
 """
 
 from __future__ import annotations
@@ -22,6 +22,7 @@ from echotales.core.store import Store
 from echotales.pipeline.llm.ollama import OllamaProvider
 from echotales.pipeline.segment.discontinuity import TopicModel, analyse_blocks, load_nlp
 from echotales.pipeline.segment.induce import load_conventions
+from echotales.pipeline.segment.place_tags import PlaceCutParams
 from echotales.pipeline.segment.presence import present_cast
 from echotales.pipeline.segment.scenes import analyse_chapter_scenes
 
@@ -38,19 +39,22 @@ def has(ids: list[str], needle: str) -> bool:
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--db", default="data/scratch/segment/ri_ch1.db")
-    ap.add_argument("--conventions", required=True)
+    ap.add_argument("--conventions", default="data/eval/segment/conventions/reverend-insanity.scene_conventions.json")
     ap.add_argument("--model", default="qwen3:8b")
     ap.add_argument("--out", default="data/eval/segment/ri_ch1_check.json")
     args = ap.parse_args()
 
     store = Store(args.db)
-    llm = OllamaProvider(model=args.model, timeout=300.0)
+    llm = OllamaProvider(model=args.model, timeout=600.0, num_ctx=4096)
     nlp = load_nlp()
     chapter = store.get_chapter(NOVEL, 1.0)
     cset = load_conventions(args.conventions)
     topic = TopicModel().fit([s.terms for s in analyse_blocks(chapter, None, nlp).values()])
+    # Parameters chosen on the learn chapters only (docs/results/SCENE_INDUCTION.md, v2.1 results): cut where the
+    # place changed and a time jump was flagged.
     analysis = analyse_chapter_scenes(
-        chapter, cset, mentions=store.get_mentions(NOVEL, 1.0), llm=llm, nlp=nlp, topic=topic
+        chapter, cset, mentions=store.get_mentions(NOVEL, 1.0), llm=llm, nlp=nlp, topic=topic,
+        method="place_tags", place_params=PlaceCutParams(both=True, min_gap=1),
     )
     cuts = [
         {"block": c.block, "source": c.source, "type": c.cut_type.value, "time": c.time_relation.value,

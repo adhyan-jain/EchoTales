@@ -168,7 +168,7 @@ def test_tag_chapter_survives_an_unreachable_model() -> None:
 def test_place_change_is_a_cut_and_rewording_is_not() -> None:
     places = ["old stone cliff"] * 10 + ["old stone cliff top"] * 4 + ["clan hall"] * 10
     ch = _chapter(len(places))
-    scenes = scenes_from_tags(ch, _tags(places), PlaceCutParams(threshold=0.5, min_gap=3))
+    scenes = scenes_from_tags(ch, _tags(places), PlaceCutParams(threshold=0.5, min_gap=3, both=False))
     assert [s.start for s in scenes] == [0, 14]
 
 
@@ -176,7 +176,7 @@ def test_one_block_aside_does_not_cut() -> None:
     """A single block set elsewhere is a detour of the text, not a scene: averaging over 3 blocks per side damps it."""
     places = ["clan hall"] * 10 + ["window"] + ["clan hall"] * 10
     ch = _chapter(len(places))
-    scenes = scenes_from_tags(ch, _tags(places), PlaceCutParams(threshold=0.75, min_gap=3))
+    scenes = scenes_from_tags(ch, _tags(places), PlaceCutParams(threshold=0.75, min_gap=3, both=False))
     assert [s.start for s in scenes] == [0]
 
 
@@ -184,15 +184,15 @@ def test_time_jump_cuts_without_a_place_change_and_can_be_switched_off() -> None
     places = ["clan hall"] * 20
     ch = _chapter(20)
     tags = _tags(places, {10: TimeRelation.LATER})
-    assert [s.start for s in scenes_from_tags(ch, tags, PlaceCutParams(threshold=0.5, time_weight=0.6))] == [0, 10]
-    assert [s.start for s in scenes_from_tags(ch, tags, PlaceCutParams(threshold=0.5, time_weight=0.0))] == [0]
+    assert [s.start for s in scenes_from_tags(ch, tags, PlaceCutParams(threshold=0.5, time_weight=0.6, both=False))] == [0, 10]
+    assert [s.start for s in scenes_from_tags(ch, tags, PlaceCutParams(threshold=0.5, time_weight=0.0, both=False))] == [0]
 
 
 def test_cap_keeps_the_strongest_cuts_per_the_learned_rate() -> None:
     places = ["a b"] * 8 + ["c d"] * 8 + ["e f"] * 8 + ["a b"] * 8
     ch = _chapter(len(places))
     cands = place_candidates(_tags(places), None)
-    chosen = select_cuts(ch, cands, PlaceCutParams(threshold=0.1, cap_rate=0.05, min_gap=2), len(places))
+    chosen = select_cuts(ch, cands, PlaceCutParams(threshold=0.1, cap_rate=0.05, min_gap=2, both=False), len(places))
     assert len(chosen) == 2  # ceil(0.05 * 32)
 
 
@@ -213,7 +213,7 @@ def test_embedding_distance_sees_synonymous_places_as_one() -> None:
         {"the great hall": [1.0, 0.0], "banquet room": [0.98, 0.2], "mountain cliff": [0.0, 1.0]}
     )
     ch = _chapter(len(places))
-    p = PlaceCutParams(threshold=0.5, min_gap=3)
+    p = PlaceCutParams(threshold=0.5, min_gap=3, both=False)
     with_emb = scenes_from_tags(ch, _tags(places), p, embedder=emb)
     without = scenes_from_tags(ch, _tags(places), p, embedder=None)
     assert [s.start for s in with_emb] == [0, 12]
@@ -226,7 +226,7 @@ def test_unreachable_embedder_falls_back_to_token_overlap() -> None:
             return None
 
     places = ["clan hall"] * 6 + ["mountain cliff"] * 6
-    scenes = scenes_from_tags(_chapter(12), _tags(places), PlaceCutParams(threshold=0.5, min_gap=3), embedder=Down())
+    scenes = scenes_from_tags(_chapter(12), _tags(places), PlaceCutParams(threshold=0.5, min_gap=3, both=False), embedder=Down())
     assert [s.start for s in scenes] == [0, 6]
 
 
