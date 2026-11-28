@@ -406,3 +406,22 @@ def test_checks_files_are_valid_json_and_name_real_gold_scenes() -> None:
         json.dumps(checks)
         for s in checks.get("match_cut_scenes", []):
             assert any(sc["scene"] == s for sc in gold["scenes"])
+
+
+def test_withheld_panel_moves_into_the_next_segment_with_its_reveal_and_the_cut_moves() -> None:
+    segs = [_seg(0, 0, 79), _seg(1, 80, 90)]
+    op = _pn("s0", Purpose.COLD_OPEN, (0,), shape=Shape.TEXT_ONLY)
+    held = _pn("s0", Purpose.BEAT, (79,), withheld=True, shot=Shot.EXTREME_CLOSE)
+    reveal = _pn("s1", Purpose.BEAT, (80,), cast=[HERO])
+    _b, _a, wps, rep = _run_rules([op, _pn("s0", blocks=(70,)), held, reveal], segs)
+    assert [w.panel.segment_id for w in wps][-2:] == ["s1", "s1"]
+    assert (segs[0].block_to, segs[1].block_from) == (78, 79)
+    assert rep.log[-1]["rule"] == "withheld_cross_segment"
+
+    # another panel of the old scene sits at or after the clue: nothing moves
+    segs2 = [_seg(0, 0, 79), _seg(1, 80, 90)]
+    late = _pn("s0", blocks=(79,))
+    held2 = _pn("s0", Purpose.BEAT, (79,), withheld=True, shot=Shot.EXTREME_CLOSE)
+    reveal2 = _pn("s1", Purpose.BEAT, (80,), cast=[HERO])
+    _b, _a, wps2, _r = _run_rules([op, held2, late, reveal2], segs2)
+    assert wps2[1].panel.segment_id == "s0" and segs2[0].block_to == 79

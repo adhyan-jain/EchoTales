@@ -625,6 +625,43 @@ def audit_v2(wps: list[WPanel], segments: list[Segment], inp: ChapterInput, card
     return c
 
 
+def _move_withheld_into_reveal_segment(wps: list[WPanel], segments: list[Segment], report: Report) -> None:
+    """A withheld-identity panel whose reveal is in the next segment belongs to that segment, and the cut moves with it.
+
+    Why: RI ch1 block 79 ("a pair of clear eyes ...") withholds who is looking and block 80 shows them, but the scene stage
+    cut at 80, so the clue sat in the previous scene and the cut was drawn between clue and reveal (owner gold: cut at 79,
+    docs/results/SCENE_INDUCTION.md v5b: qwen3:8b calls block 79 a continuation even with thinking). Only done when the
+    withheld panels are the tail of their segment and the very next segment holds the reveal, so no other panel is stranded.
+    """
+    for i, w in enumerate(wps):
+        p = w.panel
+        if not p.withheld or not p.source_blocks:
+            continue
+        reveal = next(
+            (x.panel for x in wps[i + 1 :] if _person_cast(x.panel) and x.panel.source_blocks
+             and max(x.panel.source_blocks) >= max(p.source_blocks)),
+            None,
+        )
+        if reveal is None or reveal.segment_id == p.segment_id:
+            continue
+        si = next((k for k, sg in enumerate(segments) if sg.segment_id == p.segment_id), None)
+        if si is None or si + 1 >= len(segments) or segments[si + 1].segment_id != reveal.segment_id:
+            continue
+        src, dst = segments[si], segments[si + 1]
+        lo = min(p.source_blocks)
+        # another panel of the old scene at or after the clue would be stranded on the wrong side of the moved cut
+        if lo <= src.block_from or any(
+            x.panel.segment_id == src.segment_id and x.panel is not p and not x.panel.withheld
+            and x.panel.source_blocks and max(x.panel.source_blocks) >= lo
+            for x in wps
+        ):
+            continue
+        p.segment_id, p.layer = dst.segment_id, dst.layer
+        src.block_to = min(src.block_to, lo - 1)
+        dst.block_from = min(dst.block_from, lo)
+        report.note("withheld_cross_segment", "withheld panel and the cut moved into the reveal's scene", f"b{lo} {src.segment_id}->{dst.segment_id}")
+
+
 def repair_v2(
     wps: list[WPanel], segments: list[Segment], inp: ChapterInput, cards: dict[str, list], brief: dict | None, report: Report
 ) -> list[WPanel]:
@@ -660,6 +697,8 @@ def repair_v2(
             cite = f"text:b{p.source_blocks[0] if p.source_blocks else seg.block_from}"
             report.note("invented_no_evidence", "citation added", f"{cite}: {p.invented_reason[:40]}")
             p.invented_reason = f"{cite} {p.invented_reason}".strip()
+
+    _move_withheld_into_reveal_segment(wps, segments, report)
 
     # --- cold open: a v1 hero hook is replaced, not kept beside the new one -----------------------------------------------
     if wps and not _cold_open_ok(wps[0].panel):

@@ -25,6 +25,14 @@ conflated.
 
 **Last updated:** 2026-11-27 (EVOLUTION 4.201).
 
+## Pick up here - 2026-11-28 (branch claude/final-ri1, on top of claude/adaptation-director; not pushed)
+
+- Merged on `claude/adaptation-director`: scene stage v5/v5b (outline, qwen3:8b with thinking), storyboard director v2 with knowledge cards, gold checker, webtoon grammar and drama compiler.
+- RI ch1 end to end: scenes {31, 80}, director v2 (qwen3:8b), Z-Image Turbo drama draw. Output (main checkout, not in git): `data/novels/RI/panels/ch1/v58_director-v2-drama/` (`ch1_storyboard/slice_*.png`, `side_by_side_vs_manhua.png`, `storyboard_ch1.json`).
+- Gold check `ri_ch1_owner`: 16 of 22 before and after. Failing: crowd faces in scenes 1 and 2, match cut into scene 3, b79 withheld panel (the model never flags it), Bai Ning Bing inset, b18 poem lettering. New general rule `_move_withheld_into_reveal_segment` (validators.py) moves a withheld panel and the cut into the next segment when the reveal is there; unit-tested, but it did not fire on RI ch1 because the model did not mark b79 withheld and the scene stage still cuts at 80.
+- Not done: video (no storyboard-to-video command exists; `comic build` takes comic pages), LotM, ORV, ch2-10, LoRA, i2v, KB precision re-sample. Time labels are not persisted by `save_scene_cuts`, so the director sees only the prior-loop set.
+- Visual state: panels are still flat next to the real manhua (see the side-by-side); cast is empty on most panels so characters are drawn from the visual sentence alone.
+
 ## Pick up here - 2026-11-27 (branch claude/romanized-ner, not merged; EVOLUTION 4.201, decisions D69, D70 addendum)
 
 **Landed:** model-backed mention detection. Pick a detector with `mentions.detector` in config or `echotales run --ner {fast,hybrid,llm,heuristic}`; absent, it follows `ECHOTALES_COMPUTE` (local-low fast, local-high and cloud hybrid); showcase runs use hybrid. Hybrid boundary F1 .903 vs legacy .783 on the romanized-name gold (silver, not owner-checked). Titles and shared alias keys now go through the resolve gate (RI: 52 mentions unlinked from Fang Yuan, all deictics). Details in EVOLUTION 4.201 and `docs/results/NER_ROMANIZED.md`.
