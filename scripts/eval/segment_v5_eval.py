@@ -62,8 +62,10 @@ def cmd_segment(a, meta, stores):
             starts = segment_outline(chap, lines, llm, novel_id=novel, cache=sc, think=a.think, max_tokens=a.num_predict)
         ok = sc.get(novel, float(ch)) is not None or len(lines) < 4
         if not ok:
+            # A call that produced no usable answer counts as "no cut" in the scores (never dropped from them), and is listed.
             fails.append(f"{novel}:{ch}")
-        print(f"{novel}:{ch} blocks={len(lines)} outline={t1 - t0:.0f}s seg={time.time() - t1:.0f}s {'OK' if ok else 'FAILED(no cut recorded, not cached)'} starts={[(s, c) for s, _, c in starts]}", flush=True)
+            sc.put(novel, float(ch), [])
+        print(f"{novel}:{ch} blocks={len(lines)} outline={t1 - t0:.0f}s seg={time.time() - t1:.0f}s {'OK' if ok else 'FAILED(scored as no cut)'} starts={[(s, c) for s, _, c in starts]}", flush=True)
     print("failed chapters:", fails)
 
 
