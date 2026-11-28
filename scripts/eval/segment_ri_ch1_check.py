@@ -20,10 +20,9 @@ from pathlib import Path
 
 from echotales.core.store import Store
 from echotales.pipeline.llm.ollama import OllamaProvider
+from echotales.pipeline.segment.cast import FusionParams
 from echotales.pipeline.segment.discontinuity import TopicModel, analyse_blocks, load_nlp
-from echotales.pipeline.segment.embed import get_embedder
 from echotales.pipeline.segment.induce import load_conventions
-from echotales.pipeline.segment.judge import CutRule
 from echotales.pipeline.segment.presence import present_cast
 from echotales.pipeline.segment.scenes import analyse_chapter_scenes
 
@@ -42,9 +41,13 @@ def main() -> None:
     ap.add_argument("--db", default="data/scratch/segment/ri_ch1.db")
     ap.add_argument("--conventions", default="data/eval/segment/conventions/reverend-insanity.scene_conventions.json")
     ap.add_argument("--model", default="qwen3:8b")
-    ap.add_argument("--rule", default="data/scratch/segment/v3_rule.json", help="rule chosen on the learn chapters")
-    ap.add_argument("--out", default="data/eval/segment/ri_ch1_check.json")
+    ap.add_argument("--fusion", required=True, help="v4 fusion file written by segment_v4_eval.py arms (learn-chosen)")
+    ap.add_argument("--lead", type=int, default=7)
+    ap.add_argument("--out", default="data/eval/segment/ri_ch1_check_v4.json")
     args = ap.parse_args()
+    from echotales.pipeline.segment import outline as outline_mod
+
+    outline_mod.LEAD_WORDS = args.lead
 
     store = Store(args.db)
     llm = OllamaProvider(model=args.model, timeout=600.0, num_ctx=4096)
@@ -52,12 +55,12 @@ def main() -> None:
     chapter = store.get_chapter(NOVEL, 1.0)
     cset = load_conventions(args.conventions)
     topic = TopicModel().fit([s.terms for s in analyse_blocks(chapter, None, nlp).values()])
-    # v3: pairwise judge over candidate boundaries, rule chosen on the learn chapters only (never on this chapter).
-    rule = CutRule(**json.loads(Path(args.rule).read_text())["rule"])
+    # v4: whole-chapter outline + cast continuity, fusion chosen on the learn chapters only (never on this chapter).
+    params = FusionParams(**json.loads(Path(args.fusion).read_text())["fused"]["params"])
     analysis = analyse_chapter_scenes(
         chapter, cset, mentions=store.get_mentions(NOVEL, 1.0), llm=llm, nlp=nlp, topic=topic,
-        method="judge", judge_rule=rule, judge_cache_dir="data/scratch/segment/judgecache", novel_id=NOVEL,
-        embedder=get_embedder(),
+        method="outline", outline_params=params, outline_cache_dir="data/scratch/segment/outlinecache", novel_id=NOVEL,
+        spans=store.get_spans(NOVEL, 1.0), labels={x.id: x.canonical_label for x in store.all_selves(NOVEL)},
     )
     cuts = [
         {"block": c.block, "source": c.source, "type": c.cut_type.value, "time": c.time_relation.value,
@@ -75,6 +78,7 @@ def main() -> None:
     p0, p1, p2 = (pres[f"{lo}-{hi}"] for lo, hi in SEGMENTS)
     checks = {
         "cuts exactly {31, 79}": found == {31, 79},
+        "cut 31 time relation is not LATER": all(c["time"] != "LATER" for c in cuts if c["block"] == 31),
         "0-30: Fang Yuan present": FANG_YUAN in p0["present"],
         "31-78: clan head present": has(p1["present"], "clan head") or any("clan head" in x for x in p1_labels),
         "31-78: elders present": any("elder" in x for x in p1_labels),

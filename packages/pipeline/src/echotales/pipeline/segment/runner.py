@@ -101,6 +101,10 @@ def segment_novel(
                 judge_cache_dir=scene_cuts.judge_cache_dir,
                 novel_id=novel_id,
                 mentions=store.get_mentions(novel_id, chapter.number),
+                spans=store.get_spans(novel_id, chapter.number) if scene_cuts.method == "outline" else None,
+                labels=scene_ctx["labels"],
+                outline_params=scene_cuts.outline_params,
+                outline_cache_dir=scene_cuts.outline_cache_dir,
             )
             segments = apply_cuts_to_segments(chapter, segments, analysis)
             save_scene_cuts(store, novel_id, analysis)
@@ -148,7 +152,8 @@ def _scene_context(novel_id: str, store: Store, cfg: SceneCutConfig) -> dict:
     else:
         conventions = induce_conventions(novel_id, learn, llm=cfg.llm, nlp=nlp, topic=topic)
         save_conventions(conventions, path)
-    return {"conventions": conventions, "nlp": nlp, "topic": topic}
+    labels = {x.id: x.canonical_label for x in store.all_selves(novel_id)}
+    return {"conventions": conventions, "nlp": nlp, "topic": topic, "labels": labels}
 
 
 def _merge_llm_proposals(

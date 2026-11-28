@@ -77,8 +77,45 @@ def segment_summary_line(chapter: Chapter, lo: int, hi: int, words: int = 45) ->
     return " ".join(lead.split()[: words * 2])
 
 
-def story_time_pass(chapter: Chapter, cut_blocks: list[int], llm: Any, *, nlp: Any | None = None) -> list[SegmentTimeLabel]:
-    """Layer and time relation of every segment of the chapter; one model call, quotes verified in code."""
+def outline_segment_line(outline: list[Any], lo: int, hi: int) -> str:
+    """A segment summarised from the whole-chapter outline (v4): its people, its places and every time statement."""
+    rows = [ln for ln in outline if lo <= ln.block <= hi]
+
+    def distinct(vals: list[str], n: int) -> list[str]:
+        seen: list[str] = []
+        for v in vals:
+            for part in (x.strip() for x in v.split(",")):
+                if part and part.lower() not in {y.lower() for y in seen}:
+                    seen.append(part)
+        return seen[:n]
+
+    who = ", ".join(distinct([r.who for r in rows], 5))
+    where = ", ".join(distinct([r.where for r in rows], 3))
+    when = ", ".join(distinct([r.when for r in rows], 4))
+    return "; ".join(x for x in (f"people: {who}" if who else "", f"places: {where}" if where else "", f"times: {when}" if when else "") if x)
+
+
+def outline_time_statements(chapter: Chapter, outline: list[Any], limit: int = 8, words: int = 40) -> list[str]:
+    """Blocks whose outline line states a time, with the block's own opening words so a quote can be copied from it."""
+    text = {b.index: b.text for b in chapter.blocks}
+    out = []
+    for ln in outline:
+        if ln.when and ln.block in text:
+            out.append(f"[{ln.block}] " + " ".join(text[ln.block].split()[:words]))
+        if len(out) >= limit:
+            break
+    return out
+
+
+def story_time_pass(
+    chapter: Chapter, cut_blocks: list[int], llm: Any, *, nlp: Any | None = None, outline: list[Any] | None = None
+) -> list[SegmentTimeLabel]:
+    """Layer and time relation of every segment of the chapter; one model call, quotes verified in code.
+
+    With `outline` (v4) each segment is described by the whole-chapter outline, not by its first two blocks, so a
+    segment whose time is only revealed far away (RI ch1: the cliff, revealed by block 80) is seen next to the line
+    that reveals it.
+    """
     from echotales.pipeline.segment.cuts import SceneCut
 
     cuts = [SceneCut(chapter=chapter.number, block=b, source="judge") for b in sorted(cut_blocks)]
@@ -86,8 +123,16 @@ def story_time_pass(chapter: Chapter, cut_blocks: list[int], llm: Any, *, nlp: A
     if len(ranges) < 2:
         return [SegmentTimeLabel(0)]
     full = "\n".join(b.text for b in chapter.blocks)
-    lines = [f"SEGMENT {i} (blocks {lo}-{hi}): {segment_summary_line(chapter, lo, hi)}" for i, (lo, hi) in enumerate(ranges)]
-    stated = _stated_times(chapter, 0, chapter.blocks[-1].index, nlp, limit=6) if nlp is not None else []
+    if outline:
+        lines = [
+            f"SEGMENT {i} (blocks {lo}-{hi}): {segment_summary_line(chapter, lo, hi, words=25)} || {outline_segment_line(outline, lo, hi)}"
+            for i, (lo, hi) in enumerate(ranges)
+        ]
+        stated = outline_time_statements(chapter, outline)
+    else:
+        lines = [f"SEGMENT {i} (blocks {lo}-{hi}): {segment_summary_line(chapter, lo, hi)}" for i, (lo, hi) in enumerate(ranges)]
+        stated = []
+    stated += _stated_times(chapter, 0, chapter.blocks[-1].index, nlp, limit=6) if nlp is not None else []
     prompt = "\n".join(lines) + ("\n\nTIME STATEMENTS:\n" + "\n".join(stated) if stated else "") + "\n\nGive every segment's layer and relation to the main present line."
     out = [SegmentTimeLabel(i) for i in range(len(ranges))]
     try:
