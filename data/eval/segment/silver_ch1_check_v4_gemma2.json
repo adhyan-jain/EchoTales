@@ -1,0 +1,34 @@
+{
+ "lord-of-the-mysteries": {
+  "cuts": [],
+  "present": [
+   "lord-of-the-mysteries:anon:1:1",
+   "lord-of-the-mysteries:anon:1:2",
+   "lord-of-the-mysteries:anon:1:3",
+   "lord-of-the-mysteries:anon:1:4",
+   "zhou mingrui"
+  ],
+  "referenced": [],
+  "checks": {
+   "one scene, no cuts": true,
+   "klein present": false
+  }
+ },
+ "omniscient-readers-viewpoint": {
+  "cuts": [],
+  "present": [
+   "omniscient-readers-viewpoint:anon:1:1",
+   "omniscient-readers-viewpoint:anon:1:2",
+   "omniscient-readers-viewpoint:anon:1:3",
+   "omniscient-readers-viewpoint:anon:1:4"
+  ],
+  "referenced": [
+   "kim dokja"
+  ],
+  "checks": {
+   "one scene, no cuts": true,
+   "kim dokja present": false,
+   "tls123 referenced, not present": false
+  }
+ }
+}

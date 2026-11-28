@@ -1,0 +1,309 @@
+{
+ "outline": {
+  "params": {
+   "mode": "outline",
+   "cast_k": 3,
+   "theta": 0.5,
+   "window": 2,
+   "use_sep": true,
+   "min_gap": 3,
+   "conf_min": 5
+  },
+  "learn": {
+   "tp": 5,
+   "fp": 24,
+   "fn": 14,
+   "precision": 0.172,
+   "recall": 0.263,
+   "f1": 0.208
+  },
+  "per_novel": {
+   "reverend-insanity": {
+    "tp": 1,
+    "fp": 9,
+    "fn": 5,
+    "precision": 0.1,
+    "recall": 0.167,
+    "f1": 0.125
+   },
+   "lord-of-the-mysteries": {
+    "tp": 3,
+    "fp": 7,
+    "fn": 4,
+    "precision": 0.3,
+    "recall": 0.429,
+    "f1": 0.353
+   },
+   "omniscient-readers-viewpoint": {
+    "tp": 0,
+    "fp": 3,
+    "fn": 0,
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0
+   },
+   "pride-and-prejudice": {
+    "tp": 0,
+    "fp": 1,
+    "fn": 3,
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0
+   },
+   "a-study-in-scarlet": {
+    "tp": 1,
+    "fp": 4,
+    "fn": 2,
+    "precision": 0.2,
+    "recall": 0.333,
+    "f1": 0.25
+   }
+  }
+ },
+ "cast": {
+  "params": {
+   "mode": "cast",
+   "cast_k": 3,
+   "theta": 0.9,
+   "window": 2,
+   "use_sep": true,
+   "min_gap": 8,
+   "conf_min": 1
+  },
+  "learn": {
+   "tp": 5,
+   "fp": 70,
+   "fn": 14,
+   "precision": 0.067,
+   "recall": 0.263,
+   "f1": 0.106
+  },
+  "per_novel": {
+   "reverend-insanity": {
+    "tp": 2,
+    "fp": 13,
+    "fn": 4,
+    "precision": 0.133,
+    "recall": 0.333,
+    "f1": 0.19
+   },
+   "lord-of-the-mysteries": {
+    "tp": 1,
+    "fp": 10,
+    "fn": 6,
+    "precision": 0.091,
+    "recall": 0.143,
+    "f1": 0.111
+   },
+   "omniscient-readers-viewpoint": {
+    "tp": 0,
+    "fp": 2,
+    "fn": 0,
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0
+   },
+   "pride-and-prejudice": {
+    "tp": 1,
+    "fp": 12,
+    "fn": 2,
+    "precision": 0.077,
+    "recall": 0.333,
+    "f1": 0.125
+   },
+   "a-study-in-scarlet": {
+    "tp": 1,
+    "fp": 33,
+    "fn": 2,
+    "precision": 0.029,
+    "recall": 0.333,
+    "f1": 0.054
+   }
+  }
+ },
+ "and": {
+  "params": {
+   "mode": "and",
+   "cast_k": 5,
+   "theta": 0.9,
+   "window": 0,
+   "use_sep": true,
+   "min_gap": 3,
+   "conf_min": 5
+  },
+  "learn": {
+   "tp": 4,
+   "fp": 3,
+   "fn": 15,
+   "precision": 0.571,
+   "recall": 0.211,
+   "f1": 0.308
+  },
+  "per_novel": {
+   "reverend-insanity": {
+    "tp": 0,
+    "fp": 0,
+    "fn": 6,
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0
+   },
+   "lord-of-the-mysteries": {
+    "tp": 3,
+    "fp": 1,
+    "fn": 4,
+    "precision": 0.75,
+    "recall": 0.429,
+    "f1": 0.545
+   },
+   "omniscient-readers-viewpoint": {
+    "tp": 0,
+    "fp": 1,
+    "fn": 0,
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0
+   },
+   "pride-and-prejudice": {
+    "tp": 0,
+    "fp": 0,
+    "fn": 3,
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0
+   },
+   "a-study-in-scarlet": {
+    "tp": 1,
+    "fp": 1,
+    "fn": 2,
+    "precision": 0.5,
+    "recall": 0.333,
+    "f1": 0.4
+   }
+  }
+ },
+ "or": {
+  "params": {
+   "mode": "or",
+   "cast_k": 4,
+   "theta": 0.8,
+   "window": 2,
+   "use_sep": true,
+   "min_gap": 3,
+   "conf_min": 5
+  },
+  "learn": {
+   "tp": 6,
+   "fp": 27,
+   "fn": 13,
+   "precision": 0.182,
+   "recall": 0.316,
+   "f1": 0.231
+  },
+  "per_novel": {
+   "reverend-insanity": {
+    "tp": 1,
+    "fp": 10,
+    "fn": 5,
+    "precision": 0.091,
+    "recall": 0.167,
+    "f1": 0.118
+   },
+   "lord-of-the-mysteries": {
+    "tp": 3,
+    "fp": 7,
+    "fn": 4,
+    "precision": 0.3,
+    "recall": 0.429,
+    "f1": 0.353
+   },
+   "omniscient-readers-viewpoint": {
+    "tp": 0,
+    "fp": 3,
+    "fn": 0,
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0
+   },
+   "pride-and-prejudice": {
+    "tp": 1,
+    "fp": 2,
+    "fn": 2,
+    "precision": 0.333,
+    "recall": 0.333,
+    "f1": 0.333
+   },
+   "a-study-in-scarlet": {
+    "tp": 1,
+    "fp": 5,
+    "fn": 2,
+    "precision": 0.167,
+    "recall": 0.333,
+    "f1": 0.222
+   }
+  }
+ },
+ "fused": {
+  "mode": "and",
+  "params": {
+   "mode": "and",
+   "cast_k": 5,
+   "theta": 0.9,
+   "window": 0,
+   "use_sep": true,
+   "min_gap": 3,
+   "conf_min": 5
+  },
+  "learn": {
+   "tp": 4,
+   "fp": 3,
+   "fn": 15,
+   "precision": 0.571,
+   "recall": 0.211,
+   "f1": 0.308
+  },
+  "per_novel": {
+   "reverend-insanity": {
+    "tp": 0,
+    "fp": 0,
+    "fn": 6,
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0
+   },
+   "lord-of-the-mysteries": {
+    "tp": 3,
+    "fp": 1,
+    "fn": 4,
+    "precision": 0.75,
+    "recall": 0.429,
+    "f1": 0.545
+   },
+   "omniscient-readers-viewpoint": {
+    "tp": 0,
+    "fp": 1,
+    "fn": 0,
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0
+   },
+   "pride-and-prejudice": {
+    "tp": 0,
+    "fp": 0,
+    "fn": 3,
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0
+   },
+   "a-study-in-scarlet": {
+    "tp": 1,
+    "fp": 1,
+    "fn": 2,
+    "precision": 0.5,
+    "recall": 0.333,
+    "f1": 0.4
+   }
+  }
+ },
+ "model": "gemma2:9b"
+}

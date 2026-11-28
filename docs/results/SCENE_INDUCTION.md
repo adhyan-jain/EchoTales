@@ -232,3 +232,90 @@ are not found (FAIL); Bai Ning Bing and Fang Zhi are referenced and not present:
 ## Default
 `DEFAULT_RULE` in `scenes.py` is now the learn-chosen rule. `method="judge"` was NOT made the default (held-out 0.103 is below
 v2.1's 0.13).
+
+# v4 measured results (2026-11-28, whole-chapter outline + cast continuity from the graph)
+
+Code: `segment/outline.py` (one short line per block, then one call over the whole numbered outline), `segment/cast.py`
+(cast continuity from resolved mentions and speaker attributions, no model, and the fusion), `storytime.py` (story time reads
+the outline), `scenes.py` (`method="outline"`). Scripts: `scripts/eval/segment_v4_eval.py` (`outline`, `arms`, `report`),
+`segment_v4_tables.py`, `segment_ri_ch1_check.py`, `segment_silver_check.py`. Raw numbers: `data/eval/segment/scene_induction_v4_*.json`.
+Prompt versions frozen on learn: outline `o1`, segmentation `s3` with the first 7 words of each block in the outline line.
+qwen3:8b at num_ctx 4096 (fully on GPU). gemma2:9b at num_ctx 4096 runs 9% CPU / 91% GPU (`ollama ps`, 8.1 GB) and is 3-4x slower
+(170 s per 84-block chapter outline against 42 s).
+
+Learning: every parameter below was chosen on the learn split only (34 chapters), once per gold. The learn split includes RI ch1,
+which I read once (outline and starts) while iterating prompts on learn; no change was tuned to it specifically.
+Prompt iterations on learn (qwen3, audited gold, fused F1): s1 no cap 0.152; s2 "at most five" 0.267 (the model fills the quota in
+every chapter); s3 "most chapters are one or two scenes, empty list allowed" 0.291. The model's 1-5 confidence is 5 almost always
+and carries no signal.
+
+Fusion arms: `outline` = the model's scene starts; `cast` = cast discontinuity alone (K cast-bearing blocks before against after,
+weighted Jaccard, quoted people weigh 0.3); `fused` = best of `and` (keep an outline cut only if the cast changes within `window`
+story blocks, or a structural separator sits at it) and `or` (add cast cuts that are also at a separator), chosen on learn.
+
+## Learn split (pooled, 34 chapters; gold: original 26 cuts, audited 19)
+
+| model | arm | original P / R / F1 | audited P / R / F1 |
+|---|---|---|---|
+| qwen3:8b | outline | .08 / .39 / .133 | .07 / .47 / .126 |
+| qwen3:8b | cast | .09 / .23 / .130 (chosen on original) | .07 / .26 / .106 |
+| qwen3:8b | fused (and) | .22 / .31 / .258 | .22 / .42 / .291 |
+| gemma2:9b | outline | .28 / .31 / .291 | .17 / .26 / .208 |
+| gemma2:9b | cast | .09 / .23 / .130 | .07 / .26 / .106 |
+| gemma2:9b | fused (and) | .44 / .31 / .364 | .57 / .21 / .308 |
+
+(Each row is the arm with the parameters chosen on that gold; they are listed per gold in the JSON.) gemma2:9b measures better on learn
+in every arm that uses the model, so it is the chosen model; the original gold would have chosen the same model and the same `and`
+fusion, with `theta` .8, window 4 instead of .9, window 0.
+
+## Held-out (pooled, 36 chapters; gold: original 34 cuts, audited 31)
+
+qwen3:8b, fusion chosen on learn against the audited gold (the original-gold choice gives the same fused row):
+
+| arm | original P / R / F1 | audited P / R / F1 |
+|---|---|---|
+| outline | .043 / .176 / .069 | .035 / .161 / .058 |
+| cast | .027 / .088 / .042 | .027 / .097 / .043 |
+| fused (and, K=4, theta 1.0, window 0, separator allowed) | .081 / .147 / .104 | .065 / .129 / .086 |
+| or | .040 / .206 / .067 | .034 / .194 / .059 |
+
+For comparison, held-out pooled F1: v1 about .25, v2.1 .13, v3 .103. Fused qwen3 per novel (original gold, held): RI .40, LotM .80
+(2 of 3 cuts, no false cut), ORV .06 (48 false cuts), P&P 0, Scarlet 0. Hard negatives falsely cut: 1 of 11.
+
+**gemma2:9b held-out: NOT MEASURED.** The held-out outline run is slow (3 of 36 chapters in the first 15 minutes, ORV chapters have
+130-200 blocks) and was still running when this section was written (background chain, outline cache
+`data/scratch/segment/outlinecache/gemma2_9b_o1*`). To finish: wait for `data/scratch/segment/v4_chain.done`, then
+`segment_v4_eval.py report --model gemma2:9b --lead 7 --fusion data/scratch/segment/v4_fusion_gemma2_audited.json --out data/eval/segment/scene_induction_v4_gemma2_sel-audited.json`
+and `segment_v4_tables.py` on it. The learn-to-held drop seen for qwen3 (fused .291 to .086 audited) means the gemma2 held number
+should not be assumed to stay near its learn .308.
+
+## Named checks (gemma2:9b with the learn-chosen fusion)
+
+RI ch1 (`ri_ch1_check_v4_gemma2.json`): 8 of 14 pass. The outline pass found starts at 16 and 29, the cast signal did not support
+either, and the fused result has no cut: cuts exactly {31, 79} FAIL; segment 0 prior loop FAIL (no cut, no time pass). 0-30 and
+79-89 Fang Yuan present: pass. In 31-78 the clan head is present, the elders are not found, and Fang Yuan is listed present (he
+is not referenced): FAIL x3 (the v3 failure is unchanged); Bai Ning Bing and Fang Zhi referenced and not present: pass. Earlier,
+qwen3 with the segmentation prompt s2 returned starts (31, 80) for RI ch1: block 31 exact, 80 one block after 79.
+LotM ch1: no cuts, pass. The strict "Klein present" check fails only on the label: the present person is "zhou mingrui", which
+the silver checks file declares an alias of Klein, so it passes by alias. ORV ch1: no cuts, pass; Kim Dokja is listed as
+referenced, not present (FAIL), and tls123 is not in the referenced list (FAIL).
+
+## Verdict
+
+**Not met.** Held-out pooled F1 is .086 to .104 for qwen3:8b against a target of .5, and below v1 (.25) and v2.1 (.13). The target
+is not close. What the measurements show:
+
+- The structural gain is real but small: the cast filter lifts qwen3 from .126 (outline only) to .291 on learn, by removing
+  false cuts (precision .07 to .22). It does not transfer: the learn-chosen `theta 1.0` ("the two casts share nobody") keeps 58
+  false cuts on held-out, 48 of them in ORV, where short dialogue blocks name different people in nearly every window.
+- The 8B models over-segment with a whole-chapter view as well. Telling them that scenes are few removed the "fill the quota"
+  behaviour of s2 but the outline-only precision stays .04 to .08 on qwen3; the model's own confidence is flat at 5.
+- gemma2:9b is better on learn in every model-using arm (outline alone .208 against .126 audited, precision .17 against .07),
+  at 3-4x the run time and with a 9% CPU spill at 4096 context.
+- Cast-only is the weakest arm on both models; the cast signal is useful as a filter on a model proposal, not as a proposer.
+- Learn has 19 to 26 gold cuts; the selected fusion (theta 1.0 and window 0) is the edge of the grid, so the selection is weak evidence.
+
+## Default
+`DEFAULT_OUTLINE_FUSION` in `scenes.py` stays a plain outline-only placeholder and `method="outline"` is opt-in; `place_tags` remains the
+default method (held-out .13) because v4 does not beat the best previous held-out pooled F1 on the measured model. Not yet used by
+the director.

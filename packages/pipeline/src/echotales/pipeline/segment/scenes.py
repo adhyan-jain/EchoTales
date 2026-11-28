@@ -58,7 +58,8 @@ _ARTIFACT_PREFIX = "scene_cuts"
 DEFAULT_RULE = CutRule("place", False, False, False, True, 5)
 
 
-#: Placeholder until the learn-split choice is written in (docs/results/SCENE_INDUCTION.md, v4).
+#: Outline cuts alone. The learn-chosen fusion (cast filter, `FusionParams("and", ...)` in data/eval/segment/scene_induction_v4_fusion_*.json)
+#: did not reach the target held-out and `method="outline"` is opt-in, so no tuned value is baked in (docs/results/SCENE_INDUCTION.md, v4).
 DEFAULT_OUTLINE_FUSION = FusionParams("outline", min_gap=3)
 
 
