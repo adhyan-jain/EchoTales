@@ -30,7 +30,12 @@ class LPanel(BaseModel):
     blocks: list[int] = Field(default_factory=list, description="source block numbers this panel draws from")
     peak: bool = Field(False, description="true on the climax panel of a beat")
     invented: bool = Field(False, description="true when no source text covers the panel (an insert, a card)")
-    reason: str = Field("", description="why an invented panel exists, one short phrase")
+    reason: str = Field("", description="why an invented panel exists; starts with text:, dossier: or brief: and the cited item")
+    emotion: str = Field("", description="the feeling this panel plays, one or two words")
+    withheld: bool = Field(False, description="true when the text hides who this is yet: draw only the clue, no person")
+    cut_signal: str = Field("", description="match on a transition panel that cuts to a parallel scene")
+    beat: str = Field("", description="foreshadow or curiosity, only when the future brief says it and the text allows it")
+    evidence: str = Field("", description="the source tag or brief item that justifies an invented panel")
 
 
 class LSceneMark(BaseModel):

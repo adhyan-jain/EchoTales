@@ -81,6 +81,9 @@ class LetterKind(StrEnum):
     NAME_CARD = "name_card"
     POEM = "poem"
     SFX = "sfx"  # drawn into the art by the lettering pass, not a balloon
+    #: On-screen or system text (a phone, a status window, a chat). ORV ch1 is mostly this, and the silver gold names the
+    #: missing kind as the gap: shown as speech balloons it reads as people talking.
+    SCREEN = "screen"
 
 
 class Letter(BaseModel):
@@ -97,6 +100,11 @@ class CastMember(BaseModel):
     #: copies it from the bible; it never invents one.
     look_id: str | None = None
     invented: bool = False  # an individualised crowd face; never a plot actor
+    #: The look written out for a referenced inset, with where it came from ("dossier" = whole-novel extraction at the
+    #: story time, "bible" = the look at this chapter). v1 drew absent people from a name alone, so the inset check needs
+    #: to see that a dossier look, not a guess, went into the picture.
+    look: str = ""
+    look_source: str = ""
 
 
 class Panel(BaseModel):
@@ -114,6 +122,15 @@ class Panel(BaseModel):
     source_blocks: list[int] = Field(default_factory=list)
     invented: bool = False
     invented_reason: str = ""
+    #: Seconds the panel holds in the video; derived from its lettering, never asked of the model (a model-set duration
+    #: ignores how long the lines take to read).
+    duration_s: float = 0.0
+    emotion: str = ""  # the one feeling the panel plays, so the art and the voice agree on it
+    #: The person is in the line of text but must not be drawn yet (RI ch1 block 79 hides who owns "a pair of clear
+    #: eyes"; v1 drew the face). The reveal is a later panel.
+    withheld: bool = False
+    cut_signal: str = ""  # "match" on the panel that carries a graphic match cut into a parallel scene
+    beat: str = ""  # "foreshadow" | "curiosity" | "": emphasis from whole-novel knowledge, never new plot
 
 
 class Segment(BaseModel):
