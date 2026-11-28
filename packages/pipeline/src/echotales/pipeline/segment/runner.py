@@ -97,6 +97,10 @@ def segment_novel(
                 method=scene_cuts.method,
                 embedder=scene_cuts.embedder,
                 place_params=scene_cuts.place_params,
+                judge_rule=scene_cuts.judge_rule,
+                judge_cache_dir=scene_cuts.judge_cache_dir,
+                novel_id=novel_id,
+                mentions=store.get_mentions(novel_id, chapter.number),
             )
             segments = apply_cuts_to_segments(chapter, segments, analysis)
             save_scene_cuts(store, novel_id, analysis)

@@ -93,6 +93,7 @@ class Candidate:
 class Verdict(BaseModel):
     candidate: int = Field(description="the candidate number")
     present: bool = Field(description="true only if physically in the scene's place during these blocks")
+    quote: str = Field(default="", description="exact words from the scene showing this person acting or speaking there")
 
 
 class PresenceResponse(BaseModel):
@@ -174,8 +175,8 @@ def collect_candidates(
     return list(by_id.values()), texts
 
 
-def _digest(candidates: list[Candidate], text: str) -> str:
-    key = json.dumps([[c.entity_id, c.speaks] for c in candidates], sort_keys=True) + text
+def _digest(candidates: list[Candidate], text: str, quoted: bool = False) -> str:
+    key = json.dumps([[c.entity_id, c.speaks] for c in candidates], sort_keys=True) + text + ("|q1" if quoted else "")
     return hashlib.sha1(key.encode("utf-8")).hexdigest()[:16]
 
 
@@ -209,6 +210,7 @@ def present_cast(
     block_to: int,
     *,
     llm: Any | None = None,
+    require_quote: bool = False,
 ) -> tuple[list[str], list[str]]:
     """(physically present entity ids, referenced-only entity ids) for blocks `block_from..block_to`.
 
@@ -216,6 +218,11 @@ def present_cast(
     attributions and mention roles), which over-counts people named in
     narration. With `llm` the non-speakers are classified by reading the
     scene; the verdict is cached per (scene text, candidates).
+
+    `require_quote` (segment v3): a model "present" counts only with a quote that exists in the scene, in a block
+    that mentions the person or whose words name them. RI ch1 31-78 listed Fang Yuan as present on a bare yes
+    although the elders only discuss him; a quote that must show him acting or speaking cannot be invented
+    from nothing, and a failed check puts the person in the referenced list.
     """
     candidates, texts = collect_candidates(store, novel_id, chapter, block_from, block_to)
     if not candidates:
@@ -224,10 +231,10 @@ def present_cast(
     to_ask = [c for c in candidates if not c.speaks]
     if llm is not None and to_ask:
         scene = "\n".join(f"[{i}] {texts[i]}" for i in range(block_from, block_to + 1) if i in texts)[:_MAX_SEGMENT_CHARS]
-        art_id = f"{_CACHE_PREFIX}:{novel_id}:{chapter:g}:{block_from}-{block_to}:{_digest(to_ask, scene)}"
+        art_id = f"{_CACHE_PREFIX}:{novel_id}:{chapter:g}:{block_from}-{block_to}:{_digest(to_ask, scene, require_quote)}"
         cached = _cache_get(store, art_id)
         if cached is None:
-            cached = _classify(llm, scene, to_ask)
+            cached = _classify(llm, scene, to_ask, texts if require_quote else None, block_from, block_to)
             if cached:
                 _cache_put(store, art_id, cached)
         for c in to_ask:
@@ -238,7 +245,25 @@ def present_cast(
     return present, referenced
 
 
-def _classify(llm: Any, scene: str, to_ask: list[Candidate]) -> dict[str, bool]:
+def _quote_checks(c: Candidate, quote: str, texts: dict[int, str], lo: int, hi: int) -> bool:
+    """The quote is a real stretch of one of the scene's blocks and that block is about this person."""
+    from echotales.pipeline.segment.storytime import quote_in
+
+    name_tokens = {t for t in re.findall(r"[a-z]+", c.label.lower()) if len(t) > 2}
+    for i in range(lo, hi + 1):
+        if i in texts and quote_in(texts[i], quote):
+            return i in c.blocks or bool(name_tokens & set(re.findall(r"[a-z]+", quote.lower())))
+    return False
+
+
+def _classify(
+    llm: Any,
+    scene: str,
+    to_ask: list[Candidate],
+    texts: dict[int, str] | None = None,
+    lo: int = 0,
+    hi: int = 0,
+) -> dict[str, bool]:
     lines = []
     for i, c in enumerate(to_ask, start=1):
         sn = " | ".join(c.snippets)
@@ -246,6 +271,7 @@ def _classify(llm: Any, scene: str, to_ask: list[Candidate]) -> dict[str, bool]:
     prompt = (
         f"SCENE (block numbers in brackets):\n{scene}\n\nCANDIDATES:\n" + "\n".join(lines)
         + "\n\nFor each candidate number, is that person physically present in this scene?"
+        + (" If yes, copy in `quote` the exact words from the scene that show them acting or speaking there." if texts is not None else "")
     )
     try:
         res = llm.complete(
@@ -256,5 +282,6 @@ def _classify(llm: Any, scene: str, to_ask: list[Candidate]) -> dict[str, bool]:
     out: dict[str, bool] = {}
     for v in res.value.verdicts:
         if 1 <= v.candidate <= len(to_ask):
-            out[to_ask[v.candidate - 1].entity_id] = v.present
+            c = to_ask[v.candidate - 1]
+            out[c.entity_id] = v.present and (texts is None or _quote_checks(c, v.quote, texts, lo, hi))
     return out
