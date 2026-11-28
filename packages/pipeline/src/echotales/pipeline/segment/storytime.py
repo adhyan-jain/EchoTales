@@ -20,7 +20,7 @@ from typing import Any
 from echotales.core.models import Chapter
 from echotales.pipeline.llm import LLMRequest
 from echotales.pipeline.segment.cuts import TimeRelation
-from echotales.pipeline.segment.implicit import _segment_ranges, _stated_times
+from echotales.pipeline.segment.implicit import _segment_ranges
 from echotales.pipeline.segment.judge import story_blocks
 from pydantic import BaseModel, Field
 
@@ -28,13 +28,19 @@ LAYERS = ("past", "memory", "dream", "imagined", "present")
 RELATIONS = {"earlier": TimeRelation.EARLIER, "later": TimeRelation.LATER, "same": TimeRelation.SAME, "parallel": TimeRelation.SAME}
 
 SYSTEM = (
-    "You place the segments of one novel chapter on the story timeline. The MAIN PRESENT LINE is the segment the "
-    "chapter's story continues from. For every other segment give its layer relative to that line: past (earlier "
-    "events shown straight as they happened, including a life a character lived before a rebirth or time loop), "
-    "memory (remembered by a character), dream, imagined, or present (same story line as the main one). Give its "
-    "time_relation to the main line: earlier, later, same, parallel (happens at the same time elsewhere) or "
-    "unknown. Copy in `quote` the exact words (a few words, from the segment lines or the time statements) that you "
-    "relied on; when nothing in the text states it, answer present and unknown with an empty quote."
+    "You place the segments of one novel chapter on the story timeline. First find the MAIN PRESENT LINE: the "
+    "segment the chapter's story continues from. A chapter normally ends on its main line, so start from the last "
+    "segment; choose an earlier one only when the last segment is itself a flashback, a memory or a dream. The main "
+    "line is not always the first segment: a chapter can open on a scene that a later time statement shows to be an "
+    "earlier life, an earlier loop or an earlier iteration of the same person (a death before a rebirth, a regression "
+    "to years ago). Read all the TIME STATEMENTS, each tagged with the segment it appears in, before you decide. "
+    "For every other segment give its layer relative to the main line: past (earlier events shown straight as they "
+    "happened, including a life a character lived before a rebirth or time loop, even when it is shown first in the "
+    "chapter), memory (remembered by a character), dream, imagined, or present (the same story line as the main "
+    "one, at the same time). Give its time_relation to the main line: earlier, later, same, parallel (happens at the "
+    "same time elsewhere) or unknown. Answer exactly once per segment. Copy in `quote` the exact words (a few "
+    "words, from the segment lines or the time statements) that you relied on; when nothing in the text states "
+    "it, answer present and unknown with an empty quote."
 )
 
 
@@ -46,6 +52,7 @@ class SegmentTime(BaseModel):
 
 
 class StoryTimeAnswer(BaseModel):
+    main_line_reason: str = Field(default="", description="the time statement that shows which segment the story continues from")
     main_segment: int = Field(default=0, description="number of the main present line")
     segments: list[SegmentTime] = Field(default_factory=list)
 
@@ -107,14 +114,50 @@ def outline_time_statements(chapter: Chapter, outline: list[Any], limit: int = 8
     return out
 
 
+def explicit_time_statements(chapter: Chapter, ranges: list[tuple[int, int]], nlp: Any, limit: int = 10, before: int = 90, after: int = 70) -> list[str]:
+    """Every explicit time statement in the chapter, wherever it occurs, tagged with the segment it falls in (segment v5b).
+
+    RI ch1 v5: the pass was shown the `when` words of the first 8 blocks that had one ("late in the night", a name) as
+    "TIME STATEMENTS" with the first 40 words of the block, so "500 years ago" in block 80 and "300 years ... 200 years"
+    in block 20 reached the model only by luck. A numeric DATE entity (spaCy NER, no word list) with the text around it
+    is the statement; the segment number lets the model tie a reveal in one segment to a scene shown in another.
+    """
+    if nlp is None:
+        return []
+    out: list[str] = []
+    for b in chapter.blocks:
+        if not b.block_type.is_story_content:
+            continue
+        seg = next((i for i, (lo, hi) in enumerate(ranges) if lo <= b.index <= hi), None)
+        if seg is None:
+            continue
+        for ent in nlp(b.text).ents:
+            if ent.label_ == "DATE" and any(t.like_num for t in ent):
+                lo = max(0, ent.start_char - before)
+                snip = " ".join(b.text[lo : ent.end_char + after].split())
+                out.append(f"[block {b.index}, segment {seg}] ..." + snip + "...")
+                break
+        if len(out) >= limit:
+            break
+    return out
+
+
 def story_time_pass(
-    chapter: Chapter, cut_blocks: list[int], llm: Any, *, nlp: Any | None = None, outline: list[Any] | None = None
+    chapter: Chapter,
+    cut_blocks: list[int],
+    llm: Any,
+    *,
+    nlp: Any | None = None,
+    outline: list[Any] | None = None,
+    think: bool = False,
+    max_tokens: int = 700,
 ) -> list[SegmentTimeLabel]:
     """Layer and time relation of every segment of the chapter; one model call, quotes verified in code.
 
     With `outline` (v4) each segment is described by the whole-chapter outline, not by its first two blocks, so a
     segment whose time is only revealed far away (RI ch1: the cliff, revealed by block 80) is seen next to the line
-    that reveals it.
+    that reveals it. `think` (v5b) lets the model reason before it answers; the model behind `llm` then needs the
+    `outline.V5_NUM_CTX` context and `max_tokens` must hold the trace.
     """
     from echotales.pipeline.segment.cuts import SceneCut
 
@@ -128,25 +171,28 @@ def story_time_pass(
             f"SEGMENT {i} (blocks {lo}-{hi}): {segment_summary_line(chapter, lo, hi, words=25)} || {outline_segment_line(outline, lo, hi)}"
             for i, (lo, hi) in enumerate(ranges)
         ]
-        stated = outline_time_statements(chapter, outline)
     else:
         lines = [f"SEGMENT {i} (blocks {lo}-{hi}): {segment_summary_line(chapter, lo, hi)}" for i, (lo, hi) in enumerate(ranges)]
-        stated = []
-    stated += _stated_times(chapter, 0, chapter.blocks[-1].index, nlp, limit=6) if nlp is not None else []
+    stated = explicit_time_statements(chapter, ranges, nlp)
+    if not stated and outline:
+        stated = outline_time_statements(chapter, outline)
     prompt = "\n".join(lines) + ("\n\nTIME STATEMENTS:\n" + "\n".join(stated) if stated else "") + "\n\nGive every segment's layer and relation to the main present line."
     out = [SegmentTimeLabel(i) for i in range(len(ranges))]
     try:
-        res = llm.complete(LLMRequest(stage="scene_story_time", prompt=prompt, system=SYSTEM, max_tokens=700), StoryTimeAnswer)
+        res = llm.complete(LLMRequest(stage="scene_story_time", prompt=prompt, system=SYSTEM, max_tokens=max_tokens, extra={"think": True} if think else {}), StoryTimeAnswer)
     except Exception:
         return out
     main = res.value.main_segment
+    seen: set[int] = set()
     for item in res.value.segments:
-        if not (0 <= item.segment < len(ranges)) or item.segment == main:
+        # One verified answer per segment, the first one: RI ch1 v5 had the model list a segment twice and the later,
+        # unquoted "present" overwrote the quoted answer.
+        if not (0 <= item.segment < len(ranges)) or item.segment == main or item.segment in seen:
             continue
-        # The quote has to come from the chapter, and from the segment's own lines or the time statements shown to the model.
-        shown = " ".join(lines + stated)
-        if not (quote_in(full, item.quote) and quote_in(shown + " " + full, item.quote)):
+        # The quote has to be words of the chapter itself.
+        if not quote_in(full, item.quote):
             continue
+        seen.add(item.segment)
         layer = item.layer.strip().lower()
         out[item.segment] = SegmentTimeLabel(
             item.segment,
