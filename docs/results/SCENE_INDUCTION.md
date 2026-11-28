@@ -319,3 +319,102 @@ is not close. What the measurements show:
 `DEFAULT_OUTLINE_FUSION` in `scenes.py` stays a plain outline-only placeholder and `method="outline"` is opt-in; `place_tags` remains the
 default method (held-out .13) because v4 does not beat the best previous held-out pooled F1 on the measured model. Not yet used by
 the director.
+
+
+# v5 measured results (2026-11-28, qwen3:8b only: tolerance scoring, thinking call, raw text, outline-fed presence)
+
+Code: `segment/scoring.py` (one-to-one matching within a tolerance), `OutlineOptions` and `raw_outline_prompt` in `segment/outline.py`,
+`think` as a per-request option in `llm/ollama.py` (`LLMRequest.extra["think"]`), `outline_present_labels` in `segment/presence.py`.
+Scripts: `scripts/eval/segment_v5_eval.py` (`segment`, `arms`, `report`), `segment_v5_tables.py`, `segment_v5_v1.py`.
+Raw numbers: `data/eval/segment/scene_induction_v5_*.json`. Every setting was chosen on the 34 learn chapters with the audited gold and the
++-1 metric (`arms --tol 1`), then frozen. Primary gold is the audited one (31 held-out cuts, 19 learn); the original gold (34 held, 26 learn)
+is in the JSON and is quoted where it differs. Failed model calls (token cap reached before the JSON) are scored as "no cut", never dropped.
+
+Constraints during the run: the model is qwen3:8b only. `qwen3:14b` was not run: its download stalled (about 1 MB/s, then 0.1 MB/s) and
+the owner then barred running it on this machine without notice. gemma2:9b at ctx 8192 spilled 21% to CPU and was stopped after 8 learn chapters.
+
+## H1. Tolerance scoring (cached v4 outputs, no GPU; exact reproduces the v4 numbers)
+
+Pooled F1, audited gold, v4-chosen parameters:
+
+| arm | learn exact | learn +-1 | held exact | held +-1 |
+|---|---|---|---|---|
+| outline | .126 | .142 | .058 | .094 |
+| fused | .291 | .333 | .086 | .130 |
+
+Original gold, fused: held .104 exact, .128 +-1. The metric helps by 0.02 to 0.04 and changes nothing about the verdict; re-choosing the
+parameters on learn with +-1 selects the same fused parameters. RI ch1 stays an exact check.
+
+## H2. Thinking on (qwen3:8b, whole-chapter segmentation call only)
+
+Finding that shaped the code: with a schema `format`, ollama constrains decoding from the first token and the model skips its reasoning
+(7 tokens, empty trace). A thinking request therefore goes out without `format` (schema still in the prompt) and the JSON is parsed after the
+trace (`split_think`). The trace is 3000-6500 tokens, so `num_predict` 7000 and `num_ctx` 12288 (100% GPU, `ollama ps`).
+
+| config (audited, fused arm) | learn exact | learn +-1 | held exact | held +-1 | s per chapter |
+|---|---|---|---|---|---|
+| v4 call (no thinking) | .291 | .333 | .086 | .130 | about 5 |
+| thinking | .294 | .353 | not measured | not measured | 66 mean, 152 max |
+
+Thinking alone moves learn F1 by one true positive (6 of 19 against 5 of 19): within noise. 1 of 34 learn chapters hit the token cap.
+Held-out was started and stopped after 10 of 36 chapters (ORV chapters took 90-110 s each); it is not reported.
+
+## H3. Bigger model / raw text
+
+`qwen3:14b`: not run (see above). The part of H3 that fits the card is the raw text: the opening 40 words of every block next to its outline
+line, prompt up to 4800 tokens, ctx 8192 (`--raw-words 40`; words per block shrink until it fits).
+
+| config (audited) | arm | learn exact | learn +-1 | held exact | held +-1 | s per chapter |
+|---|---|---|---|---|---|---|
+| raw text, no thinking | outline | .138 | .183 | .105 | .154 | 7 mean, 12 max |
+| raw text, no thinking | fused | .292 | .348 | .173 | .198 | |
+| raw text and thinking | outline | .242 | .276 | .192 | .242 | 65 learn, 74 held mean; 190 max |
+| raw text and thinking | fused | .438 | .500 | .320 | .320 | |
+
+Chosen on learn (audited, +-1): **raw text and thinking, fused**: `and`, K=5, theta 1.0, window 0, separators allowed, min_gap 3 (the same
+edge-of-grid cast filter as v4). Frozen file: `data/scratch/segment/v5_FROZEN_8b_think_raw40.json`. Held-out, run once on this
+configuration: audited P .42, R .26, F1 .320 (8 TP, 11 FP, 23 FN; exact and +-1 are equal here); original gold F1 .302. Per novel (audited, +-1
+F1, TP/FP/FN): RI .40 (1/0/3), LotM 1.00 (2/0/0), ORV .345 (5/9/10), P&P 0 (0/1/3), Scarlet 0 (0/1/7). 3 of 36 held chapters hit the token
+cap (ORV 24, Scarlet 8 and 12) and score as no cut; 3 of 34 on learn.
+
+Comparison on the same 36 held chapters, +-1 pooled F1: v2.1 (`place_tags`, the previous default, rerun by `segment_v5_v1.py run
+place_tags`) .14 audited and .133 original (exact .102 and .129); v4 .130 and .128; v5 .320 and .302. v1 was not rerun on all 36 chapters
+(about 50 min of GPU): its recorded run covers 25 chapters of the first gold, held-out F1 .244 exact and .256 +-1 on 10 cuts, so that number is
+not like for like.
+
+Learn-to-held drop: .500 to .320 (fused, audited +-1). Learn has 19 cuts and the selection sits at the edge of the grid, so .500 is an
+optimistic bound. The result is carried by LotM (3 of 3 cuts found) and ORV (5 of 15); P&P and Scarlet (public-domain prose with no
+graph mentions, where the cast filter has only capitalised runs) find nothing held-out.
+
+## H4. Presence from the outline who-lines (`present_cast(..., outline=lines)`)
+
+A person counts as present in a segment only if the outline lists them as acting or speaking in a block of it (token containment between
+names), or the pipeline has a speaker attribution; names the graph has no entity for are added when listed in at least 2 blocks. No model
+call. Named checks, report only (RI ch1 was in the learn split but nothing was tuned to it):
+
+| check | v3 | v4 (gemma2) | v5 |
+|---|---|---|---|
+| RI ch1 passed | 7 of 13 | 8 of 14 | 11 of 14 |
+| cuts exactly {31, 79} | no | no | no: {31, 80}, one block late (a +-1 hit) |
+| Fang Yuan not present in 31-78 | no | no | yes (referenced) |
+| elders present in 31-78 | no | no | yes (as an outline-only entity "elder") |
+| only clan head and elders present | no | no | no: Gu Yue Bo and a second clan-head entity are also listed |
+| segment 0 is the prior loop | no | no | no: the story-time pass marks segment 2 (the "500 years ago" block) as past |
+
+LotM ch1: no cut (pass); Klein is present only through the alias "zhou mingrui" (label check fails, as in v4). ORV ch1: one false cut at 32
+(fail); Kim Dokja present (pass); tls123 not listed as referenced (fail). Defect found: the who-line can contain "narrator", which becomes
+`unresolved:narrator` in the present list.
+
+## Verdict
+
+**Not met.** Held-out pooled F1 is .320 (+-1, audited) against the target .5. It is 3 times v4 and v2.1 on the same chapters and above v1's
+recorded .256, but precision .42 and recall .26 are both far from the target, and the 3 of 36 failed calls, the small learn gold and the
+two public-domain novels at zero keep it fragile. What produced the gain: reading the prose next to the outline (+.07 held +-1 over v4)
+and letting the model reason (+.12 more on top of the raw text); the tolerance metric alone is worth 0.04. Not measured: thinking alone on
+held-out, qwen3:14b, gemma2:9b with raw text.
+
+## Default
+`SceneCutConfig.method` is now `"outline"` (still `enabled=False`) with `outline.v5_options()` (thinking, 6500 tokens, 40 raw words) and
+`DEFAULT_OUTLINE_FUSION` set to the learn-chosen fusion, because held-out +-1 pooled F1 (.320) beats the previous default on the same chapters
+(.14) and the recorded v1 number. The model behind the call needs `num_ctx >= outline.V5_NUM_CTX` (12288) and about 65-75 s per
+chapter; the function-level default of `analyse_chapter_scenes` is unchanged. Presence from the outline is opt-in through the `outline=` argument.
