@@ -59,7 +59,7 @@ def cmd_segment(a, meta, stores):
             fcntl.flock(lk, fcntl.LOCK_EX)
             lines = outline_chapter(chap, olm, novel_id=novel, hints=name_hints(chap, ments, spans, labels), cache=oc)
             t1 = time.time()
-            starts = segment_outline(chap, lines, llm, novel_id=novel, cache=sc, think=a.think, max_tokens=a.num_predict)
+            starts = segment_outline(chap, lines, llm, novel_id=novel, cache=sc, think=a.think, max_tokens=a.num_predict, raw_words=a.raw_words)
         ok = sc.get(novel, float(ch)) is not None or len(lines) < 4
         if not ok:
             # A call that produced no usable answer counts as "no cut" in the scores (never dropped from them), and is listed.
@@ -123,6 +123,7 @@ def main():
     ap.add_argument("--tag", default="", help="segmentation configuration label (cache directory suffix)")
     ap.add_argument("--think", action="store_true")
     ap.add_argument("--num-predict", type=int, default=300)
+    ap.add_argument("--raw-words", type=int, default=0, help="opening words of each block shown next to the outline line (needs --ctx >= 8192)")
     ap.add_argument("--ctx", type=int, default=4096)
     ap.add_argument("--only")
     ap.add_argument("--gold", default="audited", choices=["original", "audited"])

@@ -72,6 +72,9 @@ class OutlineOptions:
     max_tokens: int = 300
     #: A different (usually larger) model for this call only; the outline lines still come from the chapter model.
     segment_llm: Any | None = None
+    #: Opening words of every block shown next to its outline line (0: the outline alone, as in v4). Needs a context
+    #: of 8192 or more; the words per block shrink until the prompt fits `RAW_TOKEN_BUDGET`.
+    raw_words: int = 0
     #: Cache suffix separating configurations that share one outline cache.
     tag: str = ""
 
@@ -254,6 +257,28 @@ def outline_prompt(lines: list[OutlineLine], lead_words: int | None = None) -> s
     return "\n".join(rows)
 
 
+#: Token budget of the outline-plus-text prompt (a context of 8192 also holds the instructions and the answer).
+RAW_TOKEN_BUDGET = 4800
+
+
+def raw_outline_prompt(lines: list[OutlineLine], chapter: Chapter, raw_words: int) -> str:
+    """Outline rows with the opening words of each block's own text, so the model reads the prose and not only the summary.
+
+    The summary line loses the narration's own markers ("the next morning", "in the meantime"); `LEAD_WORDS` kept 7 of them
+    and v4's cut-off there was the context. The words per block shrink (never the rows) until the prompt fits the budget.
+    """
+    text = {b.index: b.text for b in chapter.blocks}
+    for words in range(raw_words, 6, -4):
+        rows = []
+        for ln in lines:
+            fields = " | ".join(x for x in (", ".join(ln.who.split(",")[:3]).strip(), ln.where, ln.when) if x)
+            body = _clip(text.get(ln.block, ""), words)
+            rows.append(f"[{ln.block}] {body}" + (f"  <{fields}>" if fields else ""))
+        if _est_tokens("\n".join(rows)) <= RAW_TOKEN_BUDGET:
+            break
+    return "\n".join(rows)
+
+
 def _merge_runs(lines: list[OutlineLine]) -> list[str]:
     rows: list[str] = []
     i = 0
@@ -312,6 +337,7 @@ def segment_outline(
     cache: SegmentCache | None = None,
     think: bool = False,
     max_tokens: int = 300,
+    raw_words: int = 0,
 ) -> list[tuple[int, str, int]]:
     """(scene start block, reason, confidence) from one call over the whole outline; [] means one scene.
 
@@ -324,7 +350,10 @@ def segment_outline(
             return hit
     if len(lines) < 4:
         return []
-    prompt = f"CHAPTER OUTLINE (block | who | where | when):\n{outline_prompt(lines)}\n\nList the blocks where a new scene starts."
+    if raw_words:
+        prompt = f"CHAPTER (block number, opening words of the block, then <who | where | when>):\n{raw_outline_prompt(lines, chapter, raw_words)}\n\nList the blocks where a new scene starts."
+    else:
+        prompt = f"CHAPTER OUTLINE (block | who | where | when):\n{outline_prompt(lines)}\n\nList the blocks where a new scene starts."
     try:
         req = LLMRequest(stage="scene_segment", prompt=prompt, system=SEGMENT_SYSTEM, max_tokens=max_tokens, extra={"think": True} if think else {})
         res = llm.complete(req, SegmentAnswer)

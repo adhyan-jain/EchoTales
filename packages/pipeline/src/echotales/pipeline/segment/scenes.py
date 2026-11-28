@@ -316,7 +316,7 @@ def _outline_cuts(
     oc = OutlineCache(cache_dir, getattr(llm, "model", "model")) if cache_dir else None
     sc = SegmentCache(cache_dir, getattr(seg_llm, "model", "model"), opt.tag) if cache_dir else None
     lines = outline_chapter(chapter, llm, novel_id=novel_id, hints=name_hints(chapter, mentions, spans, labels), cache=oc)
-    starts = segment_outline(chapter, lines, seg_llm, novel_id=novel_id, cache=sc, think=opt.think, max_tokens=opt.max_tokens)
+    starts = segment_outline(chapter, lines, seg_llm, novel_id=novel_id, cache=sc, think=opt.think, max_tokens=opt.max_tokens, raw_words=opt.raw_words)
     reasons = {canonical_position(chapter, b): why for b, why, conf in starts if conf >= params.conf_min}
     scores = cast_scores(chapter, block_casts(chapter, mentions, spans), params.cast_k)
     blocks = fuse(chapter, sorted(reasons), scores, separator_positions(chapter), params)

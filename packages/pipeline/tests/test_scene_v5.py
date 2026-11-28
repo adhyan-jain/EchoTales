@@ -120,3 +120,15 @@ def test_outline_options_send_the_segmentation_call_to_a_separate_thinking_model
     assert [c.block for c in an.cuts] == [10]
     assert "scene_segment" in big.calls and "scene_segment" not in small.calls
     assert "scene_outline" in small.calls and "scene_outline" not in big.calls
+
+
+def test_raw_text_prompt_shrinks_the_words_per_block_to_fit_and_keeps_every_row() -> None:
+    from echotales.pipeline.segment.outline import RAW_TOKEN_BUDGET, _est_tokens, raw_outline_prompt
+
+    ch = _chapter(120, {i: "word " * 80 for i in range(120)})
+    lines = [OutlineLine(i, who="Ann", where="inn") for i in range(120)]
+    short = raw_outline_prompt(lines, ch, 40)
+    assert len(short.splitlines()) == 120 and _est_tokens(short) <= RAW_TOKEN_BUDGET
+    few = raw_outline_prompt(lines[:10], ch, 40)
+    assert few.splitlines()[0].count("word") == 40  # a short chapter keeps the full 40 words
+    assert "<Ann | inn>" in few
