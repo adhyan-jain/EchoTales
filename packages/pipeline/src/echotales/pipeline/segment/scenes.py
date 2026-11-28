@@ -47,6 +47,7 @@ from echotales.pipeline.segment.outline import (
     SegmentCache,
     name_hints,
     outline_chapter,
+    refine_cut,
     segment_outline,
     v5_options,
 )
@@ -324,6 +325,10 @@ def _outline_cuts(
     reasons = {canonical_position(chapter, b): why for b, why, conf in starts if conf >= params.conf_min}
     scores = cast_scores(chapter, block_casts(chapter, mentions, spans), params.cast_k)
     blocks = fuse(chapter, sorted(reasons), scores, separator_positions(chapter), params)
+    if opt.refine and blocks:
+        moved = {b: refine_cut(chapter, b, llm) for b in blocks}
+        reasons = {moved[b]: reasons.get(b, "") for b in blocks}
+        blocks = sorted(set(moved.values()))
     tl = story_time_pass(chapter, blocks, llm, nlp=nlp, outline=lines) if blocks else []
     cuts: list[SceneCut] = []
     for k, b in enumerate(blocks):

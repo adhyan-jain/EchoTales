@@ -77,6 +77,9 @@ class OutlineOptions:
     raw_words: int = 0
     #: Cache suffix separating configurations that share one outline cache.
     tag: str = ""
+    #: v5b: after fusion, ask the (4096-context, non-thinking) chapter model where each cut sits within one block. Off: on the
+    #: 34 learn chapters it moved none of 13 cuts and kept the RI ch1 cut one block late (SCENE_INDUCTION.md, v5b).
+    refine: bool = False
 
 
 #: Context the segmentation model must be served with for `v5_options`: a prompt of up to ~5.5k tokens plus a reasoning
@@ -375,3 +378,79 @@ def segment_outline(
         cache.put(novel_id, chapter.number, starts)
     return starts
 
+
+
+REFINE_SYSTEM = (
+    "You place the exact first block of a new scene in a translated novel. You see four consecutive numbered blocks; "
+    "the block marked CUT is where a scene change was first placed. For each of two blocks say whether it CONTINUES "
+    "the block just before it or turns to something NEW. A block turns to something new when its narration is about "
+    "other people, another place or another time than the block before, or looks at the same things from another "
+    "viewpoint, even if it does not name the person yet. It continues when it is still about the same people at the "
+    "same place and time, for example the next line of the same conversation."
+)
+
+
+class RefineAnswer(BaseModel):
+    before_cut: str = Field(default="continues", description="'new' or 'continues': the block just before CUT, compared with the block before it")
+    at_cut: str = Field(default="new", description="'new' or 'continues': the block marked CUT, compared with the block before it")
+
+
+def refine_cut(chapter: Chapter, cut: int, llm: Any, *, words: int = 70) -> int:
+    """Move one scene start by at most one block (segment v5b); the cut itself if the call fails or the neighbours are missing.
+
+    RI ch1: the whole-chapter call places the start at block 80 where the owner gold has 79. Block 79 opens the new scene
+    without naming the person and block 80 names them, so a cut placed on the first block that names the person is one
+    block late. Each of the two neighbouring blocks is compared with its own predecessor (no thinking, 4 blocks): the
+    scene starts at the first block that turns to something new. When neither does, the cut sat one block early.
+    """
+    order = story_blocks(chapter)
+    if cut not in order:
+        return cut
+    r = order.index(cut)
+    if r < 2 or r + 1 >= len(order):
+        return cut
+    text = {b.index: b.text for b in chapter.blocks}
+    ids = order[r - 2 : r + 2]
+    body = "\n".join(f"[{b}]{' CUT' if b == cut else ''} {_clip(text[b], words)}" for b in ids)
+    prompt = (
+        f"{body}\n\nCompared with block {order[r - 2]}, does block {order[r - 1]} turn to something NEW or CONTINUE (before_cut)? "
+        f"Compared with block {order[r - 1]}, does block {cut} turn to something new or continue (at_cut)?"
+    )
+    try:
+        v = llm.complete(LLMRequest(stage="scene_refine", prompt=prompt, system=REFINE_SYSTEM, max_tokens=60), RefineAnswer).value
+    except Exception:
+        return cut
+    if v.before_cut.strip().lower().startswith("new"):
+        return order[r - 1]
+    if v.at_cut.strip().lower().startswith("cont"):
+        return order[r + 1]
+    return cut
+
+
+class RefineCache:
+    """Refined position per (model, novel, chapter, cut block), so a rerun of the learn grid costs no GPU time."""
+
+    def __init__(self, root: Path | str, model: str) -> None:
+        self.path = Path(root) / f"refine_{model.replace(':', '_')}.json"
+        try:
+            self.data: dict[str, int] = json.loads(self.path.read_text())
+        except (OSError, ValueError):
+            self.data = {}
+
+    def refine(self, chapter: Chapter, novel: str, cut: int, llm: Any) -> int:
+        key = f"{novel}:{chapter.number:g}:{cut}"
+        if key not in self.data:
+            self.data[key] = refine_cut(chapter, cut, llm)
+            self.path.parent.mkdir(parents=True, exist_ok=True)
+            self.path.write_text(json.dumps(self.data))
+        return self.data[key]
+
+
+def refine_cuts(chapter: Chapter, cuts: list[int], llm: Any, *, novel_id: str = "", cache: RefineCache | None = None) -> list[int]:
+    """Every cut moved by `refine_cut`; two cuts that land on one block collapse to one."""
+    out: list[int] = []
+    for c in sorted(cuts):
+        n = cache.refine(chapter, novel_id, c, llm) if cache is not None else refine_cut(chapter, c, llm)
+        if n not in out:
+            out.append(n)
+    return sorted(out)
