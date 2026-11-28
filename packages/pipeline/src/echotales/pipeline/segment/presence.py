@@ -88,6 +88,8 @@ class Candidate:
     acting_mentions: int = 0
     talked_about_mentions: int = 0
     snippets: list[str] = field(default_factory=list)
+    #: Name tokens of the title mentions ("the clan head") the resolver bound to this entity.
+    titles: list[frozenset[str]] = field(default_factory=list)
 
 
 class Verdict(BaseModel):
@@ -144,6 +146,8 @@ def collect_candidates(
                 continue
             c = cand(f"unresolved:{surface}", m.text)
         c.blocks.append(m.block_index)
+        if m.target_id and m.alias_type.value == "TRANSFERABLE_TITLE":
+            c.titles.append(_name_tokens(_norm_surface(m.text)))
         # DIALOGUE_REFERENCE and INNER_THOUGHT_REFERENCE are, by definition, someone else's words or thoughts.
         if m.reference_mode.value in ("DIALOGUE_REFERENCE", "INNER_THOUGHT_REFERENCE"):
             c.talked_about_mentions += 1
@@ -230,6 +234,14 @@ def _same_person(a: frozenset[str], b: frozenset[str]) -> bool:
     return bool(a) and bool(b) and (a <= b or b <= a)
 
 
+def _is_candidate(toks: frozenset[str], c: Candidate) -> bool:
+    """The outline name is this entity's name, or a longer form of a title the resolver bound to it.
+
+    RI ch1 31-78: the outline says "Gu Yue clan head" while the resolver bound "the clan head" to Gu Yue Bo (named in
+    ch6), so the same man was listed twice, once as the entity and once as an outline-only "unresolved" name."""
+    return _same_person(toks, _name_tokens(c.label)) or any(t and t <= toks for t in c.titles)
+
+
 def _attested(toks: frozenset[str], texts: dict[int, str]) -> bool:
     """Every token of an outline-only name occurs somewhere in the chapter text.
 
@@ -306,11 +318,11 @@ def present_cast(
         who = outline_present_labels(outline, block_from, block_to)
         for c in to_ask:
             toks = _name_tokens(c.label)
-            verdict[c.entity_id] = any(_same_person(toks, w) for _, _, w in who)
+            verdict[c.entity_id] = any(_same_person(toks, w) or any(t and t <= w for t in c.titles) for _, _, w in who)
         # People the reader never made a mention for (RI ch1 31-78: "elders" were "not found" in v3 and v4).
         extra: dict[str, tuple[str, set[int]]] = {}
         for blk, surface, toks in who:
-            if not any(_same_person(toks, _name_tokens(c.label)) for c in candidates):
+            if not any(_is_candidate(toks, c) for c in candidates):
                 key = " ".join(sorted(toks))
                 extra.setdefault(key, (surface, set()))[1].add(blk)
         for key, (surface, blocks) in extra.items():

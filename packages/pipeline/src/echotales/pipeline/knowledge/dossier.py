@@ -75,6 +75,11 @@ class YesNo(BaseModel):
     answer: bool = False
 
 
+class Verdict(BaseModel):
+    subject: str = ""
+    states_value: bool = False
+
+
 @dataclass(slots=True)
 class MapReport:
     chapters: int = 0
@@ -87,13 +92,15 @@ class MapReport:
     rejected_quote: int = 0
     rejected_subject: int = 0
     rejected_not_present: int = 0
+    rejected_value: int = 0
+    rejected_verify: int = 0
     asked_attribution: int = 0
     seconds: float = 0.0
     per_chapter_seconds: dict[float, float] = field(default_factory=dict)
 
     def add(self, other: MapReport) -> None:
         for name in ("chapters", "skipped", "windows", "proposed", "accepted", "duplicates", "rejected_key",
-                     "rejected_quote", "rejected_subject", "rejected_not_present", "asked_attribution", "seconds"):
+                     "rejected_quote", "rejected_subject", "rejected_not_present", "rejected_value", "rejected_verify", "asked_attribution", "seconds"):
             setattr(self, name, getattr(self, name) + getattr(other, name))
         self.per_chapter_seconds.update(other.per_chapter_seconds)
 
@@ -213,6 +220,53 @@ def _subject_ok(
     return bool(client.complete(Task.READER, ask, YesNo, novel_id=novel_id, chapter=chapter, max_tokens=40).value.answer)
 
 
+#: What each key means, for the verifier: the first fact audit (2026-11-28, 30 random RI facts) found "role" holding
+#: "interesting end" (a quote about dying), "apparent_age" holding "top tier genius", and a smile given to the wrong man.
+KEY_MEANING = {
+    "hair_color": "hair colour", "hair_style": "hair style or length", "eye_color": "eye colour", "skin_tone": "skin tone",
+    "face": "facial expression or face shape", "height_build": "height or body build",
+    "distinguishing_features": "distinguishing physical feature or mark", "typical_attire": "clothing worn",
+    "current_condition": "injury, bodily state or what the person is doing", "apparent_age": "age or life stage",
+    "role": "title, office or occupation", "affiliation": "group, clan or organisation the person belongs to",
+}
+
+
+def _stem(word: str) -> str:
+    return word[:5]
+
+
+def value_supported(value: str, quote: str) -> bool:
+    """Some content word of the value (or its 5-letter stem) occurs in the quote.
+
+    Audit 2026-11-28: apparent_age "middle-aged" was filed under "he had stopped suppressing his cultivation" and role
+    "death wish" under "You really want to die?" - the model's value was not in the text it quoted."""
+    q = norm(quote)
+    words = [w for w in re.findall(r"[a-z]+", norm(value)) if len(w) >= 3]
+    return not words or any(_stem(w) in q for w in words)
+
+
+def _verified(
+    client: Any, novel_id: str, chapter: float, sid: str, label: str, key: str, value: str, quote: str, text: str,
+    candidates: list[str], aliases: set[str],
+) -> bool:
+    """One strict reading of a candidate fact: who is the phrase about, and does it state this value of that kind.
+
+    The stored-mention check cannot tell "Fang Yuan looked at Bai Ning Bing, then he smiled" is not Bai Ning Bing's
+    smile, or that a title spoken TO a person ("Divine Investigator, please finish it") is not that speaker's."""
+    names = ", ".join(dict.fromkeys([label, *candidates]))
+    ask = (
+        f"Passage:\n{text}\n\nPhrase: \"{quote}\"\n"
+        f"Claim: this phrase states that {label}'s {KEY_MEANING.get(key, key)} is \"{value}\".\n"
+        f"People named in the passage: {names}.\n"
+        'Answer {"subject": <the one person from that list the phrase is about, or "other">, "states_value": <true only if '
+        "the phrase itself states that value as that kind of fact about its subject; false for an action, a mood, "
+        "something said about an event, or a title given to someone being addressed>}."
+    )
+    v = client.complete(Task.READER, ask, Verdict, novel_id=novel_id, chapter=chapter, max_tokens=60).value
+    who = norm(v.subject)
+    return bool(v.states_value) and (who == norm(label) or who in aliases or (len(who) >= 3 and norm(label) in who))
+
+
 def _norm_key(raw: str) -> str:
     key = norm(raw).replace(" ", "_").replace("-", "_")
     aliases = {"hair": "hair_color", "eyes": "eye_color", "skin": "skin_tone", "build": "height_build",
@@ -311,14 +365,14 @@ def _map_chapter(
             for fact in char.facts:
                 report.proposed += 1
                 _accept(store, client, novel_id, number, n_blocks, sid, people[sid], fact, char.in_person, blocks, window,
-                        surfaces, model, report)
+                        surfaces, model, report, people)
     return report, presence
 
 
 def _accept(
     store: Store, client: Any, novel_id: str, number: float, n_blocks: int, sid: str, label: str, fact: FactOut,
     in_person: bool, blocks: dict[int, str], window: str, surfaces: dict[str, dict[int, set[str]]], model: str,
-    report: MapReport,
+    report: MapReport, people: dict[str, str] | None = None,
 ) -> None:
     key = _norm_key(fact.attribute)
     value = _short(fact.value)
@@ -335,8 +389,17 @@ def _accept(
     if block is None:
         report.rejected_quote += 1
         return
+    if not value_supported(value, fact.quote):
+        report.rejected_value += 1
+        return
     if not _subject_ok(client, store, novel_id, number, sid, label, fact.quote, block, surfaces, report, window):
         report.rejected_subject += 1
+        return
+    here = {sid2: names for sid2, by_block in surfaces.items() if (names := by_block.get(block))}
+    others = [people[s2] for s2 in here if s2 != sid and s2 in people] if people else []
+    aliases = set(surfaces.get(sid, {}).get(block, set()))
+    if not _verified(client, novel_id, number, sid, label, key, value, fact.quote.strip(), blocks[block], others, aliases):
+        report.rejected_verify += 1
         return
     if _write_fact(store, novel_id, sid, key, value, fact.quote.strip(), number, block, n_blocks, model):
         report.accepted += 1

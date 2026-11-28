@@ -773,7 +773,7 @@ def build_parser() -> argparse.ArgumentParser:
     k_build.add_argument("--novel", required=True)
     k_build.add_argument("--chapters", help="range for the dossier map, e.g. 1-5 or 1,4,7-9; default: all")
     k_build.add_argument("--only-entities", nargs="+", help="entity ids or label fragments; limits the dossier map to them")
-    k_build.add_argument("--stages", default="dossier,glossary,brief", help="comma-separated subset of dossier,glossary,brief")
+    k_build.add_argument("--stages", default="dossier,glossary,brief", help="comma-separated subset of dossier,glossary,brief,link (link is opt-in: exact-name links for unbound mentions)")
     k_build.add_argument("--brief-chapters", help="range for briefs (default: --chapters)")
     k_build.add_argument("--contrast-db", nargs="*", default=[], help="other novels' databases: a term rare there is world-specific")
 

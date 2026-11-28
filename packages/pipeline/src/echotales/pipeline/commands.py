@@ -1652,6 +1652,10 @@ def cmd_knowledge(args: argparse.Namespace) -> int:
         if client is None:
             print("error: the knowledge build needs a model backend (set ECHOTALES_MODEL_BACKEND=ollama).", file=sys.stderr)
             return 2
+    if "link" in stages:
+        from echotales.pipeline.knowledge.link import link_name_mentions
+
+        print(f"link: {link_name_mentions(store, args.novel)} unbound name mentions linked")
     if "dossier" in stages:
         from echotales.pipeline.knowledge import build_dossiers
 
