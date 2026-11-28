@@ -63,6 +63,9 @@ _SPEC = {
     LetterKind.TIME_PLACE: ("bold", True, 0.70, 80, 56, 1.0, 1.28),
     LetterKind.NAME_CARD: ("bold", False, 0.42, 40, 28, 1.0, 1.0),
     LetterKind.POEM: ("reg", False, 0.46, 46, 34, 1.0, 1.0),
+    # on-screen text is set like a plain caption until a phone-UI treatment exists; without an entry the lettering pass
+    # raises on the new kind
+    LetterKind.SCREEN: ("reg", False, 0.46, 34, 26, 1.0, 1.0),
 }
 
 
