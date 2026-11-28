@@ -202,6 +202,38 @@ def _heuristic(c: Candidate) -> bool:
     return c.acting_mentions * 2 > c.narration_present_mentions and c.acting_mentions > 0 and c.talked_about_mentions == 0
 
 
+def _name_tokens(name: str) -> frozenset[str]:
+    # "elders" and "elder" must meet; a plural -s is the only normalisation (no word list of titles or clans).
+    return frozenset(t[:-1] if len(t) > 3 and t.endswith("s") else t for t in re.findall(r"[a-z]+", name.lower()) if len(t) > 1)
+
+
+def outline_present_labels(outline: list[Any], lo: int, hi: int) -> list[tuple[int, str, frozenset[str]]]:
+    """(block, surface, name tokens) of everyone the outline lists as acting or speaking in blocks `lo..hi` (segment v5).
+
+    The outline `who` field is written per block by a model that was told people only talked about, remembered or
+    thought about do not count. RI ch1 31-78: the v3/v4 scene-level yes/no said Fang Yuan was present (his name is in
+    every block of the clan head's talk) while the per-block outline lists only the clan head, the elders and Gu Yue Bo.
+    """
+    out = []
+    for ln in outline:
+        if lo <= ln.block <= hi:
+            for part in re.split(r"[,;]", ln.who):
+                toks = _name_tokens(part)
+                if toks:
+                    out.append((ln.block, part.strip(), toks))
+    return out
+
+
+def _same_person(a: frozenset[str], b: frozenset[str]) -> bool:
+    """One name's tokens contain the other's ("Fang Yuan" in "Gu Yue Fang Yuan")."""
+    return bool(a) and bool(b) and (a <= b or b <= a)
+
+
+#: A name the graph has no entity for is added to the present cast only when the outline lists it in this many blocks
+#: of the scene, so one garbled outline line does not invent a person.
+MIN_OUTLINE_BLOCKS = 2
+
+
 def present_cast(
     store: Store,
     novel_id: str,
@@ -211,6 +243,7 @@ def present_cast(
     *,
     llm: Any | None = None,
     require_quote: bool = False,
+    outline: list[Any] | None = None,
 ) -> tuple[list[str], list[str]]:
     """(physically present entity ids, referenced-only entity ids) for blocks `block_from..block_to`.
 
@@ -223,13 +256,34 @@ def present_cast(
     that mentions the person or whose words name them. RI ch1 31-78 listed Fang Yuan as present on a bare yes
     although the elders only discuss him; a quote that must show him acting or speaking cannot be invented
     from nothing, and a failed check puts the person in the referenced list.
+
+    `outline` (segment v5, `outline.OutlineLine`s of the chapter): present means listed in the who field of a block of
+    the range; `llm` is then not used for the non-speakers.
     """
     candidates, texts = collect_candidates(store, novel_id, chapter, block_from, block_to)
     if not candidates:
         return [], []
     verdict: dict[str, bool] = {c.entity_id: _heuristic(c) for c in candidates}
     to_ask = [c for c in candidates if not c.speaks]
-    if llm is not None and to_ask:
+    if outline:
+        # v5: the outline's per-block "who acts or speaks" decides everyone who is not an attributed speaker; no extra
+        # model call. A speaker attribution still counts (it is the pipeline's one hard signal).
+        who = outline_present_labels(outline, block_from, block_to)
+        for c in to_ask:
+            toks = _name_tokens(c.label)
+            verdict[c.entity_id] = any(_same_person(toks, w) for _, _, w in who)
+        # People the reader never made a mention for (RI ch1 31-78: "elders" were "not found" in v3 and v4).
+        extra: dict[str, tuple[str, set[int]]] = {}
+        for blk, surface, toks in who:
+            if not any(_same_person(toks, _name_tokens(c.label)) for c in candidates):
+                key = " ".join(sorted(toks))
+                extra.setdefault(key, (surface, set()))[1].add(blk)
+        for key, (surface, blocks) in extra.items():
+            if len(blocks) >= MIN_OUTLINE_BLOCKS:
+                c = Candidate(entity_id=f"unresolved:{key}", label=surface, blocks=sorted(blocks))
+                candidates.append(c)
+                verdict[c.entity_id] = True
+    elif llm is not None and to_ask:
         scene = "\n".join(f"[{i}] {texts[i]}" for i in range(block_from, block_to + 1) if i in texts)[:_MAX_SEGMENT_CHARS]
         art_id = f"{_CACHE_PREFIX}:{novel_id}:{chapter:g}:{block_from}-{block_to}:{_digest(to_ask, scene, require_quote)}"
         cached = _cache_get(store, art_id)

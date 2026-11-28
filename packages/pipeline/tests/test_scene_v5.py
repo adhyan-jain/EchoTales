@@ -68,3 +68,36 @@ def test_segment_outline_asks_for_thinking_only_when_told_and_keeps_the_cap() ->
         assert [b for b, _, _ in out] == [8]
         assert llm.requests[-1].extra == {"think": True} and llm.requests[-1].max_tokens == 7000
         assert cache.get("", 1.0) is not None and cache.dir.name.endswith("_think")
+
+
+def test_outline_presence_keeps_a_talked_about_person_out_and_adds_an_unmapped_group() -> None:
+    from echotales.pipeline.segment.presence import (
+        _name_tokens,
+        _same_person,
+        outline_present_labels,
+    )
+
+    # Fang Yuan is named in every block of the clan head's talk but listed as acting in none (RI ch1 31-78)
+    outline = [OutlineLine(i, who="Gu Yue clan head, elders") for i in range(31, 36)] + [OutlineLine(40, who="Fang Yuan")]
+    who = outline_present_labels(outline, 31, 39)
+    toks = [w for _, _, w in who]
+    assert not any(_same_person(_name_tokens("Gu Yue Fang Yuan"), w) for w in toks)
+    assert any(_same_person(_name_tokens("Gu Yue clan head"), w) for w in toks)
+    assert any(_same_person(_name_tokens("elder"), w) for w in toks)  # plural -s does not split them
+    assert outline_present_labels(outline, 40, 40)[0][1] == "Fang Yuan"
+
+
+def test_present_cast_reads_the_outline_who_lines_and_never_asks_the_model() -> None:
+    from echotales.pipeline.segment.presence import present_cast
+    from test_scene_induction import _presence_store
+
+    store = _presence_store()
+    # Fang Yuan has a PRESENT mention in block 2, but the outline never lists him as acting; the clan head acts in 0 and 3;
+    # the elder speaks (block 1); "the old servant" is in no mention at all but is listed in two blocks.
+    outline = [OutlineLine(0, who="clan head"), OutlineLine(1, who="Elder, old servant"), OutlineLine(2, who="old servant"), OutlineLine(3, who="clan head")]
+    llm = _ThinkLLM()
+    present, referenced = present_cast(store, "t", 1.0, 0, 3, llm=llm, outline=outline)
+    assert llm.requests == []
+    assert "t:fy" in referenced and "t:fy" not in present
+    assert "t:el" in present and "unresolved:clan head" in present
+    assert "unresolved:old servant" in present  # listed in 2 blocks, no entity in the graph
