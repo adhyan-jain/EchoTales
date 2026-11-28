@@ -75,17 +75,27 @@ Turn web-novel chapters into a professional-feeling manhwa (vertical webtoon) an
 
 ## 4. Work plan (in order; each task is one branch, measured, then merged)
 
-### T0. Land the ch1 render
-- History note (2026-11-28): `claude/adaptation-director` was rewritten before pushing to `master`, to drop a file with verbatim novel lines. `claude/final-ri1` was branched from the OLD commit `ed0ef32`. Before merging it, run `git rebase --onto claude/adaptation-director ed0ef32 claude/final-ri1`, and check that `data/eval/storyboard/*.json` storyboards are not committed (they contain novel text).
-- If `claude/final-ri1` has commits, review them, run the tests and merge.
-- Look at v58 against the reference slices, and write the honest verdict in VERSIONS.md if it is missing.
-- If the render did not finish, finish it:
-  1. Scene stage, v5.
-  2. Director v2 on qwen3:8b.
-  3. `storyboard --gold data/gold/segment/ri_ch1_owner.json --check-only <board.json>`.
-  4. `pages --storyboard --draw zimage`, with FX on.
-- Required general rule, if it is not already in: a withheld-identity panel whose reveal falls in the next segment moves into that segment, together with the boundary. This fixes the RI ch1 cut at 80 instead of 79.
-- **Accept when:** the owner-gold check passes all 24 items, or every failure is listed with its cause.
+### T0. Fix the ch1 render (v58 exists, NOT at manhua quality)
+- v58 is at `data/novels/RI/panels/ch1/v58_director-v2-drama/`: 71 panels, 63 webtoon slices, `side_by_side_vs_manhua.png`, `storyboard_ch1.json` (local only, holds novel text). It is merged and on master.
+- The owner-gold check passes 16 of 22. Failing:
+  - crowd faces in scenes 1 and 2
+  - the match cut into scene 3
+  - the b79 withheld panel (the model never marked it; the rule `_move_withheld_into_reveal_segment` is unit-tested only)
+  - the Bai Ning Bing inset
+  - b18 poem lettering
+- Visual defects:
+  - flat, repeated medium talking heads
+  - extra or wrong people: a woman by the clan head, a ghost in the eyes panel, modern t-shirt Fang Yuan
+  - the reborn Fang Yuan reads as an adult
+- Cause: most panels have an empty cast. Only Fang Yuan's look was passed, so the dossier looks for Bai Ning Bing, the clan head and the prior-loop Fang Yuan never reached the cards.
+- Fix order:
+  1. Pass every cast look from the KB into the director cards and the panel cast.
+  2. Have the director mark withheld identity. A code-side detector is acceptable: a block whose subject has no resolved entity while the next block resolves one.
+  3. Force the inset for referenced people who matter later.
+  4. Add a shot-variety repair (no more than 2 consecutive identical shots).
+  5. Re-run and re-check.
+- There is no command yet that builds a video from a storyboard (`comic build` takes comic pages). That is T6.
+- **Accept when:** 22 of 22, or every remaining failure is explained.
 
 ### T1. Knowledge base completion (G2)
 1. Rebuild the RI facts with the new verifier (value must overlap the quote, plus the who-is-this-about check). Re-sample 30 facts at seed 8. Target precision is at least 0.9.
