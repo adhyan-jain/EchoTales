@@ -74,6 +74,8 @@ class SceneAnalysis:
     #: Indices (reading order, from 0) of segments the story order pass called a prior loop.
     prior_loop_segments: set[int] = field(default_factory=set)
     boundaries: list[Boundary] = field(default_factory=list)
+    #: v3 story-time labels (layer, relation, verified quote) per segment in reading order; empty for other methods.
+    time_labels: list[Any] = field(default_factory=list)
 
 
 #: How far (in canonical boundary positions) an LLM scene start may sit from a scored boundary and still be
@@ -166,8 +168,9 @@ def analyse_chapter_scenes(
             else:
                 weak.add(c.block)
     prior: set[int] = set()
+    time_labels: list[Any] = []
     if method == "judge" and llm is not None:
-        cuts_j, prior = _judge_cuts(
+        cuts_j, prior, time_labels = _judge_cuts(
             chapter, boundaries, llm, mentions, nlp, judge_rule or DEFAULT_RULE, judge_cache_dir, novel_id
         )
         have = {c.block for c in cuts}
@@ -206,7 +209,9 @@ def analyse_chapter_scenes(
         )
         cuts.sort(key=lambda c: c.block)
         prior = resolve_story_order(chapter, cuts, llm, nlp=nlp)
-    return SceneAnalysis(chapter=chapter.number, cuts=cuts, prior_loop_segments=prior, boundaries=boundaries)
+    return SceneAnalysis(
+        chapter=chapter.number, cuts=cuts, prior_loop_segments=prior, boundaries=boundaries, time_labels=time_labels
+    )
 
 
 def _judge_cuts(
@@ -218,7 +223,7 @@ def _judge_cuts(
     rule: CutRule,
     cache_dir: str | None,
     novel_id: str,
-) -> tuple[list[SceneCut], set[int]]:
+) -> tuple[list[SceneCut], set[int], list[Any]]:
     """v3: candidates from every proposer, the pairwise judge, the learned rule, then the story-time pass."""
     tags = tag_chapter(chapter, llm)
     cands = candidate_boundaries(chapter, boundaries, tags)
@@ -247,7 +252,7 @@ def _judge_cuts(
                 evidence=[j.reason] if j.reason else [],
             )
         )
-    return cuts, prior_loop_segments(labels) if labels else set()
+    return cuts, prior_loop_segments(labels) if labels else set(), labels
 
 
 def prior_loops_from_scenes(chapter: Chapter, cuts: list[SceneCut], scenes: list[LLMScene]) -> set[int]:

@@ -18,8 +18,8 @@ from __future__ import annotations
 import hashlib
 import json
 import re
-from itertools import pairwise
 from dataclasses import asdict, dataclass, field
+from itertools import pairwise
 from pathlib import Path
 from typing import Any
 
