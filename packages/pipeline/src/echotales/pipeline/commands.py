@@ -1412,7 +1412,16 @@ def _pages_from_storyboard(args: argparse.Namespace) -> int:
         style = StyleTable.from_dict(json.loads(Path(args.style).read_text())) if args.style else DEFAULT_STYLE
         images = storyboard_dir_images(sb, Path(args.images)) if args.images else {}
         out = Path(args.out or paths.asset_dir(sb.novel_id, "pages")) / f"ch{sb.chapter:g}_storyboard"
-        slices = render_storyboard_webtoon(sb, images, out, style)
+        if getattr(args, "draw", None):
+            from echotales.pipeline.pages.storyboard_art import StubZImageWorker, draw_storyboard
+            from echotales.pipeline.render.compiled_route import set_worker
+            from echotales.pipeline.render.compiler import CharacterBrief
+
+            looks = {k: CharacterBrief(**v) for k, v in json.loads(Path(args.looks).read_text()).items()} if args.looks else {}
+            if args.draw == "stub":
+                set_worker("z-image-turbo", StubZImageWorker())
+            images = {**images, **draw_storyboard(sb, out / "art", looks).images}
+        slices = render_storyboard_webtoon(sb, images, out, style, drama_fx=not getattr(args, "no_drama_fx", False))
         files = [*slices, out / "contact.png"]
         exports = [e for e in parse_exports(args.export) if e != "png"]
         if exports:
@@ -2105,7 +2114,7 @@ def cmd_audio_qa(args: argparse.Namespace) -> int:
 
     from echotales.pipeline.persona.build import load_trait_profiles
     from echotales.pipeline.voice import qa
-    from echotales.pipeline.voice.bank import DEFAULT_BANK_KIND, load_bank
+    from echotales.pipeline.voice.bank import load_bank
     from echotales.pipeline.voice.runner import _AUDIBLE
 
     audio_dir = Path(args.audio_dir)
@@ -2157,7 +2166,7 @@ def cmd_voice_audition(args: argparse.Namespace) -> int:
 
     from echotales.pipeline import paths
     from echotales.pipeline.voice import audition, get_engine
-    from echotales.pipeline.voice.bank import DEFAULT_BANK_KIND, load_bank
+    from echotales.pipeline.voice.bank import load_bank
 
     banks = []
     for kind in args.bank_kind or ["hifitts", "libritts_r"]:

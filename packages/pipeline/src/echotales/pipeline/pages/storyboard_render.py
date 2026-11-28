@@ -207,9 +207,10 @@ def _bg_colour_at(bg: np.ndarray, y: int) -> tuple[int, int, int]:
 
 def render_storyboard_strip(
     storyboard: Storyboard, images: Mapping[str, Path | Image.Image], style: StyleTable | None = None,
-    *, faces: FaceBoxes | None = None, drama_fx: bool = False,
+    *, faces: FaceBoxes | None = None, drama_fx: bool = True,
 ) -> StripResult:
-    """`drama_fx` (default off, so every existing page is unchanged) adds the drama layer of `pages/drama_fx.py`: per-purpose speed
+    """`drama_fx` (default on for the storyboard path: the bake-off pictures read flat without it, ART_DRAMA; pass False for a plain
+    page) adds the drama layer of `pages/drama_fx.py`: per-purpose speed
     lines, a per-layer contrast and vignette grade, screentone on memory/lore, and a burst with brushed lettering behind SFX."""
     style = style or DEFAULT_STYLE
     s, width = style.s, style.width
@@ -478,7 +479,7 @@ def _contact_sheet(slices: list[Image.Image], path: Path, col_w: int = 360) -> N
 
 def render_storyboard_webtoon(
     storyboard: Storyboard, images: Mapping[str, Path], out_dir: Path, style: StyleTable | None = None,
-    *, faces: FaceBoxes | None = None, drama_fx: bool = False,
+    *, faces: FaceBoxes | None = None, drama_fx: bool = True,
 ) -> list[Path]:
     """Slices `slice_001.png` ... plus `contact.png` and `layout.json` under `out_dir`; returns the slice paths."""
     import json

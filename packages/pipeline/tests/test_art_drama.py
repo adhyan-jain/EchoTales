@@ -91,7 +91,7 @@ def test_strip_with_fx_switch_differs_and_keeps_layout():
 
     panels = [PANELS[k].panel for k in ("p04_laugh", "p07_clanhead")]
     sb = Storyboard(novel_id="n", chapter=1, panels=panels)
-    off = render_storyboard_strip(sb, {})
+    off = render_storyboard_strip(sb, {}, drama_fx=False)
     on = render_storyboard_strip(sb, {}, drama_fx=True)
     assert on.strip.size == off.strip.size and on.cuts == off.cuts
     assert on.strip.tobytes() != off.strip.tobytes()

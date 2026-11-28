@@ -667,6 +667,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_pages.add_argument("--images", default=None, help="with --storyboard: folder of <panel_id>.png pictures (missing ones get a placeholder)")
     p_pages.add_argument("--style", default=None, help="with --storyboard: StyleTable JSON for this work (default: built-in table)")
+    p_pages.add_argument(
+        "--draw", default=None, choices=["zimage", "stub"],
+        help="with --storyboard: draw the pictures first with the drama compiler (render/drama.py B2) on Z-Image Turbo, or `stub` for "
+        "solid-colour test pictures; needs no --images. Never NoobAI")
+    p_pages.add_argument("--looks", default=None, help="with --draw: JSON {look_id or entity_id: CharacterBrief fields} for the cast")
+    p_pages.add_argument("--no-drama-fx", action="store_true", help="with --storyboard: leave out the speed lines, bursts, grades and screentone")
 
     p_comic = sub.add_parser(
         "comic",
