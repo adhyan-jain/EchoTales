@@ -49,6 +49,7 @@ from echotales.pipeline.storyboard.plan_schema import (
     LWindow,
 )
 from echotales.pipeline.storyboard.prompts import PROMPT_VERSION, fewshot_digest
+from echotales.pipeline.storyboard.stage_scenes import scenes_from_analysis
 from echotales.pipeline.storyboard.schema import (
     CastMember,
     Layer,
@@ -97,13 +98,15 @@ def _slug(text: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")[:40]
 
 
-def cache_key(inp: ChapterInput, model: str) -> str:
+def cache_key(inp: ChapterInput, model: str, stage: list[Scene] | None = None) -> str:
     h = hashlib.sha1()
     for part in (
         PROMPT_VERSION, fewshot_digest(), model, str(inp.presence_contract), str(inp.look_contract),
         json.dumps(sorted(inp.blocks.items())),
         json.dumps([(ln.id, ln.speaker_id, ln.kind) for ln in inp.lines]),
         json.dumps([(s.block_from, s.block_to, s.present_ids, s.referenced_ids) for s in inp.scenes]),
+        # a rerun of the segment stage moves scene cuts without touching the text, so it must miss the cache
+        json.dumps([(s.block_from, s.block_to, s.layer.value, s.story_time, s.cut_signal) for s in stage or []]),
     ):
         h.update(part.encode())
     return h.hexdigest()[:16]
@@ -557,10 +560,29 @@ def _seg_index(segments: list[Segment], block: int) -> int:
 # ---------------------------------------------------------------------------------------------------------------------
 
 
-def build_storyboard(store: Store, client, novel_id: str, chapter: float, *, say=print) -> tuple[Storyboard, Report, ChapterInput]:
+def _stage_scenes(store: Store, inp: ChapterInput, analysis) -> list[Scene] | None:  # type: ignore[no-untyped-def]
+    """Scenes from the segment stage when it has run for this chapter (an explicit analysis wins over the stored one)."""
+    if analysis is None:
+        try:
+            from echotales.pipeline.segment.scenes import load_scene_cuts
+
+            analysis = load_scene_cuts(store, inp.novel_id, inp.chapter)
+        except Exception:  # the stage is optional; the v1 scene pass is the fallback
+            analysis = None
+    if analysis is None or not getattr(analysis, "cuts", None) and not getattr(analysis, "prior_loop_segments", None):
+        return None
+    return scenes_from_analysis(inp, analysis)
+
+
+def build_storyboard(
+    store: Store, client, novel_id: str, chapter: float, *, say=print, analysis=None
+) -> tuple[Storyboard, Report, ChapterInput]:
     inp = load_chapter(store, novel_id, chapter)
     report = Report()
-    scenes = _detect_scenes(client, inp, report)
+    scenes = _stage_scenes(store, inp, analysis)
+    report.scenes_from_stage = scenes is not None
+    if scenes is None:
+        scenes = _detect_scenes(client, inp, report)
     for sc in scenes:
         _scene_presence(store, client, inp, sc, report)
     say(f"  {len(scenes)} scenes: " + ", ".join(f"b{sc.block_from}-{sc.block_to}" for sc in scenes))
@@ -599,7 +621,7 @@ def run_chapter(
     meta_path = path.with_suffix(".meta.json")
     model = client.model_for(Task.STORYBOARD) if hasattr(client, "model_for") else ""
     inp = load_chapter(store, novel_id, chapter)
-    key = cache_key(inp, model)
+    key = cache_key(inp, model, _stage_scenes(store, inp, None))
     if not force and path.exists() and meta_path.exists():
         meta = json.loads(meta_path.read_text(encoding="utf-8"))
         if meta.get("cache_key") == key:

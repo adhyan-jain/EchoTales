@@ -78,6 +78,7 @@ class Report:
     latency_ms: int = 0
     prompt_tokens: int = 0
     completion_tokens: int = 0
+    scenes_from_stage: bool = False  # the segment stage's cuts were used instead of the director's own scene pass
 
     def note(self, rule: str, action: str, detail: str = "") -> None:
         self.log.append({"rule": rule, "action": action, "detail": detail})
@@ -93,6 +94,7 @@ class Report:
             "latency_ms": self.latency_ms,
             "prompt_tokens": self.prompt_tokens,
             "completion_tokens": self.completion_tokens,
+            "scenes_from_stage": self.scenes_from_stage,
             "log": self.log,
         }
 
