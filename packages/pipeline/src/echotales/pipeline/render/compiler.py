@@ -93,6 +93,20 @@ PROFILES: dict[str, ModelProfile] = {
         ),
         licence="fair-ai-public-license-1.0-sd (non-commercial, card metadata)",
     ),
+    # Art bake-off v3 (arm C2): the open Illustrious-XL v0.1 base that NoobAI-XL itself was trained from. It is read as plain
+    # danbooru tags with the masterpiece-family quality words (its card); NoobAI's score_* tags mean nothing to it.
+    "illustrious-xl-0.1": ModelProfile(
+        key="illustrious-xl-0.1",
+        model_id="OnomaAIResearch/Illustrious-xl-early-release-v0",
+        family=PromptFormat.SDXL_TAGS,
+        width=832, height=1216, steps=28, guidance=5.5, sampler="euler_a",
+        quality_tags="masterpiece, best quality, amazing quality, very aesthetic, absurdres",
+        negative_base=(
+            "worst quality, low quality, lowres, bad anatomy, bad hands, extra digits, jpeg artifacts, text, "
+            "speech bubble, watermark, signature, username, logo, blurry"
+        ),
+        licence="fair-ai-public-license-1.0-sd (HF card metadata; non-commercial style share-alike terms)",
+    ),
     "anima": ModelProfile(
         key="anima",
         model_id="circlestone-labs/Anima-Base-v1.0-Diffusers",
