@@ -267,8 +267,9 @@ def validate_starts(starts: list[SceneStart], lines: list[OutlineLine]) -> list[
 
 
 class SegmentCache:
-    def __init__(self, root: Path | str, model: str) -> None:
-        self.dir = Path(root) / f"{model.replace(':', '_')}_{OUTLINE_VERSION}_{SEGMENT_VERSION}_l{LEAD_WORDS}"
+    def __init__(self, root: Path | str, model: str, tag: str = "") -> None:
+        # `tag` separates segmentation configurations (thinking on, raw text shown) that share one outline cache.
+        self.dir = Path(root) / (f"{model.replace(':', '_')}_{OUTLINE_VERSION}_{SEGMENT_VERSION}_l{LEAD_WORDS}" + (f"_{tag}" if tag else ""))
 
     def path(self, novel: str, chapter: float) -> Path:
         return self.dir / f"{novel}_{chapter:g}.json"
@@ -295,8 +296,14 @@ def segment_outline(
     *,
     novel_id: str = "",
     cache: SegmentCache | None = None,
+    think: bool = False,
+    max_tokens: int = 300,
 ) -> list[tuple[int, str, int]]:
-    """(scene start block, reason, confidence) from one call over the whole outline; [] means one scene."""
+    """(scene start block, reason, confidence) from one call over the whole outline; [] means one scene.
+
+    `think` lets the model reason before it answers (v5, this call only); `max_tokens` must then also hold the trace,
+    otherwise the cap cuts the model off before the JSON and the chapter silently gets no cut.
+    """
     if cache is not None:
         hit = cache.get(novel_id, chapter.number)
         if hit is not None:
@@ -305,7 +312,8 @@ def segment_outline(
         return []
     prompt = f"CHAPTER OUTLINE (block | who | where | when):\n{outline_prompt(lines)}\n\nList the blocks where a new scene starts."
     try:
-        res = llm.complete(LLMRequest(stage="scene_segment", prompt=prompt, system=SEGMENT_SYSTEM, max_tokens=300), SegmentAnswer)
+        req = LLMRequest(stage="scene_segment", prompt=prompt, system=SEGMENT_SYSTEM, max_tokens=max_tokens, extra={"think": True} if think else {})
+        res = llm.complete(req, SegmentAnswer)
     except Exception:  # an unreachable or malformed answer must not invent a cut
         return []
     starts = validate_starts(res.value.scene_starts, lines)
