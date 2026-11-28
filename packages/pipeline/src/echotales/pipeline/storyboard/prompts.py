@@ -12,44 +12,45 @@ import os
 from functools import lru_cache
 from pathlib import Path
 
+from echotales.pipeline.storyboard.cards import Card, Part, assemble
 from echotales.pipeline.storyboard.inputs import ChapterInput, Line, RosterEntry
 from echotales.pipeline.storyboard.plan_schema import LWindow
 
-PROMPT_VERSION = "sb-4"
+PROMPT_VERSION = "sb-5"
 MAX_NARRATION_CHARS = 300
 
-SYSTEM = """You are the storyboard artist adapting a web-novel chapter into a manhwa (vertical-scroll comic). You decide
-the list of panels for the passage you are given, the way a professional adapter would: by drama, not by paragraph.
-
+SYSTEM = """You are the storyboard artist adapting a web-novel chapter into a manhwa (vertical-scroll comic). Plan the
+panels for the passage by drama, not by paragraph. You know the whole novel (the cards and the MATTERS LATER list), so
+direct with it: add tension and curiosity, but never a plot fact the text does not state.
 Answer with one JSON object: panels, cut_lines. Refer to source text only by its tag (s12), never retype it.
 
-GRAMMAR (follow every rule):
-1. HOOK. If the passage starts the chapter, the first panel is purpose cold_open: a striking image or a sound-effect
-   spread, before any explanation.
-2. LAYER. Set each panel's layer: present, past (flashback shown straight), memory (a character remembering),
-   lore (narrated history), imagined (someone pictured or talked about), dream. One scene, one layer.
-3. CUTS. When the passage opens with a cut into a new scene (it will say so), its first panel is a time_place_card, a
-   transition (a graphic match) or an establishing wide panel, then a detail insert, then people.
-4. PRESENCE. Only people physically in the scene go in a panel's cast. A person who is only talked about, remembered
-   or planned for goes in a referenced_inset panel (layer imagined or memory), never standing in the room.
-5. DENSITY. Drama decides panel count, not text length. A peak beat (a shout, a reveal, an attack, a decision) gets
-   3-5 panels: the line, a face, a reaction, an insert. Quiet explanation shrinks to one caption panel or is skipped
-   by simply not lettering it. Every spoken line must appear in some panel unless you list it in cut_lines with a reason.
-6. CROWDS. A crowd that speaks is shown as individuals: one crowd_individual panel per speaking face (cast: a short
-   description such as "a bearded elder"), carrying that crowd line. Never give a crowd member a name.
-7. INSERTS. Punctuate peaks with insert panels (hand, object, blood, lantern, weather) and extreme_close panels (eyes).
-8. LETTERING. letters lists source lines by tag only (ref s12), never their text. Choose each line's kind: speech, shout
-   (loud, spiky), whisper, dread (menacing), thought, memory, narration, poem. Put drawn sound words in sfx (at most 3
-   words each) where the text implies a sound, and a card's caption in card. SFX and cards are the ONLY text you may
-   write; they must come from the passage.
-9. SHAPES. Vary panel shape with the beat: wide for places and crowds, tall for heroes and falls, diagonal for
-   confrontations, inset for asides and referenced people, bleed for the peak, text_only for cards, standard otherwise.
-10. NEVER ADD PLOT. Invented panels (inserts, reactions, cards, establishing views) show only what the text states or
-    implies. They carry no new speech and no new facts. Mark them invented true with a one-phrase reason.
-11. LOOKS. A person looks the way their listed look says at this point in the story; do not describe a different age or
-    clothing. Use only the names in the PEOPLE list plus crowd descriptions. Mark the climax panel of each beat peak true.
-
-Panel visuals are plain words describing the picture: no style words, no camera jargon, nothing the text does not state."""
+RULES
+1. HOOK. If the passage starts the chapter, panel 1 is purpose cold_open and is NOT a hero: sound effects (sfx), a black
+   text-only card, or a striking insert/extreme_close. The person comes after.
+2. FIXED. The scene's layer, place, time and PRESENT list are given; do not change them. A panel may use another layer
+   only for a dream, memory, lore or imagined picture inside the scene.
+3. CUTS. A passage that opens with a cut starts with a time_place_card, a transition or an establishing panel. If the
+   cut is a MATCH (a simultaneous scene elsewhere), start with a transition panel, cut_signal "match", echoing the shape
+   of the last picture of the scene before.
+4. PRESENCE. Only PRESENT people go in cast. A person only talked about is never in the room: if the CARDS say they
+   matter later, show them once as a referenced_inset (layer imagined, shape inset, shot medium_close, no letters, look
+   from their card, invented true).
+5. WITHHELD. If the text hides who someone is until a later line (see NEXT), draw only the clue: extreme_close, empty
+   cast, withheld true. The reveal is the next panel that names them.
+6. DENSITY. A peak (shout, reveal, attack, decision) gets 3-5 panels: line, face, reaction, insert. Quiet explanation
+   shrinks to one caption. Every spoken line appears in some panel or is listed in cut_lines with a reason.
+7. CROWDS. A crowd that speaks is individuals: one crowd_individual panel per speaking face, never named.
+8. LETTERING. letters = line tags with a kind: speech, shout, whisper, dread, thought, memory, narration, poem (verse),
+   screen (text on a phone, window or system display). Put sound words in sfx (max 3 words) and a card caption in card.
+9. EMOTION. Give every panel an emotion (one or two words) that the text supports.
+10. SHAPES. wide for places and crowds, tall for heroes and falls, diagonal for clashes, inset for asides, bleed for the
+    peak, text_only for cards.
+11. FORESHADOW. At most one or two panels per passage may set beat "foreshadow" or "curiosity": only an insert or
+    framing that emphasises text already there because MATTERS LATER says it pays off. Never show the later event.
+12. EVIDENCE. Every invented panel is invented true and its reason starts with text:, dossier: or brief: followed by the
+    tag or item it comes from. No reason, no panel. Invented panels carry no speech.
+13. LOOKS. Use only names from the CARDS; use each person's look and age as given.
+Visuals are plain words: no style words, no camera jargon, nothing the text does not state."""
 
 
 @lru_cache(maxsize=1)
@@ -164,32 +165,57 @@ def build_prompt(
     carry: str,
     scene_line: str = "",
     n_examples: int | None = None,
+    cards: list[Card] | None = None,
+    brief_block: str = "",
+    lookahead: str = "",
+    budget_tokens: int | None = None,
 ) -> str:
-    parts: list[str] = []
+    """The window prompt as budgeted parts. With `cards` the people section is the card list (v2); without, the v1 lines.
+
+    Priority when the budget is short (cards.assemble): few-shots go first, then lookahead and the future brief, then the
+    poorer fields of low-ranked cards, then whole low-ranked cards. Rules, fixed scene line and the text never drop."""
     if n_examples is None:
         n_examples = int(os.environ.get("ECHOTALES_STORYBOARD_SHOTS", "3"))
+    parts: list[Part] = []
     shots = load_fewshots()[:n_examples]
     if shots:
-        parts.append("EXAMPLES (invented or public-domain text; the pattern matters, not the story):")
-        for i, ex in enumerate(shots, 1):
-            parts.append(f"--- example {i}\n{render_example(ex)}")
-        parts.append("--- now the real passage")
-    by_name = {r.name: r for r in roster_in_play}
-    if fixed_presence:
-        people = [(n, by_name[n].look if n in by_name else "") for n in present_names]
-    else:
-        people = [(r.name, r.look) for r in roster_in_play]
-    parts.append("INPUT:")
-    parts.append("PASSAGE STARTS THE CHAPTER." if chapter_start else "PASSAGE CONTINUES THE CHAPTER.")
+        ex = ["EXAMPLES (invented or public-domain text; the pattern matters, not the story):"]
+        for i, e in enumerate(shots, 1):
+            ex.append(f"--- example {i}\n{render_example(e)}")
+        ex.append("--- now the real passage")
+        parts.append(Part("\n".join(ex), priority=0, name="examples"))
+    head = ["INPUT:", "PASSAGE STARTS THE CHAPTER." if chapter_start else "PASSAGE CONTINUES THE CHAPTER."]
     if scene_line:
-        parts.append(scene_line)
+        head.append(scene_line)
     if carry:
-        parts.append(f"BEFORE THIS PASSAGE: {carry}")
-    parts.append(_people(people, referenced_names, fixed=fixed_presence))
-    parts.append("TEXT:")
-    parts.append(render_lines(lines))
-    parts.append("OUTPUT:")
-    return "\n".join(parts)
+        head.append(f"BEFORE THIS PASSAGE: {carry}")
+    parts.append(Part("\n".join(head), mandatory=True, name="head"))
+    if cards is not None:
+        parts.append(Part("CARDS (present people are in the room; talked-about people are not):", mandatory=True, name="cards-head"))
+        for c in cards:
+            parts.append(Part(c.variants(), priority=10 + c.rank, name=f"card:{c.name}"))
+        if not cards:
+            parts.append(Part("  - (nobody listed; crowd and unnamed people may still appear)", mandatory=True, name="cards-none"))
+        else:
+            parts.append(Part("ONLY TALKED ABOUT = status referenced; PRESENT = " + ", ".join(c.name for c in cards if c.status == "present"),
+                              mandatory=True, name="cards-key"))
+    else:
+        by_name = {r.name: r for r in roster_in_play}
+        people = [(n, by_name[n].look if n in by_name else "") for n in present_names] if fixed_presence else [(r.name, r.look) for r in roster_in_play]
+        parts.append(Part(_people(people, referenced_names, fixed=fixed_presence), mandatory=True, name="people"))
+    if brief_block:
+        parts.append(Part(brief_block, priority=5, name="brief"))
+    parts.append(Part("TEXT:\n" + render_lines(lines), mandatory=True, name="text"))
+    if lookahead:
+        parts.append(Part("NEXT (not part of this passage; do not draw it, use it to know what is coming):\n" + lookahead, priority=4, name="lookahead"))
+    parts.append(Part("OUTPUT:", mandatory=True, name="output"))
+    asm = assemble(parts, budget_tokens if budget_tokens is not None else 10**9)
+    last_assembly.update(dropped=asm.dropped, shrunk=asm.shrunk, tokens=asm.tokens)
+    return asm.text
+
+
+#: What the last `build_prompt` call had to drop or shrink; read by the director to report budget pressure per run.
+last_assembly: dict = {"dropped": [], "shrunk": [], "tokens": 0}
 
 
 def schema_name() -> str:
