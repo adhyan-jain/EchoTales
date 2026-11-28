@@ -1,0 +1,59 @@
+{
+  "source": "Opus, 2026-11-28, read from the full LotM ch1 block dump; SILVER (not owner-verified)",
+  "status": "silver gold",
+  "novel_id": "lord-of-the-mysteries",
+  "chapter": 1.0,
+  "block_indexing": "0-based block index within the chapter, as stored in chapter.blocks_json",
+  "scenes": [
+    {
+      "scene": 1,
+      "block_from": 0,
+      "block_to": 71,
+      "anchor": "Painful!",
+      "layer": "present",
+      "time_relation": "the chapter's present: a night in the City of Tingen, under a crimson moon",
+      "place": "Klein Moretti's small rented room: desk by the window, bed, cabinet, coal stove, cracked dressing mirror",
+      "present": [
+        "Zhou Mingrui, the transmigrated self, in Klein Moretti's body. Draw Klein's body only (black hair, brown eyes, linen shirt, thin, scholarly; blocks 36 and 67). Zhou Mingrui's Earth body is never described and is never drawn."
+      ],
+      "referenced_only": [
+        "Klein's father (an army sergeant, dead)",
+        "Klein's mother (an Evernight Goddess devotee, dead)",
+        "Klein's elder brother (a clerk)",
+        "Klein's younger sister",
+        "Zhou Mingrui's manager on Earth"
+      ],
+      "sub_layers": [
+        {"blocks": [0, 16], "layer": "dream", "why": "a stupor in darkness: only inner voice and pain, no seen world until he opens his eyes at block 17"},
+        {"blocks": [45, 50], "layer": "memory", "why": "the original Klein's memories flooding in: the family and university montage"}
+      ],
+      "beats": [
+        "cold open on black: pain SFX and thought lines, with no image of a room yet (blocks 0-2)",
+        "stupor monologue in darkness (blocks 3-16)",
+        "eyes open into crimson light: insert shots of the desk objects, notebook, lamp, the angel-embossed ink bottle, pen, and the brass revolver (blocks 18-22)",
+        "the reveal of the crimson moon through the window, the chapter's establishing image, delayed until block 26",
+        "stands, falls back into the chair, chair SFX (blocks 27-28)",
+        "a wide shot of the room survey (blocks 30-34)",
+        "a first glimpse in the mirror (block 35)",
+        "the transmigration realisation (blocks 37-43)",
+        "memory montage (blocks 45-50)",
+        "the notebook text becomes readable: the dread line written in it, as an insert with dread lettering (blocks 51-54)",
+        "murmuring air, dread (block 56)",
+        "the revolver question (blocks 58-59)",
+        "insert of the bloody handprint, then the bloody palm (blocks 61-63)",
+        "walks to the mirror, and the full reflection reveals his new face (blocks 66-68)",
+        "cliffhanger: an extreme close-up of the temple wound with burn marks (block 71). Withhold any statement of how it happened; the text only implies it."
+      ],
+      "creative_licence": "Foreshadowing from whole-novel knowledge is allowed only as emphasis, never as a new plot fact. For example, hold on the revolver and the notebook line, and let the crimson moon recur as a motif."
+    }
+  ],
+  "not_scenes": [
+    {"block": 72, "why": "translator footnote, not story text"}
+  ],
+  "letter_requirements": [
+    "SFX for the pain onomatopoeia and the chair impact",
+    "thought balloons for the inner monologue",
+    "memory captions in the montage",
+    "dread lettering for the notebook line"
+  ]
+}

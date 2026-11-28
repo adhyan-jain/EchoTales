@@ -1,0 +1,51 @@
+{
+  "source": "Opus, 2026-11-28, read from the full ORV ch1 (prologue) block dump; SILVER (not owner-verified)",
+  "status": "silver gold",
+  "novel_id": "omniscient-readers-viewpoint",
+  "chapter": 1.0,
+  "block_indexing": "0-based block index within the chapter, as stored in chapter.blocks_json",
+  "scenes": [
+    {
+      "scene": 1,
+      "block_from": 1,
+      "block_to": 54,
+      "anchor": "There are three ways",
+      "layer": "present",
+      "time_relation": "the day before the world changes (block 54 says so); the place is not stated: he is reading on his old smartphone",
+      "place": "unstated; the panels should centre on the phone screen and the reader's face, with no invented landmark",
+      "present": [
+        "Kim Dokja, the first-person narrator, named only through his comment ID at block 14. His look must come from the whole-novel dossier, because ch1 never describes him."
+      ],
+      "referenced_only": [
+        "tls123, the author: present only as on-screen messages. Never draw a face or body; the author's identity is withheld across the whole novel.",
+        "the anonymous commenters (text on screen only)",
+        "the school delinquents, the university and the military unit (the memory montage)"
+      ],
+      "sub_layers": [
+        {"blocks": [1, 2], "layer": "lore", "why": "an epigraph quoted from the in-world novel, used as a title card"},
+        {"blocks": [10, 10], "layer": "memory", "why": "his life alongside the novel: bullied, a third-rate university, the frontline draft, a contract job"}
+      ],
+      "beats": [
+        "title card or cold open with the epigraph lettered as a poem or card on black (blocks 1-2)",
+        "a close-up of the phone screen showing the 'complete' mark (blocks 3-8)",
+        "a quick memory montage (block 10)",
+        "his comment typed to the author (block 14)",
+        "the chapter statistics: the numbers on screen, the hit counts falling to 1, as an insert (blocks 16-20)",
+        "the recommendation backfires: hostile comments on screen; he goes red-faced (blocks 22-30)",
+        "an unexpected message from tls123: a chat exchange rendered as a phone UI (blocks 31-50)",
+        "the author logs off; small jealousy (blocks 51-52)",
+        "closing narration over an ominous, held image of the ordinary world: a foreshadowing beat (blocks 53-54). No apocalypse imagery, because the text does not show it yet."
+      ],
+      "creative_licence": "Whole-novel knowledge lets the director make the final caption a dread beat and keep tls123 faceless. It must not depict any later event."
+    }
+  ],
+  "not_scenes": [
+    {"block": 0, "why": "chapter title line"}
+  ],
+  "letter_requirements": [
+    "on-screen text, chat messages and comments rendered as a phone UI, not as speech balloons. This needs a screen/system letter kind, which we do not have yet (a gap that director v2 must close; system windows recur in ORV)",
+    "poem or card lettering for the epigraph",
+    "narration captions for the first-person voice",
+    "speech for the few spoken lines (blocks 4, 12, 29, 52)"
+  ]
+}
