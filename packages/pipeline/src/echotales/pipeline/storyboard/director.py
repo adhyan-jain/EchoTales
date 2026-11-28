@@ -581,8 +581,8 @@ def _convert(
                 cast = [_with_card_look(m, (cards or {}).get(seg.segment_id, [])) for m in cast]
             invented = lp.invented or (not any(lt.source_span_id for lt in letters) and not blocks)
             reason = lp.reason.strip()
-            if invented and lp.evidence.strip() and not reason.lower().startswith(EVIDENCE_PREFIXES):
-                reason = f"{reason} [{lp.evidence.strip()}]".strip()
+            if invented and lp.evidence.strip().lower().startswith(EVIDENCE_PREFIXES) and not reason.lower().startswith(EVIDENCE_PREFIXES):
+                reason = f"{lp.evidence.strip()} {reason}".strip()
             beat = lp.beat.strip().lower()
             if beat not in FORESHADOW_BEATS:
                 beat = ""

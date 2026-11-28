@@ -665,7 +665,7 @@ def repair_v2(
     if wps and not _cold_open_ok(wps[0].panel):
         first = wps[0].panel
         seg = _panel_segment(first, segments)
-        v1_hook = first.purpose is Purpose.COLD_OPEN and first.invented_reason.startswith("hook before exposition")
+        v1_hook = first.purpose is Purpose.COLD_OPEN and "hook before exposition" in first.invented_reason
         if first.purpose is Purpose.COLD_OPEN and not v1_hook:
             first.shot, first.shape, first.cast = Shot.EXTREME_CLOSE, Shape.BLEED, []
             report.note("cold_open_hero", "cold open reshaped to a close detail", first.visual[:50])

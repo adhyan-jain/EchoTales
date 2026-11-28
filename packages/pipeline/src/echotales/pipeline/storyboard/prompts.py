@@ -191,14 +191,11 @@ def build_prompt(
         head.append(f"BEFORE THIS PASSAGE: {carry}")
     parts.append(Part("\n".join(head), mandatory=True, name="head"))
     if cards is not None:
-        parts.append(Part("CARDS (present people are in the room; talked-about people are not):", mandatory=True, name="cards-head"))
+        parts.append(Part("CARDS (who is in the room, and each person's look at this point in the story):", mandatory=True, name="cards-head"))
         for c in cards:
             parts.append(Part(c.variants(), priority=10 + c.rank, name=f"card:{c.name}"))
         if not cards:
             parts.append(Part("  - (nobody listed; crowd and unnamed people may still appear)", mandatory=True, name="cards-none"))
-        else:
-            parts.append(Part("ONLY TALKED ABOUT = status referenced; PRESENT = " + ", ".join(c.name for c in cards if c.status == "present"),
-                              mandatory=True, name="cards-key"))
     else:
         by_name = {r.name: r for r in roster_in_play}
         people = [(n, by_name[n].look if n in by_name else "") for n in present_names] if fixed_presence else [(r.name, r.look) for r in roster_in_play]

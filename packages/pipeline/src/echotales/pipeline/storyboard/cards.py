@@ -54,15 +54,18 @@ class Card:
         look = self.look
         short = " ".join(look.split()[:LOOK_WORDS_MIN])
 
+        # the status tag is what tells the model who may stand in the room; a card list without it read as a cast list
+        tag = "PRESENT" if self.status == "present" else "only talked about, not in the room"
+
         def line(look_text: str, role: bool, title: bool) -> str:
-            bits = [f"  - {self.name}"]
-            tail = [x for x in (look_text, f"about {self.age}" if self.age else "") if x]
+            bits = [f"  - {self.name} ({tag})"]
+            tail = [x for x in (look_text, f"age {self.age}" if self.age else "") if x]
             if tail:
                 bits.append(": " + "; ".join(tail))
             if role and self.role:
-                bits.append(f" [{self.role}]")
+                bits.append(f"; role {self.role}")
             if title and self.title_meaning:
-                bits.append(f" (title means: {self.title_meaning})")
+                bits.append(f"; title means: {self.title_meaning}")
             return "".join(bits)
 
         out = [line(look, True, True), line(look, True, False), line(look, False, False), line(short, False, False)]
@@ -102,6 +105,10 @@ def build_cards(store: Store, inp: ChapterInput, scene: Scene, brief: dict | Non
     for eid, status in [(i, "present") for i in scene.present_ids] + [(i, "referenced") for i in scene.referenced_ids]:
         r = _entry_for(inp, eid)
         if r is None:
+            # a group or someone the model's own presence read named (`crowd:`, `extra:`, `ref:`): no knowledge to carry, but
+            # the model must still be told they are in the room or it will leave the elders out of the picture
+            if eid.split(":", 1)[0] in ("crowd", "extra", "ref"):
+                cards.append(Card(eid, inp.labels.get(eid, eid.split(":", 1)[-1].replace("-", " ")), status))
             continue
         desc, _look_id, _ok = look_for(store, inp.novel_id, r, inp.chapter, scene.block_from)
         card = Card(eid, r.name, status, bool(_brief_entity(brief, eid).get("matters_later")), look=desc,
