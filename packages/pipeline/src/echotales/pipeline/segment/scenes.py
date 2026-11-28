@@ -39,8 +39,9 @@ from echotales.pipeline.segment.storytime import prior_loop_segments, story_time
 
 _ARTIFACT_PREFIX = "scene_cuts"
 
-#: Chosen on the learn chapters only (docs/results/SCENE_INDUCTION.md, v3); replaced once that measurement exists.
-DEFAULT_RULE = CutRule("sep+time_no+place&people", True, True, True, False, 1)
+#: Chosen on the learn chapters only (learn F1 0.172 over 26 gold cuts; docs/results/SCENE_INDUCTION.md, v3). Held-out F1 was
+#: 0.103, below v2.1, so `method="judge"` stays opt-in and `place_tags` remains the default method.
+DEFAULT_RULE = CutRule("place", False, False, False, True, 5)
 
 
 @dataclass(slots=True)
