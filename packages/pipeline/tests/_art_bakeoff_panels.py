@@ -58,8 +58,10 @@ def _panel(pid: str, seg: str, layer: Layer, purpose: Purpose, shape: Shape, sho
 
 
 def _person(name: str, gender: str, band: str, hair: str, attire: str, *, condition: str = "", years: int = 0, expr: str = "",
-            eyes: str = "") -> CharacterBrief:
+            eyes: str = "", features: str = "") -> CharacterBrief:
     app = {"hair": hair}
+    if features:
+        app["features"] = features
     if eyes:
         app["eyes"] = eyes
     return CharacterBrief(name=name, gender=gender, age_band=band, appearance=app, attire=attire, condition=condition,
@@ -94,7 +96,7 @@ def bakeoff_panels() -> list[BakeoffPanel]:
         identity_tags=["fang yuan", "1boy", "long black hair", "torn green robe", "chinese clothes", "blood on clothes", "blood on face", "blood pool"],
         scene_tags=["cliff", "mountain", "sunset", "red sky", "wind"], note="HERO: low angle, tall")
 
-    acc = _person("The accuser", "male", "middle-aged", "a topknot of grey-streaked black hair", "pale grey sect robes",
+    acc = _person("The accuser", "male", "middle-aged", "grey-streaked black topknotted", "pale grey sect robes",
                   expr="a snarl of hatred, teeth bared")
     p = _panel("p02_accuser", "s1", Layer.PAST, Purpose.CROWD_INDIVIDUAL, Shape.STANDARD, Shot.CLOSE,
                "an individual accuser from the besieging crowd shouts with hatred, close-up", [("The accuser", True)],
@@ -144,7 +146,7 @@ def bakeoff_panels() -> list[BakeoffPanel]:
         identity_tags=[], scene_tags=["village", "night", "rain", "lantern", "mountain", "scenery", "no humans"],
         note="establishing, calm")
 
-    ch = _person("The clan head", "male", "middle-aged", "black hair tied up in a topknot", "a white ceremonial robe",
+    ch = _person("The clan head", "male", "middle-aged", "black topknotted", "a white ceremonial robe",
                  expr="solemn and tired")
     p = _panel("p07_clanhead", "s2", Layer.PRESENT, Purpose.BEAT, Shape.STANDARD, Shot.MEDIUM,
                "the clan head, middle-aged, in a white ceremonial robe, prays kneeling before rows of ancestral tablets by candlelight",
@@ -165,8 +167,8 @@ def bakeoff_panels() -> list[BakeoffPanel]:
         identity_tags=["multiple boys", "old man", "white robe", "kneeling", "from behind"], scene_tags=["temple", "hall", "candles", "night", "indoors"],
         crowd=True, note="rows, loose white garments")
 
-    el = _person("An elder", "male", "elder", "long white hair and a white beard", "loose white ceremonial garments",
-                 expr="grave, speaking")
+    el = _person("An elder", "male", "elder", "long white", "loose white ceremonial garments",
+                 expr="grave, speaking", features="a long white beard")
     p = _panel("p09_elder", "s2", Layer.PRESENT, Purpose.DIALOGUE, Shape.STANDARD, Shot.MEDIUM_CLOSE,
                "an elder in loose white garments speaks gravely", [("An elder", False)],
                [Letter(kind=LetterKind.SPEECH, text="The Bai clan's talent is the worry.")], [55])
@@ -188,7 +190,7 @@ def bakeoff_panels() -> list[BakeoffPanel]:
 
     p = _panel("p11_garret", "s2", Layer.PRESENT, Purpose.BEAT, Shape.STANDARD, Shot.MEDIUM,
                "the clan head at his garret window looks out over the village lights in the rain", [("The clan head", False)], blocks=[73, 78])
-    add(p, _brief(p, [_person("The clan head", "male", "middle-aged", "black hair tied up in a topknot", "a white ceremonial robe",
+    add(p, _brief(p, [_person("The clan head", "male", "middle-aged", "black topknotted", "a white ceremonial robe",
                               expr="pensive")],
                   "A middle-aged man in a white ceremonial robe stands at a small garret window with his hand on the frame, looking out "
                   "at the village lights glimmering in the night rain.",

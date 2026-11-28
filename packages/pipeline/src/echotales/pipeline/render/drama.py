@@ -140,12 +140,15 @@ def drama_spec(panel: Panel, *, text: str = "") -> DramaSpec:
         bits.append("Wind whips the hair and the cloth sideways in long streaming lines.")
     if panel.shot in (Shot.WIDE, Shot.EXTREME_WIDE, Shot.OVERHEAD, Shot.LOW_ANGLE) or panel.purpose is Purpose.CROWD_INDIVIDUAL:
         bits.append("Dark out-of-focus silhouettes in the foreground frame the view.")
-    if panel.shape in _SHAPE_WORDS and (peak or panel.shape in (Shape.WIDE, Shape.INSET)):
+    # A wide or tall composition sentence contradicted an eyes-only extreme close-up ("the subject small against a large space").
+    close = panel.shot in (Shot.CLOSE, Shot.EXTREME_CLOSE, Shot.INSERT, Shot.MEDIUM_CLOSE)
+    if panel.shape in _SHAPE_WORDS and (peak or panel.shape in (Shape.WIDE, Shape.INSET)) and not (
+            close and panel.shape in (Shape.WIDE, Shape.TALL, Shape.DIAGONAL)):
         bits.append(f"{_SHAPE_WORDS[panel.shape].capitalize()}.")
     if peak:
         bits.append(f"A dark desaturated palette with {_ACCENT[panel.layer]}.")
     else:
-        bits.append("Muted colour with calm even light.")
+        bits.append("A muted colour palette and a calm, composed frame.")
     return DramaSpec(peak, motion, shot, light, tuple(bits))
 
 
@@ -197,11 +200,15 @@ _TAG_ACCENT = {
 }
 
 
-def count_tags(n_people: int, *, crowd: bool, faceless: bool) -> str:
+def count_tags(n_people: int, *, crowd: bool, faceless: bool, eyes_only: bool = False) -> str:
+    """"no humans" on an eyes-only panel drew a landscape (the eyes are a person's, just an unnamed one), so it is "solo"."""
+    if eyes_only:
+        return "solo"
     if faceless:
         return "no humans"
     if crowd:
-        return "multiple others, crowd, 6+boys, from behind" if n_people <= 1 else "6+boys, crowd"
+        # "from behind" only when no lead is placed among them: it contradicted an overhead view of the lead in the middle.
+        return "6+boys, crowd, from behind" if n_people == 0 else "6+boys, crowd"
     return {0: "no humans", 1: "solo", 2: "2boys", 3: "3boys"}.get(n_people, "multiple boys")
 
 
@@ -216,7 +223,9 @@ def compile_noobai_tags(panel: Panel, *, identity_tags: list[str], scene_tags: l
     spec = drama_spec(panel, text=text)
     faceless = panel.shot is Shot.INSERT and not panel.cast
     n = len(panel.cast)
-    count = count_tags(n, crowd=crowd, faceless=faceless)
+    eyes_only = panel.shot is Shot.EXTREME_CLOSE and not panel.cast
+    count = count_tags(n, crowd=crowd, faceless=faceless or (n == 0 and not crowd and panel.shot not in (Shot.EXTREME_CLOSE,)
+                                                              and panel.purpose is not Purpose.EXTREME_CLOSE), eyes_only=eyes_only)
     count = count.replace("boy", gender_tag) if gender_tag != "boy" else count
     sections: list[tuple[str, str]] = [
         ("quality", profile.quality_tags),
