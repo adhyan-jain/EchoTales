@@ -33,20 +33,32 @@ TAG_WINDOW = 25
 TAG_WORDS = 35
 TAG_CTX = 4096
 
+#: Bumps when TAG_SYSTEM changes; the tag caches in scripts/eval are keyed by it so old tags never score a new prompt.
+PROMPT_VERSION = "p4"
+
+# p1 measured on RI ch1 (owner gold cuts {31, 79}): blocks 0-30 got place "unknown", the cut at 79 was missed because
+# the model kept the region ("same mountain") while the action moved to another room at the same moment, and many
+# blocks were marked LATER with no stated jump. Each rule below answers one of those failures, in general terms.
 TAG_SYSTEM = (
     "You label the blocks of a translated novel chapter with WHERE each block happens and whether STORY TIME "
-    "moved. For every numbered block give: place, a short noun phrase for the physical location (room, street, "
-    "building, region); time_shift, relative to the block before it: SAME when it continues the same moment or "
-    "the next few minutes, LATER when the text itself says time has passed or jumped forward, EARLIER when the "
-    "text goes back to an earlier time (a memory told as a scene, a past life, a flashback shown as action); and "
-    "time_anchor, a few words naming when it is, or empty. "
-    "Rules: while the action stays in one place, repeat the previous place string EXACTLY; do not reword it. "
-    "A block of pure dialogue or thought keeps the place of the block before it. A different place is only a "
-    "different room, building, street or region that the text shows the action moving to or cutting to. "
-    "If the text cuts to another place where something is happening at the same time, or introduces someone whose "
-    "name is withheld but who is somewhere else, that is a new place. Remembered or imagined places are not the "
-    "place of the block unless the text shows the action there. A one-line heading or separator takes the place "
-    "of the block before it. Do not change the place because the topic, mood or speaker changed."
+    "moved. For every numbered block give: place, a short noun phrase naming the ROOM or BUILDING or street where "
+    "the action is, never a region (not 'the mountain', 'the city', 'the country': say which room or building in "
+    "it); time_shift relative to the block before it; and time_anchor, a few words naming when it is, or empty. "
+    "Always give a concrete place: when the text does not name one, infer it from what the characters are doing "
+    "and holding (a bed, a table, a road), never 'unknown'. "
+    "PLACE RULES. While the action stays in one room, repeat the previous place string EXACTLY; do not reword it. "
+    "Dialogue or thought keeps the place of the block before it. Two rooms or buildings in the same town, "
+    "estate or mountain are two places. If the text cuts to somewhere else where something happens at the same "
+    "time (a phrase like 'at that very moment', 'at the same time', 'meanwhile', 'elsewhere'), that is a new "
+    "place: name where THAT person or group is (their own room), not the place of the block before, even if "
+    "they look at the same thing or the surroundings seem close. If it introduces a person by description only "
+    "(a pair of eyes, a figure, a voice) and the block before centred on someone else, that is a new place. Remembered, imagined or described places are not the place of the "
+    "block unless the action is shown there. A one-line heading or separator keeps the place before it. Do not "
+    "change the place because the topic, mood or speaker changed. "
+    "TIME RULES. time_shift is SAME unless the text itself states or clearly implies a jump: LATER when it says "
+    "time has passed or skips ahead (a new day, 'after a while', a season or years later); EARLIER when the text "
+    "goes back in time and shows it as action (a flashback, a past life, 'years ago'). Walking, talking, "
+    "thinking and the next few minutes are SAME. When in doubt answer SAME."
 )
 
 
@@ -92,9 +104,14 @@ def tag_chapter(chapter: Chapter, llm: Any) -> list[TaggedBlock]:
         win = shown[lo : lo + TAG_WINDOW]
         lines = "\n".join(f"[{i}] {_clip(text[i], TAG_WORDS)}" for i in win)
         head = (
-            f"The previous block's place was: {prev_place or 'unknown (this is the start of the chapter)'}"
-            + (f"; time: {prev_anchor}" if prev_anchor else "")
-            + ".\n"
+            (
+                f"The previous block's place was: {prev_place}"
+                + (f"; time: {prev_anchor}" if prev_anchor else "")
+                + ".\n"
+                if prev_place
+                # p2 measured: "unknown (this is the start...)" was copied verbatim onto blocks 0-30 of RI ch1.
+                else "This is the start of the chapter: name the place from the text itself.\n"
+            )
         )
         prompt = f"{head}\n{lines}\n\nGive one entry for every block number above, in order."
         got: dict[int, BlockTag] = {}
@@ -131,6 +148,10 @@ class PlaceCutParams:
     #: Cap on cuts for a chapter of `n` blocks: ceil(cap_rate * n); None disables.
     cap_rate: float | None = None
     cap_min: int = 1
+    #: "Both" rule: cut only where the place string changed AND the model flagged a time jump. Measured on the learn
+    #: chapters (qwen3:8b, tags p4): place change alone is 0 hits in 25 candidates (a walk through a street and a
+    #: bakery changes the place every few blocks and is one scene), a time flag alone 2 of 22, both together 11 of 31.
+    both: bool = True
 
 
 @dataclass(slots=True)
@@ -185,6 +206,24 @@ def place_candidates(tags: list[TaggedBlock], embedder: Any | None = None, *, si
     return out
 
 
+def _norm_place(place: str) -> str:
+    """Letters and single spaces only: the model sometimes re-emits a place with a stray comma ('his, chair')."""
+    return " ".join("".join(ch if ch.isalpha() else " " for ch in place.lower()).split())
+
+
+def rule_cuts(chapter: Chapter, tags: list[TaggedBlock], p: PlaceCutParams) -> list[PlaceCandidate]:
+    """Blocks where the place changed and a time jump was flagged, spaced by `min_gap` (first one wins)."""
+    out: list[PlaceCandidate] = []
+    for j in range(1, len(tags)):
+        a, b = tags[j - 1], tags[j]
+        if _norm_place(a.place) == _norm_place(b.place) or b.time_shift is TimeRelation.SAME:
+            continue
+        pos = canonical_position(chapter, b.block)
+        if all(abs(pos - canonical_position(chapter, o.block)) >= p.min_gap for o in out):
+            out.append(PlaceCandidate(b.block, 1.0, 1.0, True, j))
+    return out
+
+
 def select_cuts(chapter: Chapter, cands: list[PlaceCandidate], p: PlaceCutParams, n_blocks: int) -> list[PlaceCandidate]:
     """Peaks of the combined place/time score above the threshold, spaced and capped by the learned priors."""
     scored = [
@@ -217,8 +256,10 @@ def scenes_from_tags(
     """The model's tags as scenes (first scene at the first block), so downstream code is unchanged."""
     if not tags:
         return [LLMScene(start=0)]
-    cands = place_candidates(tags, embedder, side=params.side)
-    chosen = select_cuts(chapter, cands, params, len(tags))
+    if params.both:
+        chosen = rule_cuts(chapter, tags, params)
+    else:
+        chosen = select_cuts(chapter, place_candidates(tags, embedder, side=params.side), params, len(tags))
     place_at = {t.block: t for t in tags}
     scenes = [LLMScene(start=tags[0].block, place=tags[0].place)]
     for c in chosen:
