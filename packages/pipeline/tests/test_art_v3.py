@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pytest
 from _art_bakeoff_panels import bakeoff_panels
-from echotales.pipeline.render.compiler import PROFILES
+from echotales.pipeline.render.compiler import model_profile
 from echotales.pipeline.render.drama_tags import CHECKPOINTS, compile_c2, identity_tags
 from echotales.pipeline.render.sdxl_control import CONTROLNETS, ControlSpec, control_map, validate
 from PIL import Image
@@ -49,8 +49,8 @@ def tags(t) -> set[str]:
 @pytest.mark.parametrize("ck", list(CHECKPOINTS))
 def test_every_panel_compiles_with_its_checkpoint_quality_words(pid, ck):
     t = c2(pid, ck)
-    assert t.positive.startswith(PROFILES[CHECKPOINTS[ck]].quality_tags)
-    assert t.negative.startswith(PROFILES[CHECKPOINTS[ck]].negative_base.split(",")[0])
+    assert t.positive.startswith(model_profile(CHECKPOINTS[ck]).quality_tags)
+    assert t.negative.startswith(model_profile(CHECKPOINTS[ck]).negative_base.split(",")[0])
     assert len(t.positive.split(", ")) == len(set(t.positive.split(", "))), "tags are de-duplicated"
     assert ("score_9" in t.positive) == (ck == "noobai"), "score tags are NoobAI's, not Illustrious's"
 

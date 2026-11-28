@@ -16,7 +16,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
-from echotales.pipeline.render.compiler import PROFILES, CharacterBrief, PanelBrief
+from echotales.pipeline.render.compiler import CharacterBrief, PanelBrief, model_profile
 from echotales.pipeline.render.drama import (
     _GLOW,
     _TAG_ACCENT,
@@ -212,7 +212,7 @@ def compile_c2(panel: Panel, brief: PanelBrief, *, checkpoint: str = "noobai", t
 
     `trigger` is a character LoRA's trigger word, placed right after the count so it is read before the look it replaces.
     `checkpoint` picks the quality words and the base negative only (`CHECKPOINTS`); the drama vocabulary is the same for both."""
-    profile = PROFILES[CHECKPOINTS[checkpoint]]  # not `model_profile`: that is gated by the engine registry, which C2 does not extend
+    profile = model_profile(CHECKPOINTS[checkpoint])
     spec = drama_spec(panel, text=text, brief=brief)
     free, isolated, peak = spec.people_free, spec.isolated, spec.peak
     eyes_only = free and panel.shot is Shot.EXTREME_CLOSE

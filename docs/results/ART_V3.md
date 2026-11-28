@@ -7,7 +7,7 @@ Branch `claude/art-v3` (from `claude/adaptation-director`). Owner decision 2026-
 | Piece | File |
 |---|---|
 | Arm C2 tag compiler | `packages/pipeline/src/echotales/pipeline/render/drama_tags.py` (`compile_c2`, `identity_tags`, `scene_tags`) |
-| Illustrious profile | `render/compiler.py` `PROFILES["illustrious-xl-0.1"]` (not added to the engine registry, so `model_profile()` still refuses it; C2 reads `PROFILES` directly) |
+| Illustrious profile | `render/compiler.py` `PROFILES["illustrious-xl-0.1"]` (plus an `engines/registry.py` entry, so `model_profile()` accepts it; the default stays Z-Image) |
 | SDXL art worker (checkpoint, LoRA, img2img, ControlNet) | `render/_sdxl_art_worker.py`, `render/sdxl_control.py` |
 | LoRA trainer | `scripts/art/train_character_lora.py` |
 | Training-set builder | `scripts/art/build_lora_set.py` |
