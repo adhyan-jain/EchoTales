@@ -76,6 +76,7 @@ Turn web-novel chapters into a professional-feeling manhwa (vertical webtoon) an
 ## 4. Work plan (in order; each task is one branch, measured, then merged)
 
 ### T0. Land the ch1 render
+- History note (2026-11-28): `claude/adaptation-director` was rewritten before pushing to `master`, to drop a file with verbatim novel lines. `claude/final-ri1` was branched from the OLD commit `ed0ef32`. Before merging it, run `git rebase --onto claude/adaptation-director ed0ef32 claude/final-ri1`, and check that `data/eval/storyboard/*.json` storyboards are not committed (they contain novel text).
 - If `claude/final-ri1` has commits, review them, run the tests and merge.
 - Look at v58 against the reference slices, and write the honest verdict in VERSIONS.md if it is missing.
 - If the render did not finish, finish it:
