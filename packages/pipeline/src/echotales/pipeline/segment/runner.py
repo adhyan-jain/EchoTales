@@ -105,6 +105,7 @@ def segment_novel(
                 labels=scene_ctx["labels"],
                 outline_params=scene_cuts.outline_params,
                 outline_cache_dir=scene_cuts.outline_cache_dir,
+                outline_options=scene_cuts.outline_options,
             )
             segments = apply_cuts_to_segments(chapter, segments, analysis)
             save_scene_cuts(store, novel_id, analysis)

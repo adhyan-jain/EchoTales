@@ -43,6 +43,7 @@ from echotales.pipeline.segment.judge import (
 from echotales.pipeline.segment.llm_segment import LLMScene, cut_type_for, segment_chapter_llm
 from echotales.pipeline.segment.outline import (
     OutlineCache,
+    OutlineOptions,
     SegmentCache,
     name_hints,
     outline_chapter,
@@ -89,6 +90,8 @@ class SceneCutConfig:
     outline_params: Any | None = None
     #: Directory of cached outline lines and scene starts (outline.OutlineCache); None means no cache.
     outline_cache_dir: str | None = None
+    #: `outline.OutlineOptions` for the segmentation call (thinking, token cap, a separate model); None is the v4 call.
+    outline_options: Any | None = None
 
 
 @dataclass(slots=True)
@@ -182,6 +185,7 @@ def analyse_chapter_scenes(
     labels: dict[str, str] | None = None,
     outline_params: FusionParams | None = None,
     outline_cache_dir: str | None = None,
+    outline_options: Any | None = None,
 ) -> SceneAnalysis:
     """Scene cuts for one chapter. `llm_scenes` lets a caller reuse a cached model pass (evaluation)."""
     boundaries = score_chapter(chapter, mentions, nlp=nlp, topic=topic, embedder=embedder)
@@ -199,7 +203,8 @@ def analyse_chapter_scenes(
     time_labels: list[Any] = []
     if method == "outline" and llm is not None:
         cuts_o, prior, time_labels = _outline_cuts(
-            chapter, llm, mentions, spans, labels, nlp, outline_params or DEFAULT_OUTLINE_FUSION, outline_cache_dir, novel_id
+            chapter, llm, mentions, spans, labels, nlp, outline_params or DEFAULT_OUTLINE_FUSION, outline_cache_dir, novel_id,
+            outline_options,
         )
         have = {c.block for c in cuts}
         cuts += [c for c in cuts_o if c.block not in have]
@@ -300,13 +305,18 @@ def _outline_cuts(
     params: FusionParams,
     cache_dir: str | None,
     novel_id: str,
+    options: OutlineOptions | None = None,
 ) -> tuple[list[SceneCut], set[int], list[Any]]:
-    """v4: whole-chapter outline, scene starts from one call, fused with cast continuity, then story time."""
-    model = getattr(llm, "model", "model")
-    oc = OutlineCache(cache_dir, model) if cache_dir else None
-    sc = SegmentCache(cache_dir, model) if cache_dir else None
+    """v4: whole-chapter outline, scene starts from one call, fused with cast continuity, then story time.
+
+    v5 `options`: the segmentation call may think and may use a larger model than the outline lines.
+    """
+    opt = options or OutlineOptions()
+    seg_llm = opt.segment_llm or llm
+    oc = OutlineCache(cache_dir, getattr(llm, "model", "model")) if cache_dir else None
+    sc = SegmentCache(cache_dir, getattr(seg_llm, "model", "model"), opt.tag) if cache_dir else None
     lines = outline_chapter(chapter, llm, novel_id=novel_id, hints=name_hints(chapter, mentions, spans, labels), cache=oc)
-    starts = segment_outline(chapter, lines, llm, novel_id=novel_id, cache=sc)
+    starts = segment_outline(chapter, lines, seg_llm, novel_id=novel_id, cache=sc, think=opt.think, max_tokens=opt.max_tokens)
     reasons = {canonical_position(chapter, b): why for b, why, conf in starts if conf >= params.conf_min}
     scores = cast_scores(chapter, block_casts(chapter, mentions, spans), params.cast_k)
     blocks = fuse(chapter, sorted(reasons), scores, separator_positions(chapter), params)

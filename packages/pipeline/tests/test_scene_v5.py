@@ -101,3 +101,22 @@ def test_present_cast_reads_the_outline_who_lines_and_never_asks_the_model() -> 
     assert "t:fy" in referenced and "t:fy" not in present
     assert "t:el" in present and "unresolved:clan head" in present
     assert "unresolved:old servant" in present  # listed in 2 blocks, no entity in the graph
+
+
+def test_outline_options_send_the_segmentation_call_to_a_separate_thinking_model() -> None:
+    from echotales.pipeline.segment.cast import FusionParams
+    from echotales.pipeline.segment.outline import OutlineOptions
+    from echotales.pipeline.segment.scenes import SceneCutConfig, analyse_chapter_scenes
+    from echotales.pipeline.segment.storytime import StoryTimeAnswer
+    from test_scene_v4 import FakeLLM, _echo_outline
+
+    def answer(request, schema):
+        return StoryTimeAnswer() if schema is StoryTimeAnswer else _echo_outline(request, schema)
+
+    small, big = FakeLLM(answer), FakeLLM(answer)
+    opts = OutlineOptions(think=True, max_tokens=7000, segment_llm=big, tag="think")
+    cfg = SceneCutConfig(enabled=True, method="outline", outline_options=opts)
+    an = analyse_chapter_scenes(_chapter(30), None, llm=small, method=cfg.method, novel_id="t", outline_params=FusionParams("outline", min_gap=1), outline_options=cfg.outline_options)
+    assert [c.block for c in an.cuts] == [10]
+    assert "scene_segment" in big.calls and "scene_segment" not in small.calls
+    assert "scene_outline" in small.calls and "scene_outline" not in big.calls

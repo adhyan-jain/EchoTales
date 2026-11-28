@@ -62,6 +62,20 @@ SEGMENT_SYSTEM = (
 )
 
 
+@dataclass(slots=True)
+class OutlineOptions:
+    """How the whole-chapter segmentation call runs (segment v5). The defaults are the v4 call."""
+
+    #: Let the model reason before answering; the call then goes out without a schema `format` (see llm/ollama.py).
+    think: bool = False
+    #: Output cap; with `think` it must also hold the reasoning trace (measured 3000-6500 tokens on qwen3:8b).
+    max_tokens: int = 300
+    #: A different (usually larger) model for this call only; the outline lines still come from the chapter model.
+    segment_llm: Any | None = None
+    #: Cache suffix separating configurations that share one outline cache.
+    tag: str = ""
+
+
 class OutlineItem(BaseModel):
     n: int = Field(description="block number")
     who: str = Field(default="", description="names of people who act or speak, comma separated")
