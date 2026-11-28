@@ -153,3 +153,40 @@ expect `time_weight` to tune to about 0 and the prompt to need the withheld-iden
 4. RI ch1 check: `segment_ri_ch1_check.py` still uses the v1 call; pass `method="place_tags"` and `place_params`; expect cuts {31, 79},
    prior loop on segment 0, ritual cast. Worktrees have no `.env`: CLI runs need `ECHOTALES_MODEL_BACKEND=ollama ECHOTALES_LLM_MODE=local`.
 5. Fill the v2 per-novel, model-comparison and RI ch1 tables.
+
+# v2.1 measured results (2026-11-28, qwen3:8b, prompt p4, rule cutter `both=True, min_gap=1`)
+
+Parameters were chosen on the learn chapters only; held-out is report-only (70 chapters tagged, tag cache
+`data/scratch/segment/tagcache/qwen3_8b_p4/`). Machine-readable: `data/eval/segment/scene_induction_v2.json`.
+Baseline = v1 "full" row of `data/eval/segment/scene_induction.json` (held-out column).
+
+| novel | split | chapters | TP | FP | FN | P | R | F1 | v1 held F1 |
+|---|---|---|---|---|---|---|---|---|---|
+| reverend-insanity | learn | 10 | 4 | 6 | 4 | .40 | .50 | .44 | |
+| lord-of-the-mysteries | learn | 10 | 5 | 4 | 2 | .56 | .71 | .63 | |
+| omniscient-readers-viewpoint | learn | 2 | 0 | 0 | 1 | 0 | 0 | 0 | |
+| pride-and-prejudice | learn | 5 | 0 | 1 | 4 | 0 | 0 | 0 | |
+| a-study-in-scarlet | learn | 7 | 2 | 5 | 4 | .29 | .33 | .31 | |
+| **pooled** | learn | 34 | 11 | 16 | 15 | .41 | .42 | .42 | |
+| reverend-insanity | held | 4 | 2 | 1 | 1 | .67 | .67 | .67 | .40 |
+| lord-of-the-mysteries | held | 2 | 0 | 6 | 3 | 0 | 0 | 0 | .36 |
+| omniscient-readers-viewpoint | held | 16 | 1 | 9 | 14 | .10 | .07 | .08 | 0 |
+| pride-and-prejudice | held | 7 | 0 | 5 | 4 | 0 | 0 | 0 | .20 |
+| a-study-in-scarlet | held | 7 | 1 | 4 | 8 | .20 | .11 | .14 | n/a |
+| **pooled** | held | 36 | 4 | 25 | 30 | .14 | .12 | .13 | |
+
+Hard negatives falsely cut: learn 2 of 38, held 1 of 11.
+
+**Verdict: the tag cutter does not meet the 0.6 target.** Held-out F1 is 0.13 pooled, driven by recall (30 of 34 gold cuts missed,
+mostly ORV where the gold is dense). It beats v1 only on RI and ORV (tiny counts); it is worse on LotM and P&P held-out. The
+learn-to-held drop (0.42 to 0.13) shows the prompt and `min_gap` do not transfer.
+
+## RI ch1 named check (`scripts/eval/segment_ri_ch1_check.py`): 7 of 12 pass
+Cuts found {31, 35}, expected {31, 79}. Passing: Fang Yuan present in 0-30 and 79-89; clan head present in 31-78; Bai Ning Bing and
+Fang Zhi referenced and not present. Failing: cuts exactly {31, 79}; Fang Yuan not present in 31-78 (he is listed present);
+Fang Yuan referenced in 31-78; prior-loop flag on segment 0 (none flagged); cut 31 time relation (tagged LATER, not EARLIER).
+
+Diagnosis: the tags are wrong, not the cut rule. The model re-labels the continuous clan scene: place changes from "Qing Mao
+Mountain" to "Gu Yue Village" at block 36 with time LATER, which fires a cut near 35, and at 75-79 the place becomes "the third
+floor of the garret" with time SAME, so the real cut at 79 is never both-place-and-time. The "500 years ago" anchor lands on block
+80 instead of the prior-loop segment 0. No fix applied: a general fix was not clearly justified and tuning on RI ch1 is excluded.

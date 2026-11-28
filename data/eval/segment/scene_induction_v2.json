@@ -1,0 +1,222 @@
+{
+ "params": {
+  "both": true,
+  "min_gap": 1
+ },
+ "prompt": "p4",
+ "model": "qwen3:8b",
+ "chapters_tagged": 70,
+ "learn": {
+  "pooled": {
+   "tp": 11,
+   "fp": 16,
+   "fn": 15,
+   "precision": 0.407,
+   "recall": 0.423,
+   "f1": 0.415,
+   "hard_negatives": 38,
+   "hard_negative_false_cuts": 2
+  },
+  "per_novel": {
+   "reverend-insanity": {
+    "tp": 4,
+    "fp": 6,
+    "fn": 4,
+    "precision": 0.4,
+    "recall": 0.5,
+    "f1": 0.444,
+    "hard_negatives": 5,
+    "hard_negative_false_cuts": 1
+   },
+   "lord-of-the-mysteries": {
+    "tp": 5,
+    "fp": 4,
+    "fn": 2,
+    "precision": 0.556,
+    "recall": 0.714,
+    "f1": 0.625,
+    "hard_negatives": 24,
+    "hard_negative_false_cuts": 0
+   },
+   "omniscient-readers-viewpoint": {
+    "tp": 0,
+    "fp": 0,
+    "fn": 1,
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "hard_negatives": 0,
+    "hard_negative_false_cuts": 0
+   },
+   "pride-and-prejudice": {
+    "tp": 0,
+    "fp": 1,
+    "fn": 4,
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "hard_negatives": 1,
+    "hard_negative_false_cuts": 0
+   },
+   "a-study-in-scarlet": {
+    "tp": 2,
+    "fp": 5,
+    "fn": 4,
+    "precision": 0.286,
+    "recall": 0.333,
+    "f1": 0.308,
+    "hard_negatives": 8,
+    "hard_negative_false_cuts": 1
+   }
+  },
+  "chapters": {
+   "reverend-insanity": 10,
+   "lord-of-the-mysteries": 10,
+   "omniscient-readers-viewpoint": 2,
+   "pride-and-prejudice": 5,
+   "a-study-in-scarlet": 7
+  }
+ },
+ "held": {
+  "pooled": {
+   "tp": 4,
+   "fp": 25,
+   "fn": 30,
+   "precision": 0.138,
+   "recall": 0.118,
+   "f1": 0.127,
+   "hard_negatives": 11,
+   "hard_negative_false_cuts": 1
+  },
+  "per_novel": {
+   "reverend-insanity": {
+    "tp": 2,
+    "fp": 1,
+    "fn": 1,
+    "precision": 0.667,
+    "recall": 0.667,
+    "f1": 0.667,
+    "hard_negatives": 4,
+    "hard_negative_false_cuts": 0
+   },
+   "lord-of-the-mysteries": {
+    "tp": 0,
+    "fp": 6,
+    "fn": 3,
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "hard_negatives": 0,
+    "hard_negative_false_cuts": 0
+   },
+   "omniscient-readers-viewpoint": {
+    "tp": 1,
+    "fp": 9,
+    "fn": 14,
+    "precision": 0.1,
+    "recall": 0.067,
+    "f1": 0.08,
+    "hard_negatives": 0,
+    "hard_negative_false_cuts": 0
+   },
+   "pride-and-prejudice": {
+    "tp": 0,
+    "fp": 5,
+    "fn": 4,
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "hard_negatives": 2,
+    "hard_negative_false_cuts": 1
+   },
+   "a-study-in-scarlet": {
+    "tp": 1,
+    "fp": 4,
+    "fn": 8,
+    "precision": 0.2,
+    "recall": 0.111,
+    "f1": 0.143,
+    "hard_negatives": 5,
+    "hard_negative_false_cuts": 0
+   }
+  },
+  "chapters": {
+   "reverend-insanity": 4,
+   "lord-of-the-mysteries": 2,
+   "omniscient-readers-viewpoint": 16,
+   "pride-and-prejudice": 7,
+   "a-study-in-scarlet": 7
+  }
+ },
+ "all": {
+  "pooled": {
+   "tp": 15,
+   "fp": 41,
+   "fn": 45,
+   "precision": 0.268,
+   "recall": 0.25,
+   "f1": 0.259,
+   "hard_negatives": 49,
+   "hard_negative_false_cuts": 3
+  },
+  "per_novel": {
+   "reverend-insanity": {
+    "tp": 6,
+    "fp": 7,
+    "fn": 5,
+    "precision": 0.462,
+    "recall": 0.545,
+    "f1": 0.5,
+    "hard_negatives": 9,
+    "hard_negative_false_cuts": 1
+   },
+   "lord-of-the-mysteries": {
+    "tp": 5,
+    "fp": 10,
+    "fn": 5,
+    "precision": 0.333,
+    "recall": 0.5,
+    "f1": 0.4,
+    "hard_negatives": 24,
+    "hard_negative_false_cuts": 0
+   },
+   "omniscient-readers-viewpoint": {
+    "tp": 1,
+    "fp": 9,
+    "fn": 15,
+    "precision": 0.1,
+    "recall": 0.062,
+    "f1": 0.077,
+    "hard_negatives": 0,
+    "hard_negative_false_cuts": 0
+   },
+   "pride-and-prejudice": {
+    "tp": 0,
+    "fp": 6,
+    "fn": 8,
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "hard_negatives": 3,
+    "hard_negative_false_cuts": 1
+   },
+   "a-study-in-scarlet": {
+    "tp": 3,
+    "fp": 9,
+    "fn": 12,
+    "precision": 0.25,
+    "recall": 0.2,
+    "f1": 0.222,
+    "hard_negatives": 13,
+    "hard_negative_false_cuts": 1
+   }
+  },
+  "chapters": {
+   "reverend-insanity": 14,
+   "lord-of-the-mysteries": 12,
+   "omniscient-readers-viewpoint": 18,
+   "pride-and-prejudice": 12,
+   "a-study-in-scarlet": 14
+  }
+ }
+}
