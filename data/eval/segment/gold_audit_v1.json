@@ -1,0 +1,497 @@
+{
+ "protocol": "blind; 140 probes: all 58 gold cuts (excl RI ch1), 24 of 52 gold ambiguous (seed 7), 58 random non-cuts (seed 7); auditor Claude reading 4 blocks either side",
+ "summary": {
+  "a-study-in-scarlet": {
+   "n": 39,
+   "gold_cuts": 15,
+   "cut_agree": 6,
+   "cut_as_ambig": 2,
+   "cut_as_not": 7,
+   "random_noncuts": 12,
+   "noncut_called_cut": 0,
+   "noncut_called_amb": 0,
+   "gold_ambig": 12,
+   "ambig_my": {
+    "ambiguous": 1,
+    "not_cut": 10,
+    "cut": 1
+   },
+   "kappa3": 0.244,
+   "kappa_binary_cut_vs_not": 0.372
+  },
+  "lord-of-the-mysteries": {
+   "n": 22,
+   "gold_cuts": 10,
+   "cut_agree": 8,
+   "cut_as_ambig": 0,
+   "cut_as_not": 2,
+   "random_noncuts": 11,
+   "noncut_called_cut": 1,
+   "noncut_called_amb": 0,
+   "gold_ambig": 1,
+   "ambig_my": {
+    "ambiguous": 1
+   },
+   "kappa3": 0.747,
+   "kappa_binary_cut_vs_not": 0.712
+  },
+  "omniscient-readers-viewpoint": {
+   "n": 39,
+   "gold_cuts": 16,
+   "cut_agree": 13,
+   "cut_as_ambig": 2,
+   "cut_as_not": 1,
+   "random_noncuts": 21,
+   "noncut_called_cut": 0,
+   "noncut_called_amb": 0,
+   "gold_ambig": 2,
+   "ambig_my": {
+    "ambiguous": 2
+   },
+   "kappa3": 0.861,
+   "kappa_binary_cut_vs_not": 0.831
+  },
+  "reverend-insanity": {
+   "n": 22,
+   "gold_cuts": 9,
+   "cut_agree": 5,
+   "cut_as_ambig": 1,
+   "cut_as_not": 3,
+   "random_noncuts": 7,
+   "noncut_called_cut": 0,
+   "noncut_called_amb": 0,
+   "gold_ambig": 6,
+   "ambig_my": {
+    "cut": 1,
+    "ambiguous": 2,
+    "not_cut": 3
+   },
+   "kappa3": 0.452,
+   "kappa_binary_cut_vs_not": 0.522
+  },
+  "pride-and-prejudice": {
+   "n": 18,
+   "gold_cuts": 8,
+   "cut_agree": 2,
+   "cut_as_ambig": 2,
+   "cut_as_not": 4,
+   "random_noncuts": 7,
+   "noncut_called_cut": 0,
+   "noncut_called_amb": 0,
+   "gold_ambig": 3,
+   "ambig_my": {
+    "not_cut": 2,
+    "cut": 1
+   },
+   "kappa3": 0.202,
+   "kappa_binary_cut_vs_not": 0.237
+  },
+  "ALL": {
+   "n": 140,
+   "gold_cuts": 58,
+   "cut_agree": 34,
+   "cut_as_ambig": 7,
+   "cut_as_not": 17,
+   "random_noncuts": 58,
+   "noncut_called_cut": 1,
+   "noncut_called_amb": 0,
+   "gold_ambig": 24,
+   "ambig_my": {
+    "ambiguous": 6,
+    "not_cut": 15,
+    "cut": 3
+   },
+   "kappa3": 0.495,
+   "kappa_binary_cut_vs_not": 0.569
+  }
+ },
+ "disagreements": [
+  {
+   "novel": "lord-of-the-mysteries",
+   "chapter": "5",
+   "block": 50,
+   "gold_label": "cut",
+   "audit_label": "not_cut",
+   "anchor": "After the second-floor tenants",
+   "reason": "same evening same place preparing ritual"
+  },
+  {
+   "novel": "a-study-in-scarlet",
+   "chapter": "12",
+   "block": 3,
+   "gold_label": "ambiguous",
+   "audit_label": "not_cut",
+   "anchor": "About the middle of the",
+   "reason": "travel summary same group"
+  },
+  {
+   "novel": "a-study-in-scarlet",
+   "chapter": "12",
+   "block": 4,
+   "gold_label": "cut",
+   "audit_label": "not_cut",
+   "anchor": "He walked for a couple",
+   "reason": "same hunt continuing"
+  },
+  {
+   "novel": "pride-and-prejudice",
+   "chapter": "3",
+   "block": 6,
+   "gold_label": "cut",
+   "audit_label": "not_cut",
+   "anchor": "being gone to London only",
+   "reason": "sentence continues across illustration"
+  },
+  {
+   "novel": "a-study-in-scarlet",
+   "chapter": "4",
+   "block": 52,
+   "gold_label": "ambiguous",
+   "audit_label": "not_cut",
+   "anchor": "We started off for the",
+   "reason": "same people leave together"
+  },
+  {
+   "novel": "a-study-in-scarlet",
+   "chapter": "11",
+   "block": 54,
+   "gold_label": "cut",
+   "audit_label": "not_cut",
+   "anchor": "Once on the high road",
+   "reason": "same fugitives continue"
+  },
+  {
+   "novel": "reverend-insanity",
+   "chapter": "21",
+   "block": 32,
+   "gold_label": "ambiguous",
+   "audit_label": "cut",
+   "anchor": "The academy bulletin wall",
+   "reason": "time passes, new place and people"
+  },
+  {
+   "novel": "a-study-in-scarlet",
+   "chapter": "10",
+   "block": 23,
+   "gold_label": "ambiguous",
+   "audit_label": "not_cut",
+   "anchor": "He was still sitting with",
+   "reason": "same room, daughter enters"
+  },
+  {
+   "novel": "a-study-in-scarlet",
+   "chapter": "12",
+   "block": 13,
+   "gold_label": "ambiguous",
+   "audit_label": "cut",
+   "anchor": "I am Jefferson Hope",
+   "reason": "new place after days of travel summary"
+  },
+  {
+   "novel": "a-study-in-scarlet",
+   "chapter": "11",
+   "block": 26,
+   "gold_label": "ambiguous",
+   "audit_label": "not_cut",
+   "anchor": "Thus day followed day",
+   "reason": "period summary same people"
+  },
+  {
+   "novel": "reverend-insanity",
+   "chapter": "8",
+   "block": 18,
+   "gold_label": "cut",
+   "audit_label": "not_cut",
+   "anchor": "After he left the Gu",
+   "reason": "follows same person onward"
+  },
+  {
+   "novel": "a-study-in-scarlet",
+   "chapter": "3",
+   "block": 31,
+   "gold_label": "cut",
+   "audit_label": "not_cut",
+   "anchor": "Number 3, Lauriston Gardens",
+   "reason": "same people arrive on foot"
+  },
+  {
+   "novel": "a-study-in-scarlet",
+   "chapter": "4",
+   "block": 18,
+   "gold_label": "cut",
+   "audit_label": "not_cut",
+   "anchor": "This conversation had occurred while",
+   "reason": "same cab travel"
+  },
+  {
+   "novel": "pride-and-prejudice",
+   "chapter": "40",
+   "block": 25,
+   "gold_label": "ambiguous",
+   "audit_label": "not_cut",
+   "anchor": "She was now, on being",
+   "reason": "same time continued summary"
+  },
+  {
+   "novel": "a-study-in-scarlet",
+   "chapter": "1",
+   "block": 33,
+   "gold_label": "cut",
+   "audit_label": "not_cut",
+   "anchor": "This was a lofty chamber",
+   "reason": "same pair arrive at lab"
+  },
+  {
+   "novel": "pride-and-prejudice",
+   "chapter": "15",
+   "block": 10,
+   "gold_label": "cut",
+   "audit_label": "not_cut",
+   "anchor": "Mrs. Philips was always glad",
+   "reason": "same visit continues"
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "chapter": "24",
+   "block": 101,
+   "gold_label": "cut",
+   "audit_label": "ambiguous",
+   "anchor": "Did you do such great",
+   "reason": "asterisk break but conversation continues"
+  },
+  {
+   "novel": "reverend-insanity",
+   "chapter": "5",
+   "block": 5,
+   "gold_label": "cut",
+   "audit_label": "not_cut",
+   "anchor": "One of the oldest legends",
+   "reason": "legend digression inside same scene"
+  },
+  {
+   "novel": "reverend-insanity",
+   "chapter": "4",
+   "block": 3,
+   "gold_label": "ambiguous",
+   "audit_label": "not_cut",
+   "anchor": "The group of youths made",
+   "reason": "same group enters cave"
+  },
+  {
+   "novel": "reverend-insanity",
+   "chapter": "5",
+   "block": 23,
+   "gold_label": "cut",
+   "audit_label": "not_cut",
+   "anchor": "At this moment, the Hope",
+   "reason": "returns from digression same scene"
+  },
+  {
+   "novel": "a-study-in-scarlet",
+   "chapter": "7",
+   "block": 32,
+   "gold_label": "ambiguous",
+   "audit_label": "not_cut",
+   "anchor": "I went downstairs and carried",
+   "reason": "same scene errand"
+  },
+  {
+   "novel": "reverend-insanity",
+   "chapter": "8",
+   "block": 45,
+   "gold_label": "ambiguous",
+   "audit_label": "not_cut",
+   "anchor": "Hence when he saw Fang",
+   "reason": "same scene"
+  },
+  {
+   "novel": "a-study-in-scarlet",
+   "chapter": "5",
+   "block": 2,
+   "gold_label": "cut",
+   "audit_label": "ambiguous",
+   "anchor": "He was very late in",
+   "reason": "hours pass in same rooms, bridge"
+  },
+  {
+   "novel": "pride-and-prejudice",
+   "chapter": "3",
+   "block": 19,
+   "gold_label": "ambiguous",
+   "audit_label": "cut",
+   "anchor": "The evening altogether passed off",
+   "reason": "ball ends, new place home"
+  },
+  {
+   "novel": "reverend-insanity",
+   "chapter": "8",
+   "block": 32,
+   "gold_label": "ambiguous",
+   "audit_label": "not_cut",
+   "anchor": "A week after the Awakening",
+   "reason": "retrospective summary same walk"
+  },
+  {
+   "novel": "lord-of-the-mysteries",
+   "chapter": "36",
+   "block": 53,
+   "gold_label": "cut",
+   "audit_label": "not_cut",
+   "anchor": "The curtains were drawn as",
+   "reason": "same room continuous"
+  },
+  {
+   "novel": "a-study-in-scarlet",
+   "chapter": "6",
+   "block": 42,
+   "gold_label": "ambiguous",
+   "audit_label": "not_cut",
+   "anchor": "I next called upon Madame",
+   "reason": "reported narration same scene"
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "chapter": "33",
+   "block": 79,
+   "gold_label": "cut",
+   "audit_label": "ambiguous",
+   "anchor": "I walked up the stairs",
+   "reason": "protagonist leaves companions, continuous action"
+  },
+  {
+   "novel": "a-study-in-scarlet",
+   "chapter": "3",
+   "block": 26,
+   "gold_label": "cut",
+   "audit_label": "not_cut",
+   "anchor": "It was a foggy, cloudy",
+   "reason": "same cab ride"
+  },
+  {
+   "novel": "a-study-in-scarlet",
+   "chapter": "8",
+   "block": 39,
+   "gold_label": "cut",
+   "audit_label": "not_cut",
+   "anchor": "At the head of the",
+   "reason": "same scene, shift began at 38"
+  },
+  {
+   "novel": "pride-and-prejudice",
+   "chapter": "3",
+   "block": 20,
+   "gold_label": "cut",
+   "audit_label": "not_cut",
+   "anchor": "Oh, my dear Mr. Bennet",
+   "reason": "scene start was one block earlier"
+  },
+  {
+   "novel": "a-study-in-scarlet",
+   "chapter": "12",
+   "block": 12,
+   "gold_label": "cut",
+   "audit_label": "ambiguous",
+   "anchor": "For five days he toiled",
+   "reason": "journey summary bridge between 2 scenes"
+  },
+  {
+   "novel": "a-study-in-scarlet",
+   "chapter": "2",
+   "block": 16,
+   "gold_label": "ambiguous",
+   "audit_label": "not_cut",
+   "anchor": "During the first week or",
+   "reason": "summary continues"
+  },
+  {
+   "novel": "pride-and-prejudice",
+   "chapter": "12",
+   "block": 4,
+   "gold_label": "cut",
+   "audit_label": "ambiguous",
+   "anchor": "On Sunday, after morning service",
+   "reason": "departure summary bridge"
+  },
+  {
+   "novel": "reverend-insanity",
+   "chapter": "9",
+   "block": 33,
+   "gold_label": "cut",
+   "audit_label": "ambiguous",
+   "anchor": "Gu Yue Fang Zheng was ushered",
+   "reason": "new place and people, true start at 32"
+  },
+  {
+   "novel": "a-study-in-scarlet",
+   "chapter": "1",
+   "block": 63,
+   "gold_label": "ambiguous",
+   "audit_label": "not_cut",
+   "anchor": "We left him working among",
+   "reason": "same people leave together"
+  },
+  {
+   "novel": "pride-and-prejudice",
+   "chapter": "12",
+   "block": 5,
+   "gold_label": "ambiguous",
+   "audit_label": "not_cut",
+   "anchor": "They were not welcomed home",
+   "reason": "same people arrive home continuing"
+  },
+  {
+   "novel": "a-study-in-scarlet",
+   "chapter": "1",
+   "block": 23,
+   "gold_label": "ambiguous",
+   "audit_label": "not_cut",
+   "anchor": "As we made our way",
+   "reason": "same pair, conversation continues en route"
+  },
+  {
+   "novel": "lord-of-the-mysteries",
+   "chapter": "5",
+   "block": 98,
+   "gold_label": "not_cut",
+   "audit_label": "cut",
+   "anchor": "...",
+   "reason": "ellipsis break, new place, header follows"
+  },
+  {
+   "novel": "a-study-in-scarlet",
+   "chapter": "6",
+   "block": 40,
+   "gold_label": "ambiguous",
+   "audit_label": "not_cut",
+   "anchor": "Well, I went to Underwood",
+   "reason": "reported narration same scene"
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "chapter": "2",
+   "block": 11,
+   "gold_label": "cut",
+   "audit_label": "not_cut",
+   "anchor": "In a noisy subway, I",
+   "reason": "same intro scene"
+  },
+  {
+   "novel": "pride-and-prejudice",
+   "chapter": "7",
+   "block": 46,
+   "gold_label": "cut",
+   "audit_label": "not_cut",
+   "anchor": "She was shown into the",
+   "reason": "same person arrives, follows"
+  },
+  {
+   "novel": "pride-and-prejudice",
+   "chapter": "23",
+   "block": 14,
+   "gold_label": "cut",
+   "audit_label": "ambiguous",
+   "anchor": "Mr. Collins returned most punctually",
+   "reason": "time jump after summary, bridge"
+  }
+ ]
+}
