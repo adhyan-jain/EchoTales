@@ -147,7 +147,8 @@ def test_gender_explicit_in_every_character_clause():
 def test_imagined_panel_has_no_place_and_no_bystanders():
     comp = _drama("p10_bainingbing")
     text = comp.positive
-    assert "isolated figure floating in an abstract void" in text and "no other people" in text
+    assert "isolated figure floating in a pure empty black void lit only by a soft cold pale-blue glow" in text
+    assert "no landscape, no sky, no mountains and no horizon" in text and "no other people" in text
     assert not any(s.label in ("setting", "others") for s in comp.sections)
     for banned in ("hall", "temple", "elders", "kneel"):
         assert banned not in text.lower()
@@ -197,3 +198,12 @@ def test_people_free_panels_get_the_style_lead_without_the_people_clause():
         assert "mature faces" not in text and "hanfu robes" not in text, pid
         assert text.startswith("Korean webtoon colour illustration")
     assert "mature faces" in _drama("p01_hero").positive
+
+
+def test_accent_light_does_not_tint_the_irises():
+    """ART_DRAMA gap: the eyes-only panel's irises came back teal because the palette sentence was the only colour word near them."""
+    eyes = _drama("p12_eyes").positive
+    assert "never tints the irises" in eyes
+    hero = _drama("p02_accuser").positive  # a close shot with a cast: irises keep the look's own colour
+    assert "never tints the eyes" in hero
+    assert "never tints" not in _drama("p05_detonation").positive  # no eyes in a detonation

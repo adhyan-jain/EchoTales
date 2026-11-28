@@ -107,15 +107,15 @@ _ACCENT = {
     Layer.IMAGINED: "cold pale-blue",
     Layer.DREAM: "violet",
 }
-#: The void an isolated (IMAGINED / REFERENCED_INSET) subject floats in, in the layer's own palette.
-_VOID = {
-    Layer.IMAGINED: "an abstract void filled with a soft cold pale-blue glow",
-    Layer.MEMORY: "a hazy abstract field of warm gold glow",
-    Layer.DREAM: "a drifting abstract violet mist",
-    Layer.LORE: "a pale abstract ink-grey void",
-    Layer.PAST: "an abstract blood-red haze",
-    Layer.PRESENT: "an abstract dark void with a soft glow",
+#: The void an isolated (IMAGINED / REFERENCED_INSET) subject floats in, in the layer's own glow colour. Round 2 said "an abstract
+#: void filled with a soft cold pale-blue glow" and the inset still came back with a painted mountain landscape (ART_DRAMA gap):
+#: "filled with" read as a scene to fill. It is now a pure black void that only a glow lights, with the absent things named.
+_GLOW = {
+    Layer.IMAGINED: "cold pale-blue", Layer.MEMORY: "warm gold", Layer.DREAM: "violet", Layer.LORE: "pale ink-grey",
+    Layer.PAST: "blood-red", Layer.PRESENT: "cold pale-blue",
 }
+_VOID = {layer: f"a pure empty black void lit only by a soft {glow} glow, with no landscape, no sky, no mountains and no horizon"
+         for layer, glow in _GLOW.items()}
 _TEXTURE_LAYERS = frozenset({Layer.PAST, Layer.LORE, Layer.MEMORY, Layer.DREAM})
 
 
@@ -212,12 +212,17 @@ def drama_spec(panel: Panel, *, text: str = "", brief: PanelBrief | None = None)
             close and panel.shape in (Shape.WIDE, Shape.TALL, Shape.DIAGONAL)) and not (
             free):  # "the subject" of a shape sentence is a person to the model
         bits.append(f"{_SHAPE_WORDS[panel.shape].capitalize()}.")
+    # The accent colour is a light on the scene, not a colour of the eyes: the eyes-only panel came back with teal irises because the
+    # palette sentence was the only colour word near them (ART_DRAMA gap). Whenever eyes are the frame or near it, say where it falls.
+    eyes_near = panel.shot in (Shot.EXTREME_CLOSE, Shot.CLOSE, Shot.MEDIUM_CLOSE) and not isolated
+    iris = (" The accent light never tints the irises: they stay plain natural dark irises." if free
+            else " The accent light never tints the eyes: the irises keep their own colour.") if eyes_near else ""
     if isolated:
         bits.append(f"A dark palette with one intensely saturated {_ACCENT[panel.layer]} glow around the subject.")
     elif peak:
-        bits.append(f"A dark desaturated palette with one intensely saturated {_ACCENT[panel.layer]} accent light raking across the scene.")
+        bits.append(f"A dark desaturated palette with one intensely saturated {_ACCENT[panel.layer]} accent light raking across the scene.{iris}")
     else:
-        bits.append("A muted colour palette and a calm, composed frame.")
+        bits.append(f"A muted colour palette and a calm, composed frame.{iris}")
     return DramaSpec(peak, motion, free, isolated, shot, light, tuple(bits))
 
 
@@ -290,7 +295,7 @@ def _isolated_brief(b: PanelBrief, panel: Panel) -> PanelBrief:
     expr = next((c.stated_expression for c in b.characters if c.stated_expression), "")
     mood = f", {expr}," if expr else ""
     b.composition = (f"{names}{mood} stands alone as an isolated figure floating in {_VOID[panel.layer]}, pictured as a vision. "
-                     f"No room, no walls, no furniture, no ground and no other people anywhere in the frame.")
+                     f"No room, no walls, no furniture, no ground, no scenery and no other people anywhere in the frame.")
     b.empty_hands = False
     return b
 
