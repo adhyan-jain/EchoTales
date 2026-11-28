@@ -79,6 +79,17 @@ class OutlineOptions:
     tag: str = ""
 
 
+#: Context the segmentation model must be served with for `v5_options`: a prompt of up to ~5.5k tokens plus a reasoning
+#: trace of 3-6.5k tokens (qwen3:8b, 100% GPU at 12288 on the 8 GB development card, `ollama ps`).
+V5_NUM_CTX = 12288
+
+
+def v5_options(segment_llm: Any | None = None) -> OutlineOptions:
+    """The segment v5 call, chosen on the learn split (docs/results/SCENE_INDUCTION.md, v5): thinking on, the opening 40
+    words of every block next to its outline line. The provider behind the segmentation model needs `num_ctx=V5_NUM_CTX`."""
+    return OutlineOptions(think=True, max_tokens=6500, segment_llm=segment_llm, raw_words=40, tag="think_raw40")
+
+
 class OutlineItem(BaseModel):
     n: int = Field(description="block number")
     who: str = Field(default="", description="names of people who act or speak, comma separated")

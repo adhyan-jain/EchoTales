@@ -48,6 +48,7 @@ from echotales.pipeline.segment.outline import (
     name_hints,
     outline_chapter,
     segment_outline,
+    v5_options,
 )
 from echotales.pipeline.segment.place_tags import PlaceCutParams, scenes_from_tags, tag_chapter
 from echotales.pipeline.segment.storytime import prior_loop_segments, story_time_pass
@@ -59,9 +60,10 @@ _ARTIFACT_PREFIX = "scene_cuts"
 DEFAULT_RULE = CutRule("place", False, False, False, True, 5)
 
 
-#: Outline cuts alone. The learn-chosen fusion (cast filter, `FusionParams("and", ...)` in data/eval/segment/scene_induction_v4_fusion_*.json)
-#: did not reach the target held-out and `method="outline"` is opt-in, so no tuned value is baked in (docs/results/SCENE_INDUCTION.md, v4).
-DEFAULT_OUTLINE_FUSION = FusionParams("outline", min_gap=3)
+#: Fusion of the outline cuts with the cast filter, chosen on the 34 learn chapters (audited gold, +-1 block, qwen3:8b with the
+#: v5 call; data/scratch/segment/v5_fusion_think_raw40_pm1.json): an outline cut stays only if the K=5 cast-bearing blocks
+#: before and after it share nobody (theta 1.0), or a separator sits at it. Held-out pooled F1 (+-1): see SCENE_INDUCTION.md, v5.
+DEFAULT_OUTLINE_FUSION = FusionParams("and", cast_k=5, theta=1.0, window=0, use_sep=True, min_gap=3, conf_min=1)
 
 
 @dataclass(slots=True)
@@ -75,9 +77,10 @@ class SceneCutConfig:
     #: Small local model for the implicit-cut and story-order passes. None means conventions only.
     llm: Any | None = None
     max_implicit_per_chapter: int = 4
-    #: "place_tags" (v2.1: the model tags each block with place and time, code decides the cuts),
-    #: "whole_chapter" (v2: the model lists the chapter's scenes; over-segments) or "per_boundary" (v1 judge).
-    method: str = "place_tags"
+    #: "outline" (v5, the default: whole-chapter outline, one thinking call, cast filter), "place_tags" (v2.1: the model tags
+    #: each block with place and time, code decides the cuts), "judge" (v3), "whole_chapter" (v2; over-segments) or
+    #: "per_boundary" (v1). Outline needs `llm`; without one only the learned conventions cut.
+    method: str = "outline"
     #: Tuned thresholds for "place_tags" (see place_tags.PlaceCutParams); None means the defaults.
     place_params: Any | None = None
     #: Embedding model for the topic feature; None keeps TF-IDF.
@@ -90,7 +93,8 @@ class SceneCutConfig:
     outline_params: Any | None = None
     #: Directory of cached outline lines and scene starts (outline.OutlineCache); None means no cache.
     outline_cache_dir: str | None = None
-    #: `outline.OutlineOptions` for the segmentation call (thinking, token cap, a separate model); None is the v4 call.
+    #: `outline.OutlineOptions` for the segmentation call (thinking, token cap, a separate model); None means `v5_options()`,
+    #: whose model must be served with num_ctx >= `outline.V5_NUM_CTX`.
     outline_options: Any | None = None
 
 
@@ -311,7 +315,7 @@ def _outline_cuts(
 
     v5 `options`: the segmentation call may think and may use a larger model than the outline lines.
     """
-    opt = options or OutlineOptions()
+    opt = options or v5_options()
     seg_llm = opt.segment_llm or llm
     oc = OutlineCache(cache_dir, getattr(llm, "model", "model")) if cache_dir else None
     sc = SegmentCache(cache_dir, getattr(seg_llm, "model", "model"), opt.tag) if cache_dir else None

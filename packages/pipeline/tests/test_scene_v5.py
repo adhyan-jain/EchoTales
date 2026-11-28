@@ -132,3 +132,13 @@ def test_raw_text_prompt_shrinks_the_words_per_block_to_fit_and_keeps_every_row(
     few = raw_outline_prompt(lines[:10], ch, 40)
     assert few.splitlines()[0].count("word") == 40  # a short chapter keeps the full 40 words
     assert "<Ann | inn>" in few
+
+
+def test_v5_is_the_default_method_with_the_learn_chosen_call_and_fusion() -> None:
+    from echotales.pipeline.segment.outline import V5_NUM_CTX, v5_options
+    from echotales.pipeline.segment.scenes import DEFAULT_OUTLINE_FUSION, SceneCutConfig
+
+    assert SceneCutConfig().method == "outline" and SceneCutConfig().enabled is False
+    o = v5_options()
+    assert o.think and o.raw_words == 40 and o.max_tokens + 5500 <= V5_NUM_CTX  # the trace plus a full prompt fit the context
+    assert (DEFAULT_OUTLINE_FUSION.mode, DEFAULT_OUTLINE_FUSION.cast_k, DEFAULT_OUTLINE_FUSION.theta) == ("and", 5, 1.0)
