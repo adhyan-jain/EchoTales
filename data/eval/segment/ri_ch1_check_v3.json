@@ -1,0 +1,150 @@
+{
+ "model": "qwen3:8b",
+ "cuts": [
+  {
+   "block": 19,
+   "source": "judge",
+   "type": "NEW_SCENE",
+   "time": "EARLIER",
+   "confidence": 0.7,
+   "why": [
+    "The scene shifts to Fang Yuan's memories of his past life, indicating a break in time and location."
+   ]
+  },
+  {
+   "block": 31,
+   "source": "judge",
+   "type": "NEW_SCENE",
+   "time": "UNKNOWN",
+   "confidence": 0.9,
+   "why": [
+    "The scene shifts to a different time and location, focusing on a different set of characters."
+   ]
+  },
+  {
+   "block": 45,
+   "source": "judge",
+   "type": "NEW_SCENE",
+   "time": "SAME",
+   "confidence": 0.8,
+   "why": [
+    "The AFTER section reflects on past events and looks forward to future ones, indicating a shift in time and perspective."
+   ]
+  },
+  {
+   "block": 55,
+   "source": "judge",
+   "type": "NEW_SCENE",
+   "time": "SAME",
+   "confidence": 0.8,
+   "why": [
+    "The conversation shifts to different people and locations, indicating a scene break."
+   ]
+  },
+  {
+   "block": 79,
+   "source": "judge",
+   "type": "NEW_SCENE",
+   "time": "SAME",
+   "confidence": 0.8,
+   "why": [
+    "The AFTER section shifts to a different time and location, focusing on a different character."
+   ]
+  }
+ ],
+ "prior_loop_segments": [],
+ "time_labels": [
+  {
+   "segment": 0,
+   "layer": "present",
+   "relation": "UNKNOWN",
+   "quote": "",
+   "verified": false
+  },
+  {
+   "segment": 1,
+   "layer": "memory",
+   "relation": "EARLIER",
+   "quote": "memories of his previous life on Earth",
+   "verified": true
+  },
+  {
+   "segment": 2,
+   "layer": "present",
+   "relation": "UNKNOWN",
+   "quote": "",
+   "verified": false
+  },
+  {
+   "segment": 3,
+   "layer": "present",
+   "relation": "SAME",
+   "quote": "Time flies too quickly",
+   "verified": true
+  },
+  {
+   "segment": 4,
+   "layer": "present",
+   "relation": "SAME",
+   "quote": "You\u2019re right, Fang Zhi\u2019s side has appeared",
+   "verified": true
+  },
+  {
+   "segment": 5,
+   "layer": "present",
+   "relation": "SAME",
+   "quote": "Gu Yue Village, this is 500 years ago",
+   "verified": true
+  }
+ ],
+ "present_labels_31_78": [
+  "fang yuan",
+  "head of gu",
+  "unresolved:clan head",
+  "unresolved:gu yue clan head"
+ ],
+ "presence": {
+  "0-30": {
+   "present": [
+    "reverend-insanity:self:476821534c"
+   ],
+   "referenced": []
+  },
+  "31-78": {
+   "present": [
+    "unresolved:gu yue clan head",
+    "reverend-insanity:self:476821534c",
+    "unresolved:clan head",
+    "reverend-insanity:title:head_of_gu"
+   ],
+   "referenced": [
+    "unresolved:bai ning bing",
+    "reverend-insanity:self:60117b7f5a",
+    "unresolved:this one"
+   ]
+  },
+  "79-89": {
+   "present": [
+    "reverend-insanity:self:476821534c"
+   ],
+   "referenced": []
+  }
+ },
+ "checks": {
+  "cuts exactly {31, 79}": false,
+  "0-30: Fang Yuan present": true,
+  "31-78: clan head present": true,
+  "31-78: elders present": false,
+  "31-78: only clan head and elders present": false,
+  "31-78: Fang Yuan NOT present": false,
+  "31-78: Fang Yuan referenced": false,
+  "31-78: Bai Ning Bing referenced": true,
+  "31-78: Bai Ning Bing NOT present": true,
+  "31-78: Fang Zhi referenced": true,
+  "31-78: Fang Zhi NOT present": true,
+  "segment 0 layer = past (prior loop)": false,
+  "79-89: Fang Yuan present": true
+ },
+ "passed": 7,
+ "total": 13
+}

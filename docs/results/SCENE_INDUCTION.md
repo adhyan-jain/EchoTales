@@ -190,3 +190,45 @@ Diagnosis: the tags are wrong, not the cut rule. The model re-labels the continu
 Mountain" to "Gu Yue Village" at block 36 with time LATER, which fires a cut near 35, and at 75-79 the place becomes "the third
 floor of the garret" with time SAME, so the real cut at 79 is never both-place-and-time. The "500 years ago" anchor lands on block
 80 instead of the prior-loop segment 0. No fix applied: a general fix was not clearly justified and tuning on RI ch1 is excluded.
+
+# v3 measured results (2026-11-28, qwen3:8b, judge prompt j1, candidate union + pairwise boundary judge)
+
+Rule chosen on the 34 learn chapters only, from an interpretable grid (`data/scratch/segment/v3_rule.json`): **place alone, min_gap 5**
+(cut when the judge says `same_location = no`, suppress cuts within 5 blocks of the previous one). Held-out was judged once after the
+prompt was frozen. Machine-readable: `data/eval/segment/scene_induction_v3.json`. Script: `scripts/eval/segment_v3_eval.py`.
+
+| novel | split | TP | FP | FN | P | R | F1 | v1 held F1 | v2.1 held F1 |
+|---|---|---|---|---|---|---|---|---|---|
+| reverend-insanity | learn | 4 | 24 | 4 | .14 | .50 | .22 | | |
+| lord-of-the-mysteries | learn | 5 | 38 | 2 | .12 | .71 | .20 | | |
+| omniscient-readers-viewpoint | learn | 0 | 8 | 1 | 0 | 0 | 0 | | |
+| pride-and-prejudice | learn | 0 | 8 | 4 | 0 | 0 | 0 | | |
+| a-study-in-scarlet | learn | 2 | 13 | 4 | .13 | .33 | .19 | | |
+| **pooled** | learn | 11 | 91 | 15 | .11 | .42 | .17 | | |
+| reverend-insanity | held | 1 | 12 | 2 | .08 | .33 | .125 | .40 | .67 |
+| lord-of-the-mysteries | held | 2 | 11 | 1 | .15 | .67 | .25 | .36 | 0 |
+| omniscient-readers-viewpoint | held | 7 | 141 | 8 | .05 | .47 | .086 | 0 | .08 |
+| pride-and-prejudice | held | 1 | 5 | 3 | .17 | .25 | .20 | .20 | 0 |
+| a-study-in-scarlet | held | 1 | 17 | 8 | .06 | .11 | .074 | n/a | .14 |
+| **pooled** | held | 12 | 186 | 22 | .06 | .35 | .103 | | .13 |
+
+Hard negatives falsely cut: learn 3 of 38, held 2 of 11 (v2.1: 2 of 38 and 1 of 11).
+
+**Verdict: not met.** Held-out pooled F1 is 0.103 against a target of 0.5 and against v2.1's 0.13. Recall rose (0.35 vs 0.12) but
+precision collapsed (0.06): 186 false cuts, 141 of them in ORV. v3 is at or above v1 held-out F1 only on ORV and equal on P&P; it is
+below v1 on RI and LotM. The judge says "different location" on almost every boundary it is shown, so the place-only rule cuts
+nearly everywhere and `min_gap` is what decides the result. Because the learn split has only 26 gold cuts, the chosen rule
+(learn F1 0.17) is barely above the next grid entries (0.14 to 0.16), so the selection is weak evidence.
+
+Held-out examples (silver gold may be wrong). Several "false negatives" had judge answers of no/no/no and were removed only by
+`min_gap 5` (RI ch21 block 37 after a cut at 36), so the gap rule, not the judge, lost them. Anchors are in the JSON `examples`
+key.
+
+## RI ch1 named check (`ri_ch1_check_v3.json`): 7 of 13 pass
+Cuts found {19, 31, 45, 55, 79}, expected {31, 79}: FAIL (both gold cuts are found, with three extra). Segment 0 layer is "present",
+no prior-loop segment: FAIL. In 31-78 the clan head is present, but Fang Yuan is listed present (FAIL) and not referenced (FAIL), elders
+are not found (FAIL); Bai Ning Bing and Fang Zhi are referenced and not present: pass. In 79-89 Fang Yuan is present: pass.
+
+## Default
+`DEFAULT_RULE` in `scenes.py` is now the learn-chosen rule. `method="judge"` was NOT made the default (held-out 0.103 is below
+v2.1's 0.13).
