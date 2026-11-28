@@ -207,8 +207,10 @@ def _bg_colour_at(bg: np.ndarray, y: int) -> tuple[int, int, int]:
 
 def render_storyboard_strip(
     storyboard: Storyboard, images: Mapping[str, Path | Image.Image], style: StyleTable | None = None,
-    *, faces: FaceBoxes | None = None,
+    *, faces: FaceBoxes | None = None, drama_fx: bool = False,
 ) -> StripResult:
+    """`drama_fx` (default off, so every existing page is unchanged) adds the drama layer of `pages/drama_fx.py`: per-purpose speed
+    lines, a per-layer contrast and vignette grade, screentone on memory/lore, and a burst with brushed lettering behind SFX."""
     style = style or DEFAULT_STYLE
     s, width = style.s, style.width
     faces = faces or {}
@@ -322,6 +324,10 @@ def render_storyboard_strip(
             face_px[p.panel_id] = {"_ph": (x0 + w // 2 - int(min(w, h) * 0.17), y0 + int(h * 0.45 - min(w, h) * 0.21),
                                            x0 + w // 2 + int(min(w, h) * 0.17), y0 + int(h * 0.45 + min(w, h) * 0.21))}
         pic = GRADES.get(gm["layer"].grade, GRADES["none"])(pic)
+        if drama_fx:
+            from echotales.pipeline.pages import drama_fx as fx
+
+            pic = fx.apply_panel_fx(pic, p, seed=zlib.crc32(p.panel_id.encode()))
         _paste_shaped(strip, pic, gm, style, bg, panels[0] is p)
 
     # ---- 4. lettering
@@ -369,7 +375,13 @@ def render_storyboard_strip(
         res.sort(key=lambda t: (t[0].kind == LetterKind.SFX, t[1][1], t[1][0]))
         for m, bx, tip in res:
             if m.kind == LetterKind.SFX:
-                ext = gl.draw_sfx(strip, m, (bx[0], bx[1]))
+                if drama_fx:
+                    from echotales.pipeline.pages import drama_fx as fx
+
+                    ext = fx.draw_burst_and_brush(strip, m, (bx[0], bx[1]), layer.sfx_fill, layer.sfx_edge,
+                                                  seed=zlib.crc32(m.letter.text.encode()))
+                else:
+                    ext = gl.draw_sfx(strip, m, (bx[0], bx[1]))
                 placed.append(gl.Placed(p.panel_id, m.idx, "sfx", bx, ext, None, m.letter.text, m.font_px))
                 continue
             on_dark = _lum(mid_bg) < 110
@@ -466,14 +478,14 @@ def _contact_sheet(slices: list[Image.Image], path: Path, col_w: int = 360) -> N
 
 def render_storyboard_webtoon(
     storyboard: Storyboard, images: Mapping[str, Path], out_dir: Path, style: StyleTable | None = None,
-    *, faces: FaceBoxes | None = None,
+    *, faces: FaceBoxes | None = None, drama_fx: bool = False,
 ) -> list[Path]:
     """Slices `slice_001.png` ... plus `contact.png` and `layout.json` under `out_dir`; returns the slice paths."""
     import json
 
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
-    res = render_storyboard_strip(storyboard, images, style, faces=faces)
+    res = render_storyboard_strip(storyboard, images, style, faces=faces, drama_fx=drama_fx)
     bounds = [0, *res.cuts, res.strip.height]
     slices = [res.strip.crop((0, a, res.strip.width, b)) for a, b in itertools.pairwise(bounds)]
     paths = []
