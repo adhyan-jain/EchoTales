@@ -1598,9 +1598,19 @@ def cmd_storyboard(args: argparse.Namespace) -> int:
     """Storyboard director: one cached panel plan per chapter, with its scorecard."""
     from echotales.pipeline.llm.tasks import Task
     from echotales.pipeline.paths import DATA_ROOT
-    from echotales.pipeline.storyboard import scorecard
+    from echotales.pipeline.storyboard import gold_check, scorecard
     from echotales.pipeline.storyboard.director import run_chapter, set_model
 
+    gold, checks = gold_check.load_gold(args.gold) if getattr(args, "gold", None) else ({}, {})
+    if getattr(args, "check_only", None):
+        if not gold:
+            print("error: --check-only needs --gold", file=sys.stderr)
+            return 2
+        from echotales.pipeline.storyboard.schema import Storyboard
+
+        sb = Storyboard.model_validate_json(Path(args.check_only).read_text(encoding="utf-8"))
+        print(gold_check.format_rows(gold_check.check_gold(sb, gold, checks)))
+        return 0
     store = _open_store(args)
     client = _build_client(store, tasks={Task.STORYBOARD})
     if client is None:
@@ -1623,6 +1633,8 @@ def cmd_storyboard(args: argparse.Namespace) -> int:
         print(scorecard.format_table(card))
         print(f"rule violations before repair: {sum(meta['before'].values())} {meta['before']}")
         print(f"rule violations after repair:  {sum(meta['after'].values())} {meta['after']}")
+        if gold and float(gold.get("chapter", ch)) == ch:
+            print(gold_check.format_rows(gold_check.check_gold(sb, gold, checks)))
     store.close()
     return 0
 

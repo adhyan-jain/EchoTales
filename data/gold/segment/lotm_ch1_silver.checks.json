@@ -1,0 +1,63 @@
+{
+ "about": "Machine-readable checks for lotm_ch1_silver.json (silver, model-drafted).",
+ "aliases": {
+  "Zhou Mingrui": [
+   "Klein Moretti"
+  ]
+ },
+ "sub_layers": [
+  {
+   "blocks": [
+    0,
+    16
+   ],
+   "layer": "dream"
+  },
+  {
+   "blocks": [
+    45,
+    50
+   ],
+   "layer": "memory"
+  }
+ ],
+ "letter_ranges": [
+  {
+   "blocks": [
+    0,
+    2
+   ],
+   "kinds": [
+    "sfx"
+   ]
+  },
+  {
+   "blocks": [
+    3,
+    16
+   ],
+   "kinds": [
+    "thought"
+   ]
+  },
+  {
+   "blocks": [
+    45,
+    50
+   ],
+   "kinds": [
+    "memory"
+   ]
+  },
+  {
+   "blocks": [
+    51,
+    54
+   ],
+   "kinds": [
+    "dread"
+   ]
+  }
+ ],
+ "foreshadow": true
+}

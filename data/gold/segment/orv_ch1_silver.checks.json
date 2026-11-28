@@ -1,0 +1,69 @@
+{
+ "about": "Machine-readable checks for orv_ch1_silver.json (silver, model-drafted). Needs the screen letter kind.",
+ "sub_layers": [
+  {
+   "blocks": [
+    1,
+    2
+   ],
+   "layer": "lore"
+  },
+  {
+   "blocks": [
+    10,
+    10
+   ],
+   "layer": "memory"
+  }
+ ],
+ "letter_ranges": [
+  {
+   "blocks": [
+    1,
+    2
+   ],
+   "kinds": [
+    "poem",
+    "name_card",
+    "time_place"
+   ]
+  },
+  {
+   "blocks": [
+    3,
+    8
+   ],
+   "kinds": [
+    "screen"
+   ]
+  },
+  {
+   "blocks": [
+    14,
+    14
+   ],
+   "kinds": [
+    "screen"
+   ]
+  },
+  {
+   "blocks": [
+    16,
+    20
+   ],
+   "kinds": [
+    "screen"
+   ]
+  },
+  {
+   "blocks": [
+    31,
+    50
+   ],
+   "kinds": [
+    "screen"
+   ]
+  }
+ ],
+ "foreshadow": true
+}

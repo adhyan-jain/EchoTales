@@ -761,6 +761,10 @@ def build_parser() -> argparse.ArgumentParser:
     p_storyboard.add_argument("--model", default=None, help="ollama model for this run (default: the task profile / ECHOTALES_STORYBOARD_MODEL)")
     p_storyboard.add_argument("--force", action="store_true", help="ignore the cache and re-plan")
     p_storyboard.add_argument("--hand-presence", default=None, help="JSON hand list of who is present per block range, to score presence against")
+    p_storyboard.add_argument("--gold", default=None, help="gold scene JSON (data/gold/segment/*.json): print the named gold checks after the run; "
+                              "machine-readable parts come from the sibling <stem>.checks.json")
+    p_storyboard.add_argument("--check-only", default=None, metavar="STORYBOARD_JSON",
+                              help="with --gold: score an existing storyboard file against the gold, no model, no run")
     p_storyboard.add_argument("--data-root", default=None, help="where storyboards are written (default: data/)")
 
     p_know = sub.add_parser("knowledge", help="per-novel knowledge base: character dossiers, world glossary, chapter briefs")

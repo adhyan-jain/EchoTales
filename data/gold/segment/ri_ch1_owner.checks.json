@@ -1,0 +1,35 @@
+{
+ "about": "Machine-readable checks for ri_ch1_owner.json; the prose gold stays as the owner wrote it. Block numbers come from that gold's own scenes and notes.",
+ "match_cut_scenes": [
+  3
+ ],
+ "withheld": [
+  {
+   "block": 79,
+   "reveal_block": 80
+  }
+ ],
+ "insets": [
+  {
+   "name": "Bai Ning Bing",
+   "look_source": "dossier"
+  }
+ ],
+ "letter_ranges": [
+  {
+   "blocks": [
+    18,
+    18
+   ],
+   "kinds": [
+    "poem"
+   ]
+  }
+ ],
+ "foreshadow": true,
+ "aliases": {
+  "Gu Yue": [
+   "Clan Head"
+  ]
+ }
+}
