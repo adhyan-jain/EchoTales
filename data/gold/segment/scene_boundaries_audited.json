@@ -1,0 +1,1174 @@
+{
+ "_note": "SILVER gold: scene boundaries drafted by reading the text (Claude, 2026-11-27), not human-verified. cut = index of the first block of the new scene; ambiguous = a defensible cut that is neither rewarded nor penalised. Anchors are the first <=5 words of the block; source texts are not stored. Pride and Prejudice is public domain. RI chapter 1 is OWNER gold (data/gold/segment/ri_ch1_owner.json, 2026-11-28): cuts at 31 and 79 only. A Study in Scarlet (Gutenberg) added 2026-11-28: all 14 chapters read in full; learned on chapters 1-7 (learn_max), held-out 8-14 (Part II, a different place and time). AUDITED v1 (2026-11-28): blind re-annotation of 140 probes; changes listed in `changed`; RI ch1 untouched.",
+ "novels": {
+  "reverend-insanity": {
+   "1": {
+    "cuts": [
+     {
+      "block": 31,
+      "anchor": "The spring rain quietly rained"
+     },
+     {
+      "block": 79,
+      "anchor": "At the very same moment,"
+     }
+    ],
+    "ambiguous": [],
+    "n_blocks": 92,
+    "owner_checked": true
+   },
+   "2": {
+    "cuts": [],
+    "ambiguous": [],
+    "n_blocks": 63
+   },
+   "3": {
+    "cuts": [],
+    "ambiguous": [
+     29
+    ],
+    "n_blocks": 53
+   },
+   "5": {
+    "cuts": [],
+    "ambiguous": [],
+    "n_blocks": 36
+   },
+   "21": {
+    "cuts": [
+     {
+      "block": 32,
+      "anchor": "The academy bulletin wall had"
+     },
+     {
+      "block": 37,
+      "anchor": "The Mo branch family home."
+     },
+     {
+      "block": 43,
+      "anchor": "Almost at the same time,"
+     }
+    ],
+    "ambiguous": [
+     29
+    ],
+    "n_blocks": 52
+   },
+   "45": {
+    "cuts": [
+     {
+      "block": 33,
+      "anchor": "“One more cup!”"
+     }
+    ],
+    "ambiguous": [],
+    "n_blocks": 82
+   },
+   "4": {
+    "cuts": [],
+    "ambiguous": [
+     3
+    ],
+    "negatives": [],
+    "n_blocks": 47,
+    "coverage": "full"
+   },
+   "6": {
+    "cuts": [],
+    "ambiguous": [],
+    "negatives": [
+     {
+      "block": 22,
+      "anchor": "—"
+     },
+     {
+      "block": 59,
+      "anchor": "* * *"
+     }
+    ],
+    "n_blocks": 62,
+    "coverage": "full"
+   },
+   "7": {
+    "cuts": [],
+    "ambiguous": [],
+    "negatives": [
+     {
+      "block": 41,
+      "anchor": "Under the blue sky and"
+     }
+    ],
+    "n_blocks": 46,
+    "coverage": "full"
+   },
+   "8": {
+    "cuts": [
+     {
+      "block": 18,
+      "anchor": "After he left the Gu",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "SAME"
+     }
+    ],
+    "ambiguous": [
+     32,
+     45
+    ],
+    "negatives": [
+     {
+      "block": 28,
+      "anchor": "It was at this moment,"
+     }
+    ],
+    "n_blocks": 54,
+    "coverage": "full"
+   },
+   "9": {
+    "cuts": [
+     {
+      "block": 33,
+      "anchor": "Gu Yue Fang Zheng was",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "LATER"
+     },
+     {
+      "block": 41,
+      "anchor": "The dark clouds in the",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "SAME"
+     },
+     {
+      "block": 56,
+      "anchor": "The younger brother Fang Zheng",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "SAME"
+     }
+    ],
+    "ambiguous": [
+     24,
+     32
+    ],
+    "negatives": [],
+    "n_blocks": 62,
+    "coverage": "full"
+   },
+   "10": {
+    "cuts": [],
+    "ambiguous": [],
+    "negatives": [
+     {
+      "block": 45,
+      "anchor": "Outside the door came his"
+     }
+    ],
+    "n_blocks": 46,
+    "coverage": "full"
+   },
+   "12": {
+    "cuts": [],
+    "ambiguous": [],
+    "negatives": [
+     {
+      "block": 29,
+      "anchor": "At this moment the young"
+     },
+     {
+      "block": 68,
+      "anchor": "* * *"
+     }
+    ],
+    "n_blocks": 71,
+    "coverage": "full"
+   },
+   "14": {
+    "cuts": [],
+    "ambiguous": [],
+    "negatives": [
+     {
+      "block": 24,
+      "anchor": "A quiet mountain stream paved"
+     },
+     {
+      "block": 38,
+      "anchor": "Once he rushed in, the"
+     }
+    ],
+    "n_blocks": 59,
+    "coverage": "full"
+   }
+  },
+  "lord-of-the-mysteries": {
+   "1": {
+    "cuts": [],
+    "ambiguous": [],
+    "n_blocks": 73
+   },
+   "2": {
+    "cuts": [],
+    "ambiguous": [],
+    "n_blocks": 76
+   },
+   "3": {
+    "cuts": [],
+    "ambiguous": [
+     8
+    ],
+    "n_blocks": 69
+   },
+   "4": {
+    "cuts": [],
+    "ambiguous": [],
+    "n_blocks": 101
+   },
+   "7": {
+    "cuts": [
+     {
+      "block": 66,
+      "anchor": "As for Zhou Mingrui, he"
+     }
+    ],
+    "ambiguous": [
+     78
+    ],
+    "n_blocks": 83
+   },
+   "8": {
+    "cuts": [
+     {
+      "block": 43,
+      "anchor": "Empress Borough, Backlund, capital of"
+     },
+     {
+      "block": 78,
+      "anchor": "The Imperial naval base, Pritz"
+     }
+    ],
+    "ambiguous": [],
+    "n_blocks": 124
+   },
+   "26": {
+    "cuts": [],
+    "ambiguous": [
+     45
+    ],
+    "n_blocks": 85
+   },
+   "36": {
+    "cuts": [
+     {
+      "block": 59,
+      "anchor": "Audrey Hall looked at herself"
+     },
+     {
+      "block": 74,
+      "anchor": "In an underground basement lit"
+     }
+    ],
+    "ambiguous": [],
+    "n_blocks": 81
+   },
+   "5": {
+    "cuts": [
+     {
+      "block": 50,
+      "anchor": "After the second-floor tenants gradually",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "LATER"
+     },
+     {
+      "block": 84,
+      "anchor": "In the Loen Kingdom’s capital,",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "SAME"
+     },
+     {
+      "block": 93,
+      "anchor": "In the Sonia Sea, a",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "SAME"
+     },
+     {
+      "block": 99,
+      "anchor": "In the fog of gray",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "SAME"
+     }
+    ],
+    "ambiguous": [],
+    "negatives": [
+     {
+      "block": 87,
+      "anchor": "“In the name of the"
+     },
+     {
+      "block": 89,
+      "anchor": "She switched between many different"
+     },
+     {
+      "block": 91,
+      "anchor": "Her voice trailed off. The"
+     },
+     {
+      "block": 96,
+      "anchor": "“Still short on the Ghost"
+     },
+     {
+      "block": 100,
+      "anchor": "Immediately after, the both of"
+     }
+    ],
+    "n_blocks": 105,
+    "coverage": "candidates"
+   },
+   "6": {
+    "cuts": [],
+    "ambiguous": [],
+    "negatives": [
+     {
+      "block": 22,
+      "anchor": "When she did not identify"
+     },
+     {
+      "block": 38,
+      "anchor": "“Are you from Loen?"
+     },
+     {
+      "block": 41,
+      "anchor": "Zhou Mingrui listened attentively, but"
+     },
+     {
+      "block": 45,
+      "anchor": "Alger gave a low-sounding laugh,"
+     },
+     {
+      "block": 51,
+      "anchor": "Alger leaned back slightly, and"
+     },
+     {
+      "block": 74,
+      "anchor": "Language of Giants."
+     }
+    ],
+    "n_blocks": 75,
+    "coverage": "candidates"
+   },
+   "9": {
+    "cuts": [],
+    "ambiguous": [
+     12
+    ],
+    "negatives": [
+     {
+      "block": 25,
+      "anchor": "Anyone would choke eating those"
+     },
+     {
+      "block": 47,
+      "anchor": "There are four more days"
+     },
+     {
+      "block": 51,
+      "anchor": "The book he had began"
+     },
+     {
+      "block": 54,
+      "anchor": "“16th May. Senior Associate Professor"
+     },
+     {
+      "block": 56,
+      "anchor": "“29th May. Welch found me"
+     },
+     {
+      "block": 64,
+      "anchor": "“18th June. I have graduated."
+     },
+     {
+      "block": 74,
+      "anchor": "Which means to say that"
+     },
+     {
+      "block": 80,
+      "anchor": "There was a series of"
+     }
+    ],
+    "n_blocks": 85,
+    "coverage": "candidates"
+   },
+   "10": {
+    "cuts": [],
+    "ambiguous": [],
+    "negatives": [
+     {
+      "block": 9,
+      "anchor": "Then he picked up the"
+     },
+     {
+      "block": 25,
+      "anchor": "As talents needed to be"
+     },
+     {
+      "block": 29,
+      "anchor": "The inspector with the peak"
+     },
+     {
+      "block": 45,
+      "anchor": "When he heard the question,"
+     },
+     {
+      "block": 52,
+      "anchor": "Where are your search warrants?"
+     }
+    ],
+    "n_blocks": 82,
+    "coverage": "candidates"
+   }
+  },
+  "omniscient-readers-viewpoint": {
+   "2": {
+    "cuts": [],
+    "ambiguous": [],
+    "n_blocks": 116
+   },
+   "3": {
+    "cuts": [],
+    "ambiguous": [],
+    "n_blocks": 85
+   },
+   "24": {
+    "cuts": [
+     {
+      "block": 101,
+      "anchor": "[…You did such great things"
+     }
+    ],
+    "ambiguous": [
+     114
+    ],
+    "n_blocks": 154
+   },
+   "33": {
+    "cuts": [
+     {
+      "block": 79,
+      "anchor": "I walked up the stairs"
+     }
+    ],
+    "ambiguous": [],
+    "n_blocks": 165
+   },
+   "14": {
+    "cuts": [],
+    "ambiguous": [
+     28
+    ],
+    "negatives": [],
+    "n_blocks": 128,
+    "coverage": "candidates"
+   },
+   "16": {
+    "cuts": [],
+    "ambiguous": [
+     13
+    ],
+    "negatives": [],
+    "n_blocks": 110,
+    "coverage": "candidates"
+   },
+   "17": {
+    "cuts": [
+     {
+      "block": 97,
+      "anchor": "Geumho Station was originally a",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "UNKNOWN"
+     }
+    ],
+    "ambiguous": [],
+    "negatives": [],
+    "n_blocks": 148,
+    "coverage": "candidates"
+   },
+   "18": {
+    "cuts": [
+     {
+      "block": 113,
+      "anchor": "After a while, only the",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "LATER"
+     }
+    ],
+    "ambiguous": [],
+    "negatives": [],
+    "n_blocks": 130,
+    "coverage": "candidates"
+   },
+   "20": {
+    "cuts": [
+     {
+      "block": 30,
+      "anchor": "After a while, several people",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "LATER"
+     }
+    ],
+    "ambiguous": [],
+    "negatives": [],
+    "n_blocks": 127,
+    "coverage": "candidates"
+   },
+   "23": {
+    "cuts": [
+     {
+      "block": 74,
+      "anchor": "After a while, we searched",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "LATER"
+     }
+    ],
+    "ambiguous": [],
+    "negatives": [],
+    "n_blocks": 145,
+    "coverage": "candidates"
+   },
+   "26": {
+    "cuts": [
+     {
+      "block": 79,
+      "anchor": "We had crossed half the",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "LATER"
+     },
+     {
+      "block": 127,
+      "anchor": "After a while, I stood",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "LATER"
+     }
+    ],
+    "ambiguous": [],
+    "negatives": [],
+    "n_blocks": 141,
+    "coverage": "candidates"
+   },
+   "27": {
+    "cuts": [],
+    "ambiguous": [
+     78
+    ],
+    "negatives": [],
+    "n_blocks": 170,
+    "coverage": "candidates"
+   },
+   "28": {
+    "cuts": [
+     {
+      "block": 44,
+      "anchor": "While taking care of the",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "LATER"
+     }
+    ],
+    "ambiguous": [],
+    "negatives": [],
+    "n_blocks": 122,
+    "coverage": "candidates"
+   },
+   "29": {
+    "cuts": [
+     {
+      "block": 105,
+      "anchor": "After a while, we safely",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "LATER"
+     }
+    ],
+    "ambiguous": [],
+    "negatives": [],
+    "n_blocks": 151,
+    "coverage": "candidates"
+   },
+   "30": {
+    "cuts": [],
+    "ambiguous": [
+     41
+    ],
+    "negatives": [],
+    "n_blocks": 141,
+    "coverage": "candidates"
+   },
+   "32": {
+    "cuts": [
+     {
+      "block": 48,
+      "anchor": "「 Dokja. 」",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "UNKNOWN"
+     },
+     {
+      "block": 118,
+      "anchor": "I breathed out roughly. There",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "LATER"
+     },
+     {
+      "block": 160,
+      "anchor": "I woke up two hours",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "LATER"
+     }
+    ],
+    "ambiguous": [],
+    "negatives": [],
+    "n_blocks": 201,
+    "coverage": "candidates"
+   },
+   "39": {
+    "cuts": [
+     {
+      "block": 20,
+      "anchor": "Dudududu. There was the sound",
+      "cut_type": "POV_SWITCH",
+      "time_relation": "SAME"
+     },
+     {
+      "block": 103,
+      "anchor": "After a while, we kidnapped",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "LATER"
+     }
+    ],
+    "ambiguous": [],
+    "negatives": [],
+    "n_blocks": 188,
+    "coverage": "candidates"
+   },
+   "40": {
+    "cuts": [],
+    "ambiguous": [
+     51
+    ],
+    "negatives": [],
+    "n_blocks": 194,
+    "coverage": "candidates"
+   }
+  },
+  "pride-and-prejudice": {
+   "3": {
+    "cuts": [
+     {
+      "block": 2,
+      "anchor": "In a few days Mr."
+     },
+     {
+      "block": 6,
+      "anchor": "being gone to London only"
+     },
+     {
+      "block": 19,
+      "anchor": "The evening altogether passed off"
+     }
+    ],
+    "ambiguous": [],
+    "n_blocks": 25
+   },
+   "4": {
+    "cuts": [],
+    "ambiguous": [],
+    "n_blocks": 16
+   },
+   "6": {
+    "cuts": [],
+    "ambiguous": [
+     11
+    ],
+    "n_blocks": 55
+   },
+   "7": {
+    "cuts": [],
+    "ambiguous": [],
+    "n_blocks": 51
+   },
+   "12": {
+    "cuts": [
+     {
+      "block": 4,
+      "anchor": "On Sunday, after morning service,"
+     }
+    ],
+    "ambiguous": [
+     5
+    ],
+    "n_blocks": 7
+   },
+   "22": {
+    "cuts": [],
+    "ambiguous": [
+     7,
+     15
+    ],
+    "n_blocks": 22
+   },
+   "40": {
+    "cuts": [
+     {
+      "block": 26,
+      "anchor": "“Well, Lizzy,” said Mrs. Bennet,"
+     }
+    ],
+    "ambiguous": [
+     25
+    ],
+    "n_blocks": 36
+   },
+   "10": {
+    "cuts": [],
+    "ambiguous": [],
+    "negatives": [
+     {
+      "block": 67,
+      "anchor": "She then ran gaily off,"
+     }
+    ],
+    "n_blocks": 68,
+    "coverage": "candidates"
+   },
+   "13": {
+    "cuts": [],
+    "ambiguous": [],
+    "negatives": [
+     {
+      "block": 12,
+      "anchor": "“Hunsford, near Westerham, Kent, 15th"
+     }
+    ],
+    "n_blocks": 30,
+    "coverage": "candidates"
+   },
+   "15": {
+    "cuts": [],
+    "ambiguous": [],
+    "negatives": [],
+    "n_blocks": 13,
+    "coverage": "candidates"
+   },
+   "20": {
+    "cuts": [],
+    "ambiguous": [],
+    "negatives": [
+     {
+      "block": 26,
+      "anchor": "While the family were in"
+     }
+    ],
+    "n_blocks": 36,
+    "coverage": "candidates"
+   },
+   "23": {
+    "cuts": [
+     {
+      "block": 14,
+      "anchor": "Mr. Collins returned most punctually",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "LATER"
+     }
+    ],
+    "ambiguous": [],
+    "negatives": [],
+    "n_blocks": 26,
+    "coverage": "candidates"
+   }
+  },
+  "a-study-in-scarlet": {
+   "1": {
+    "cuts": [
+     {
+      "block": 33,
+      "anchor": "This was a lofty chamber,",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "LATER"
+     }
+    ],
+    "ambiguous": [
+     4,
+     23,
+     63
+    ],
+    "negatives": [],
+    "n_blocks": 69,
+    "coverage": "full"
+   },
+   "2": {
+    "cuts": [
+     {
+      "block": 17,
+      "anchor": "It was upon the 4th",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "LATER"
+     }
+    ],
+    "ambiguous": [
+     16
+    ],
+    "negatives": [
+     {
+      "block": 41,
+      "anchor": "“I wonder what that fellow"
+     }
+    ],
+    "n_blocks": 51,
+    "coverage": "full"
+   },
+   "3": {
+    "cuts": [],
+    "ambiguous": [
+     43,
+     44
+    ],
+    "negatives": [
+     {
+      "block": 11,
+      "anchor": "This is the letter which"
+     },
+     {
+      "block": 83,
+      "anchor": "I have remarked that the"
+     }
+    ],
+    "n_blocks": 101,
+    "coverage": "full"
+   },
+   "4": {
+    "cuts": [],
+    "ambiguous": [
+     19,
+     52,
+     56
+    ],
+    "negatives": [],
+    "n_blocks": 57,
+    "coverage": "full"
+   },
+   "5": {
+    "cuts": [
+     {
+      "block": 2,
+      "anchor": "He was very late in",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "LATER"
+     }
+    ],
+    "ambiguous": [
+     24,
+     47
+    ],
+    "negatives": [
+     {
+      "block": 32,
+      "anchor": "As he spoke there was"
+     }
+    ],
+    "n_blocks": 54,
+    "coverage": "full"
+   },
+   "6": {
+    "cuts": [],
+    "ambiguous": [
+     40,
+     42
+    ],
+    "negatives": [
+     {
+      "block": 18,
+      "anchor": "There was a violent peal"
+     },
+     {
+      "block": 85,
+      "anchor": "It was indeed Lestrade, who"
+     }
+    ],
+    "n_blocks": 88,
+    "coverage": "full"
+   },
+   "7": {
+    "cuts": [],
+    "ambiguous": [
+     32
+    ],
+    "negatives": [
+     {
+      "block": 8,
+      "anchor": "“So it proved. I spent"
+     },
+     {
+      "block": 48,
+      "anchor": "“Please, sir,” he said, touching"
+     }
+    ],
+    "n_blocks": 58,
+    "coverage": "full"
+   },
+   "8": {
+    "cuts": [
+     {
+      "block": 38,
+      "anchor": "Had the wanderer remained awake"
+     }
+    ],
+    "ambiguous": [
+     5,
+     37
+    ],
+    "negatives": [],
+    "n_blocks": 68,
+    "coverage": "full"
+   },
+   "9": {
+    "cuts": [
+     {
+      "block": 7,
+      "anchor": "It was a warm June",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "LATER"
+     },
+     {
+      "block": 22,
+      "anchor": "It was a summer evening",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "LATER"
+     }
+    ],
+    "ambiguous": [
+     21
+    ],
+    "negatives": [],
+    "n_blocks": 31,
+    "coverage": "full"
+   },
+   "10": {
+    "cuts": [
+     {
+      "block": 5,
+      "anchor": "One fine morning, John Ferrier",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "LATER"
+     }
+    ],
+    "ambiguous": [
+     23
+    ],
+    "negatives": [
+     {
+      "block": 17,
+      "anchor": "[1] Heber C. Kemball, in"
+     }
+    ],
+    "n_blocks": 38,
+    "coverage": "full"
+   },
+   "11": {
+    "cuts": [
+     {
+      "block": 28,
+      "anchor": "He was sitting alone one",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "LATER"
+     }
+    ],
+    "ambiguous": [
+     21,
+     26,
+     46
+    ],
+    "negatives": [
+     {
+      "block": 42,
+      "anchor": "While Ferrier was absent, preparing"
+     }
+    ],
+    "n_blocks": 64,
+    "coverage": "full"
+   },
+   "12": {
+    "cuts": [
+     {
+      "block": 12,
+      "anchor": "For five days he toiled",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "LATER"
+     },
+     {
+      "block": 25,
+      "anchor": "The prediction of the Mormon",
+      "cut_type": "NEW_SCENE",
+      "time_relation": "LATER"
+     }
+    ],
+    "ambiguous": [
+     3,
+     13,
+     26
+    ],
+    "negatives": [],
+    "n_blocks": 31,
+    "coverage": "full"
+   },
+   "13": {
+    "cuts": [],
+    "ambiguous": [
+     6,
+     15,
+     21
+    ],
+    "negatives": [
+     {
+      "block": 27,
+      "anchor": "“At last, one evening I"
+     },
+     {
+      "block": 34,
+      "anchor": "“It was nearer one than"
+     },
+     {
+      "block": 47,
+      "anchor": "“He cowered away with wild"
+     }
+    ],
+    "n_blocks": 56,
+    "coverage": "full"
+   },
+   "14": {
+    "cuts": [],
+    "ambiguous": [
+     21
+    ],
+    "negatives": [],
+    "n_blocks": 26,
+    "coverage": "full"
+   }
+  }
+ },
+ "dbs": {
+  "reverend-insanity": "data/scratch/segment/reverend-insanity.db",
+  "lord-of-the-mysteries": "data/scratch/segment/lord-of-the-mysteries.db",
+  "omniscient-readers-viewpoint": "data/scratch/segment/omniscient-readers-viewpoint.db",
+  "pride-and-prejudice": "data/scratch/segment/pp.db",
+  "a-study-in-scarlet": "data/scratch/segment/a-study-in-scarlet.db"
+ },
+ "learn_max": {
+  "a-study-in-scarlet": 7
+ },
+ "changed": [
+  {
+   "novel": "reverend-insanity",
+   "chapter": "5",
+   "action": "remove_cut",
+   "block": 5,
+   "reason": "legend of Ren Zu is a digression inside the flower-sea walk; same person, place and moment"
+  },
+  {
+   "novel": "reverend-insanity",
+   "chapter": "5",
+   "action": "remove_cut",
+   "block": 23,
+   "reason": "return from the digression to the same flower-sea scene"
+  },
+  {
+   "novel": "reverend-insanity",
+   "chapter": "21",
+   "action": "add_cut",
+   "block": 32,
+   "reason": "sun climbs, academy bulletin wall: new place, new people, later time"
+  },
+  {
+   "novel": "a-study-in-scarlet",
+   "chapter": "3",
+   "action": "remove_cut",
+   "block": 26,
+   "reason": "same cab ride continues; narrator and Holmes unchanged"
+  },
+  {
+   "novel": "a-study-in-scarlet",
+   "chapter": "3",
+   "action": "remove_cut",
+   "block": 31,
+   "reason": "same pair walks the last hundred yards and reaches the house; following the same people"
+  },
+  {
+   "novel": "a-study-in-scarlet",
+   "chapter": "4",
+   "action": "remove_cut",
+   "block": 18,
+   "reason": "same cab ride and same pair arriving at Audley Court"
+  },
+  {
+   "novel": "a-study-in-scarlet",
+   "chapter": "11",
+   "action": "remove_cut",
+   "block": 54,
+   "reason": "same fugitives continue along the high road without a break"
+  },
+  {
+   "novel": "a-study-in-scarlet",
+   "chapter": "12",
+   "action": "remove_cut",
+   "block": 4,
+   "reason": "same hunt, same hunter, continuous action"
+  },
+  {
+   "novel": "a-study-in-scarlet",
+   "chapter": "8",
+   "action": "remove_cut",
+   "block": 39,
+   "reason": "cut belongs one block earlier; see add"
+  },
+  {
+   "novel": "a-study-in-scarlet",
+   "chapter": "8",
+   "action": "add_cut",
+   "block": 38,
+   "reason": "narration leaves the two wanderers for the approaching column; first block of the new scene"
+  },
+  {
+   "novel": "lord-of-the-mysteries",
+   "chapter": "36",
+   "action": "remove_cut",
+   "block": 53,
+   "reason": "continuous morning action in the same room (curtains opened after waking)"
+  },
+  {
+   "novel": "omniscient-readers-viewpoint",
+   "chapter": "2",
+   "action": "remove_cut",
+   "block": 11,
+   "reason": "block 10 already speaks inside the subway, so the scene started earlier; no break here"
+  },
+  {
+   "novel": "pride-and-prejudice",
+   "chapter": "15",
+   "action": "remove_cut",
+   "block": 10,
+   "reason": "same sisters walk to the house and go in; following the same people"
+  },
+  {
+   "novel": "pride-and-prejudice",
+   "chapter": "7",
+   "action": "remove_cut",
+   "block": 46,
+   "reason": "same woman completes her walk and is shown in; following the same person"
+  },
+  {
+   "novel": "pride-and-prejudice",
+   "chapter": "3",
+   "action": "remove_cut",
+   "block": 20,
+   "reason": "cut belongs one block earlier; see add"
+  },
+  {
+   "novel": "pride-and-prejudice",
+   "chapter": "3",
+   "action": "add_cut",
+   "block": 19,
+   "reason": "summary of the ball ending at home is the first block of the new scene"
+  }
+ ]
+}
