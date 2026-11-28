@@ -16,7 +16,7 @@ Rules checked and repaired: speech_lost, referenced_in_room, name_not_in_cast, s
 
 ## Measured: RI ch1, qwen3:8b, num_ctx 8192, 100% GPU (copy of ri_fresh_v57.db)
 
-Files: `data/eval/storyboard/ri_ch1_qwen3-8b.{json,meta.json,cli.txt}`.
+Files: `data/eval/storyboard/ri_ch1_qwen3-8b.{meta.json,cli.txt}`. The board JSON itself holds verbatim novel lines, so it is kept out of git (local copy in `data/scratch/`).
 - 112 panels (reference ~84; 1.3 per story block, inside the band), 8 scenes, cold open yes, layers 4, SFX 8, inserts+ECU 15, crowd individuals 17, referenced insets 5, shapes 7, letter kinds 6 (reference 8).
 - Violations before repair 19 (speech_lost 5, panel_overstuffed 3, crowd not individualised 3, speaker_not_present 3, card_empty 2, peak_no_relief 2, visual_names_absent 1); after repair 4, all visual_repeat (not repairable).
 - Latency 242 s model time for 19 calls (68k prompt, 8k completion tokens), about 4 min per chapter. JSON failures 0 after bisection.
