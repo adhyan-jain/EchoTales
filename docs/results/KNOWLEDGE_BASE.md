@@ -67,3 +67,20 @@ To continue after a stop, rerun the same script; finished chapters are skipped.
 - The clan head's "middle-aged" (ch1 block 37) was not extracted in the first ch1 run; roles are stated per window only.
 - Facts are written on MAIN_TIMELINE only; past-life and memory timelines are not separated except through the body split.
 - Mentions with an empty `target_id` (for example ch1 "Bai Ning Bing") are invisible to the map pass.
+
+
+## Gate G2 audit, 2026-11-28 (scope cut: RI only, ch1)
+
+- Fact precision, 30 random RI facts (seed 7, hand-judged against the block): 20 right, 10 wrong = 0.67 (target 0.9).
+  Errors: junk values under role or apparent_age (5), value not in the quote (2), fact given to the wrong person (3: a
+  smile of Fang Yuan, a title said TO someone, a different man's hair). All 30 were from 3 targeted entities; LotM has no facts.
+- Fix: `value_supported` (a content word of the value must occur in the quote) and `_verified` (one strict model call:
+  who is the phrase about, does it state this kind of value). Replayed on the same 30 with qwen3:8b: 8 of 10 wrong dropped,
+  4 of 20 right also dropped, so about 0.86 on that sample (in-sample; a fresh re-sample after a rebuild is NOT done).
+  Existing scratch-DB facts were written before the fix and are not rebuilt.
+- Bai Ning Bing (male, persona gender "male"): no numeric age in the text; "white-clothed youth" (ch121), "young man" (ch108);
+  first in person ch108; hair white / silver, blue eyes, white gown, fair skin from ch108-195, all flagged extrapolated at ch1.
+- Linking: `knowledge/link.py` (`knowledge build --stages link`) binds the 3 ch1 "Bai Ning Bing" mentions by exact name (reversible
+  via `unlink_kb_links`, prior value in `evidence_json`). `presence.py` now treats an outline name that contains a bound title
+  ("Gu Yue clan head" contains "clan head", bound to Gu Yue Bo) as that entity: ch1 31-78 with the v5b outline lists one clan head.
+- NOT done: glossaries for LotM/ORV, coverage sweep, briefs for other novels, fresh 30-fact re-sample.
