@@ -407,7 +407,7 @@ LotM ch1: no cut (pass); Klein is present only through the alias "zhou mingrui" 
 
 ## Verdict
 
-**Not met.** Held-out pooled F1 is .320 (+-1, audited) against the target .5. It is 3 times v4 and v2.1 on the same chapters and above v1's
+**Not met.** Held-out pooled F1 is .320 (+-1, audited) against the target .5. It is more than twice v4 and v2.1 on the same chapters and above v1's
 recorded .256, but precision .42 and recall .26 are both far from the target, and the 3 of 36 failed calls, the small learn gold and the
 two public-domain novels at zero keep it fragile. What produced the gain: reading the prose next to the outline (+.07 held +-1 over v4)
 and letting the model reason (+.12 more on top of the raw text); the tolerance metric alone is worth 0.04. Not measured: thinking alone on
