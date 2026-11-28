@@ -197,3 +197,25 @@ def test_fusion_modes() -> None:
     assert fuse(ch, [5], sc, set(), FusionParams("or", 3, 0.5, min_gap=1)) == [5]
     # min_gap spaces the survivors
     assert fuse(ch, [5, 6], sc, seps, FusionParams("outline", min_gap=3)) == [5]
+
+
+def test_method_outline_end_to_end_with_a_stub_model() -> None:
+    """analyse_chapter_scenes(method="outline"): the model's start becomes a cut; an unreachable model gives none."""
+    from echotales.pipeline.segment.scenes import analyse_chapter_scenes
+    from echotales.pipeline.segment.storytime import StoryTimeAnswer
+
+    ch = _chapter(30)
+
+    def answer(request, schema):
+        if schema is StoryTimeAnswer:
+            return StoryTimeAnswer()
+        return _echo_outline(request, schema)
+
+    an = analyse_chapter_scenes(ch, None, llm=FakeLLM(answer), method="outline", novel_id="t", outline_params=FusionParams("outline", min_gap=1))
+    assert [c.block for c in an.cuts] == [10]
+    assert an.cuts[0].source == "outline" and an.cuts[0].evidence == ["other people elsewhere"]
+
+    def boom(request, schema):
+        raise RuntimeError("down")
+
+    assert analyse_chapter_scenes(ch, None, llm=FakeLLM(boom), method="outline", novel_id="t").cuts == []
