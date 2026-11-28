@@ -40,9 +40,12 @@ def _img(a: np.ndarray) -> Image.Image:
 
 
 def speed_lines(size: tuple[int, int], *, centre: tuple[float, float] = (0.5, 0.45), count: int = 110, seed: int = 0,
-                inner: float = 0.28, colour: tuple[int, int, int] = (255, 255, 255)) -> Image.Image:
+                inner: float = 0.28, colour: tuple[int, int, int] = (255, 255, 255), width: float = 1.0,
+                opacity: float = 1.0) -> Image.Image:
     """RGBA radial lines from the frame edge toward `centre`, stopping at `inner` of the half-diagonal so the subject stays clear.
-    Line width tapers to a point at the inner end, as drawn lines do."""
+    Line width tapers to a point at the inner end, as drawn lines do. `width` scales the lines' angular width and `opacity` their
+    alpha: round 1's peak lines (half-width 0.0015-0.006 rad, alpha 70-150) were barely visible on the sheets, so peaks now pass
+    a width of 2.6 and a higher opacity."""
     w, h = size
     layer = Image.new("RGBA", size, (0, 0, 0, 0))
     d = ImageDraw.Draw(layer)
@@ -53,12 +56,12 @@ def speed_lines(size: tuple[int, int], *, centre: tuple[float, float] = (0.5, 0.
         ang = rng.uniform(0, math.tau)
         r0 = reach * rng.uniform(inner, inner + 0.22)
         r1 = reach * rng.uniform(0.62, 0.85)
-        half = rng.uniform(0.0015, 0.006)
+        half = rng.uniform(0.0015, 0.006) * width
         p0 = (cx + math.cos(ang) * r0, cy + math.sin(ang) * r0)
         a1, a2 = ang - half, ang + half
         p1 = (cx + math.cos(a1) * r1, cy + math.sin(a1) * r1)
         p2 = (cx + math.cos(a2) * r1, cy + math.sin(a2) * r1)
-        d.polygon([p0, p1, p2], fill=(*colour, rng.randint(70, 150)))
+        d.polygon([p0, p1, p2], fill=(*colour, min(int(rng.randint(70, 150) * opacity), 255)))
     return layer
 
 
@@ -81,7 +84,8 @@ def apply_panel_fx(img: Image.Image, panel: Panel, *, seed: int = 0, centre: tup
     a = _arr(img)
     vig, con = _LAYER_GRADE[panel.layer]
     if peak:
-        vig, con = vig + 0.22, con + 0.12
+        # Round 1 added 0.22 and the vignette was barely visible beside the reference peaks; 0.40 darkens the corners clearly.
+        vig, con = vig + 0.40, con + 0.14
     a = np.clip((a - 128.0) * con + 128.0, 0, 255)
     yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
     d = np.sqrt(((xx - w * centre[0]) / (w / 1.4)) ** 2 + ((yy - h * centre[1]) / (h / 1.4)) ** 2)
@@ -96,9 +100,9 @@ def apply_panel_fx(img: Image.Image, panel: Panel, *, seed: int = 0, centre: tup
     out = _img(a).convert("RGBA")
     if peak and panel.shape is not Shape.TEXT_ONLY:
         if panel.purpose in _FOCUS:
-            out.alpha_composite(speed_lines(out.size, centre=centre, seed=seed, count=150, inner=0.34))
+            out.alpha_composite(speed_lines(out.size, centre=centre, seed=seed, count=240, inner=0.30, width=2.6, opacity=1.6))
         elif panel.shape in (Shape.TALL, Shape.BLEED, Shape.DIAGONAL) or panel.purpose in (Purpose.HERO, Purpose.TRANSITION):
-            out.alpha_composite(speed_lines(out.size, centre=centre, seed=seed, count=90, inner=0.42))
+            out.alpha_composite(speed_lines(out.size, centre=centre, seed=seed, count=160, inner=0.38, width=2.6, opacity=1.6))
     return out.convert("RGB")
 
 

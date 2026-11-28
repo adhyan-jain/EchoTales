@@ -17,12 +17,18 @@ import re
 from dataclasses import dataclass
 
 from echotales.pipeline.render.compiler import (
+    _ADULT_FACE,
     AppearanceInText,
+    CharacterBrief,
     CompiledPrompt,
     PanelBrief,
     PromptSection,
     _compile_composed,
+    _identity_head,
+    body_is_young,
+    identity_sentence,
     model_profile,
+    trim_staging,
 )
 from echotales.pipeline.storyboard.schema import Layer, Panel, Purpose, Shape, Shot
 
@@ -88,14 +94,25 @@ _LIGHT_PEAK_BY_LAYER = {
     Layer.LORE: "High-contrast ink silhouette lighting, deep black shapes against a pale ground.",
 }
 
-#: One accent colour per layer inside an otherwise desaturated, dark palette (the NoobAI v54 look: dark, with red accents).
+#: One saturated accent light per layer inside an otherwise dark, desaturated palette. v1 said "a single X accent" and the 13-panel
+#: sheets came out muted next to the RI manhua slices, whose peaks carry one intensely saturated colour (red sky, teal glow);
+#: the colour is now a light that rakes across the subject, said as a light because Z-Image paints a lit thing and ignores a tint.
 _ACCENT = {
-    Layer.PRESENT: "a single cold teal-green accent",
-    Layer.PAST: "a single blood-red accent",
-    Layer.MEMORY: "a single warm gold accent",
-    Layer.LORE: "a single faded vermilion accent on grey ink",
-    Layer.IMAGINED: "a single cold pale-blue glow",
-    Layer.DREAM: "a single violet accent",
+    Layer.PRESENT: "cold teal-green",
+    Layer.PAST: "blood-red",
+    Layer.MEMORY: "warm gold",
+    Layer.LORE: "faded vermilion",
+    Layer.IMAGINED: "cold pale-blue",
+    Layer.DREAM: "violet",
+}
+#: The void an isolated (IMAGINED / REFERENCED_INSET) subject floats in, in the layer's own palette.
+_VOID = {
+    Layer.IMAGINED: "an abstract void filled with a soft cold pale-blue glow",
+    Layer.MEMORY: "a hazy abstract field of warm gold glow",
+    Layer.DREAM: "a drifting abstract violet mist",
+    Layer.LORE: "a pale abstract ink-grey void",
+    Layer.PAST: "an abstract blood-red haze",
+    Layer.PRESENT: "an abstract dark void with a soft glow",
 }
 _TEXTURE_LAYERS = frozenset({Layer.PAST, Layer.LORE, Layer.MEMORY, Layer.DREAM})
 
@@ -104,6 +121,10 @@ _TEXTURE_LAYERS = frozenset({Layer.PAST, Layer.LORE, Layer.MEMORY, Layer.DREAM})
 class DramaSpec:
     peak: bool
     motion: bool
+    #: Nobody may be drawn (empty cast, no crowd): the light, the blast, the place or one pair of eyes only.
+    people_free: bool
+    #: A person who is talked about or pictured, not present: drawn alone on a glow, with no place and no bystanders.
+    isolated: bool
     shot_sentence: str
     light_sentence: str
     drama_sentences: tuple[str, ...]
@@ -125,31 +146,129 @@ def has_motion(panel: Panel, extra: str = "") -> bool:
     return bool(_MOTION.search(f"{panel.visual} {extra}"))
 
 
-def drama_spec(panel: Panel, *, text: str = "") -> DramaSpec:
+def is_isolated(panel: Panel) -> bool:
+    """A subject who is talked about or imagined, not present (schema: layer IMAGINED, purpose REFERENCED_INSET). v1 compiled these
+    like any other beat and the referenced man came out standing among people in the hall (13-panel bake-off, p10)."""
+    return panel.layer is Layer.IMAGINED or panel.purpose is Purpose.REFERENCED_INSET
+
+
+def is_people_free(panel: Panel, brief: PanelBrief | None) -> bool:
+    """No identity to draw: an empty cast with no crowd. v1 still added people there: the detonation (p05) gained a man in black
+    from "across half the face and body" in the peak light sentence, and the eyes-only panel (p12) gained two figures above the eyes.
+    With no brief (the tag arm) only the panel's own cast is known."""
+    if panel.cast:
+        return False
+    return brief is None or (not brief.characters and brief.crowd is None)
+
+
+def drama_spec(panel: Panel, *, text: str = "", brief: PanelBrief | None = None) -> DramaSpec:
     peak = is_peak(panel)
     motion = has_motion(panel, text)
+    isolated = is_isolated(panel)
+    free = is_people_free(panel, brief) and not isolated
     shot = (_SHOT_PEAK if peak else _SHOT_CALM)[panel.shot]
     if peak and panel.purpose is Purpose.HERO:
         shot = _SHOT_PEAK[Shot.LOW_ANGLE]
-    light = (_LIGHT_PEAK_BY_LAYER.get(panel.layer, _LIGHT_PEAK) if peak else "")
+    if free and peak and panel.shot in _SHOT_PEAK_FREE:
+        shot = _SHOT_PEAK_FREE[panel.shot]
+    if free and panel.shot is Shot.EXTREME_CLOSE:
+        # "cropped tight on the eyes and brow" invited a brow, a forehead and then a head with figures above it (p12).
+        shot = "An extreme macro close-up of one single pair of eyes, filling the whole frame edge to edge."
+    if free:
+        # The people-bearing light says "across half the face and body": on a blast it drew a man (p05).
+        light = ("Hard chiaroscuro: one strong light source, hard-edged black shadows, deep inky blacks and high contrast."
+                 if peak else "")
+    elif isolated:
+        light = _LIGHT_PEAK_BY_LAYER.get(panel.layer, _LIGHT_PEAK_BY_LAYER[Layer.IMAGINED])
+    else:
+        light = _LIGHT_PEAK_BY_LAYER.get(panel.layer, _LIGHT_PEAK) if peak else ""
     bits: list[str] = []
-    if peak:
+    if free:
+        if panel.shot is Shot.EXTREME_CLOSE:
+            bits.append("The irises hold small reflected lights and streaks of rain, and nothing else is in the frame: no forehead, "
+                        "no nose, no mouth, no second person, no figures.")
+        else:
+            bits.append("The frame holds no people, no bodies, no faces and no silhouettes: it is made only of the light, the matter "
+                        "and the place itself.")
+    if peak and not isolated:
         bits.append("Ink-wash brush texture at the edges and fine blood-like ink splatter." if panel.layer in _TEXTURE_LAYERS
                     else "Rough ink-brush texture at the edges of the frame.")
-    if motion:
+    if motion and not free:
         bits.append("Wind whips the hair and the cloth sideways in long streaming lines.")
-    if panel.shot in (Shot.WIDE, Shot.EXTREME_WIDE, Shot.OVERHEAD, Shot.LOW_ANGLE) or panel.purpose is Purpose.CROWD_INDIVIDUAL:
-        bits.append("Dark out-of-focus silhouettes in the foreground frame the view.")
+    elif motion:
+        bits.append("Debris, rain and light streak across the frame in long diagonal lines.")
+    if not free and not isolated and (
+            panel.shot in (Shot.WIDE, Shot.EXTREME_WIDE, Shot.OVERHEAD, Shot.LOW_ANGLE) or panel.purpose is Purpose.CROWD_INDIVIDUAL):
+        bits.append("Dark out-of-focus silhouettes in the foreground frame the view.")  # silhouettes are people: never on a people-free panel
+    if peak and not isolated:
+        # The RI manhua slices carry extreme perspective and diagonal energy; v1's low angle and tilt alone stayed tame (round 1 sheets).
+        bits.append("Extreme perspective, strong foreshortening, a diagonal composition and a dynamic pose." if not free
+                    else "Extreme perspective, the force of it radiating diagonally toward the viewer.")
     # A wide or tall composition sentence contradicted an eyes-only extreme close-up ("the subject small against a large space").
     close = panel.shot in (Shot.CLOSE, Shot.EXTREME_CLOSE, Shot.INSERT, Shot.MEDIUM_CLOSE)
-    if panel.shape in _SHAPE_WORDS and (peak or panel.shape in (Shape.WIDE, Shape.INSET)) and not (
-            close and panel.shape in (Shape.WIDE, Shape.TALL, Shape.DIAGONAL)):
+    if not isolated and panel.shape in _SHAPE_WORDS and (peak or panel.shape in (Shape.WIDE, Shape.INSET)) and not (
+            close and panel.shape in (Shape.WIDE, Shape.TALL, Shape.DIAGONAL)) and not (
+            free):  # "the subject" of a shape sentence is a person to the model
         bits.append(f"{_SHAPE_WORDS[panel.shape].capitalize()}.")
-    if peak:
-        bits.append(f"A dark desaturated palette with {_ACCENT[panel.layer]}.")
+    if isolated:
+        bits.append(f"A dark palette with one intensely saturated {_ACCENT[panel.layer]} glow around the subject.")
+    elif peak:
+        bits.append(f"A dark desaturated palette with one intensely saturated {_ACCENT[panel.layer]} accent light raking across the scene.")
     else:
         bits.append("A muted colour palette and a calm, composed frame.")
-    return DramaSpec(peak, motion, shot, light, tuple(bits))
+    return DramaSpec(peak, motion, free, isolated, shot, light, tuple(bits))
+
+
+# ---------------------------------------------------------------------------
+# identity: age and gender lead the character clause
+# ---------------------------------------------------------------------------
+
+#: Visible age markers per age band. v1 left "middle-aged" and "a 15-year-old" as one word in the head of the sentence, and the
+#: clan head came out about 30 and young Fang Yuan an adult (bake-off p07, p13): a word is not a face, so the band becomes drawn
+#: features, placed straight after the head, before hair and clothes.
+_AGE_MARKERS = {
+    "middle-aged": "greying temples, a lined face with creases at the eyes and mouth, and a mature heavy build",
+    "elder": "a deeply lined weathered face and a frail stooped build",
+    "teen": "a youthful soft round face with no lines or stubble, a slight narrow frame and a noticeably smaller stature",
+}
+#: Camera sentences for a panel with nobody in it: the people-bearing peak sentences ("the figures towering against the sky") drew
+#: figures into the detonation panel (p05).
+_SHOT_PEAK_FREE = {
+    Shot.EXTREME_WIDE: "A vast high wide view of the land.",
+    Shot.WIDE: "A dramatic low wide shot seen from the ground, looking up at the sky.",
+    Shot.OVERHEAD: "A steep overhead bird's-eye view looking straight down.",
+    Shot.LOW_ANGLE: "An extreme low-angle view from the ground looking up at the sky.",
+}
+
+
+def _age_key(c: CharacterBrief) -> str:
+    band = (c.age_band or "").lower()
+    if body_is_young(band, c.age_years):
+        return "teen"
+    return {"elderly": "elder", "ageless-ancient": "elder"}.get(band, band)
+
+
+def drama_identity_sentence(c: CharacterBrief) -> str:
+    """`identity_sentence` with the age made visible and the gender spelled out.
+
+    The sentence still starts with the head ("X is a middle-aged man"), whose noun carries the gender from the cast's look or
+    dossier; the age markers follow it. The adult-face clause is dropped for bands with markers because "an adult face with a
+    defined jaw" told the model to draw a thirty-year-old. A beard is written for an elder only when the cast's own facts
+    mention one."""
+    base = identity_sentence(c, AppearanceInText.SHORT)
+    key = _age_key(c)
+    marker = _AGE_MARKERS.get(key)
+    if not marker or c.is_creature or c.gender == "creature" or c.same_face_as:
+        return base
+    if key == "elder" and not any("hair" in k for k in c.appearance):
+        marker = "white hair, " + marker  # a beard only where the cast's own facts give one (they are folded in below), never invented
+    head, _ = _identity_head(c)
+    if not base.startswith(head):
+        return base
+    tail = base[len(head):].replace(_ADULT_FACE, "")
+    if tail.startswith(" with "):
+        tail = ", " + tail[len(" with "):]  # fold the look's own facts into the same "with" list
+    return f"{head} with {marker}{tail}"
 
 
 def compile_neutral(brief: PanelBrief, panel: Panel) -> CompiledPrompt:
@@ -159,19 +278,41 @@ def compile_neutral(brief: PanelBrief, panel: Panel) -> CompiledPrompt:
     return _compile_composed(b, model_profile("z-image-turbo"), AppearanceInText.SHORT)
 
 
+def _isolated_brief(b: PanelBrief, panel: Panel) -> PanelBrief:
+    """An isolated subject drops the place, the other people and the room's staging: a vision is one figure on a glow. v1 kept the
+    hall, so Bai Ning Bing (an imagined, referenced man) was drawn standing among people in it (p10)."""
+    b.location = b.setting = b.location_description = ""
+    b.crowd = None
+    b.staging = trim_staging(b.staging.strip(), "eyes", b.shot) if b.staging else ""  # keeps the Light line only
+    names = " and ".join(c.name for c in b.characters) or "The subject"
+    expr = next((c.stated_expression for c in b.characters if c.stated_expression), "")
+    mood = f", {expr}," if expr else ""
+    b.composition = (f"{names}{mood} stands alone as an isolated figure floating in {_VOID[panel.layer]}, pictured as a vision. "
+                     f"No room, no walls, no furniture, no ground and no other people anywhere in the frame.")
+    b.empty_hands = False
+    return b
+
+
 def compile_drama(brief: PanelBrief, panel: Panel, *, text: str = "") -> CompiledPrompt:
-    """Arm B: the same brief, with the framing, light and a drama block written from the panel's schema fields.
+    """Arm B / B2: the same brief, with the framing, light and a drama block written from the panel's schema fields.
 
     The style lead stays section 0; framing, grade and drama sit right after it and before identity, as the compiler already
-    orders framing and grade (Z-Image has no CFG: first and plain wins)."""
-    spec = drama_spec(panel, text=text)
+    orders framing and grade (Z-Image has no CFG: first and plain wins). B2 changes (bake-off round 1 failures): age markers and
+    explicit gender in every character clause, isolated subjects on a glow with no place, no people on an empty cast."""
+    spec = drama_spec(panel, text=text, brief=brief)
     b = copy.copy(brief)
     b.framing = spec.shot_sentence
     if spec.light_sentence:
         b.grade = spec.light_sentence  # a peak's hard light replaces a flat graded light; a calm beat keeps its own `grade`
+    if spec.isolated:
+        b = _isolated_brief(b, panel)
     comp = _compile_composed(b, model_profile("z-image-turbo"), AppearanceInText.SHORT)
     drama = PromptSection("drama", " ".join(spec.drama_sentences))
     sections = list(comp.sections)
+    by_name = {f"character:{c.name}": c for c in b.characters if not c.back_turned}
+    for i, sec in enumerate(sections):
+        if sec.label in by_name:
+            sections[i] = PromptSection(sec.label, drama_identity_sentence(by_name[sec.label]))
     at = next((i for i, s in enumerate(sections) if s.label == "grade"), None)
     at = (at if at is not None else next((i for i, s in enumerate(sections) if s.label == "framing"), 0)) + 1
     sections.insert(at, drama)

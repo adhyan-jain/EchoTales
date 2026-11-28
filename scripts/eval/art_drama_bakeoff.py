@@ -1,4 +1,6 @@
-"""Art-drama bake-off: arms A/B/C/D over the 13 hand-built RI ch1 panels, same seeds, plus the FX layer on and off.
+"""Art-drama bake-off (round 2: arms A, B2 = the fixed drama compiler, B2_fx, plus the round-1 B column; C and D are not rerun).
+
+Round 1 was arms A/B/C/D over the 13 hand-built RI ch1 panels, same seeds, plus the FX layer on and off.
 
 Run the whole thing under the GPU lock (owner rule; image models and ollama never share the 8 GB card):
 
@@ -27,7 +29,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "packages/pipeline/tests"))
-OUT = ROOT / "data/scratch/art_drama"
+OUT = ROOT / "data/scratch/art_drama_v2"
+#: Round 1 (v1 compiler) images, kept as a comparison column. The worktree has no gitignored data, so it is the v1 worktree's.
+OLD = Path.home() / "Desktop/EchoTales/.claude/worktrees/art-drama/data/scratch/art_drama"
 REF_DIR = ROOT / "data/scratch/reference/ri_manhua/ch01"
 if not REF_DIR.exists():  # a worktree has no gitignored data; the primary checkout holds the reference slices
     REF_DIR = Path.home() / "Desktop/EchoTales/data/scratch/reference/ri_manhua/ch01"
@@ -41,7 +45,7 @@ REFERENCE = {
 STRENGTHS = (0.35, 0.45, 0.55)
 SIZE = (832, 1216)
 ARMS = ["A", "B", "C", "D35", "D45", "D55"]
-SHEET_COLS = ["ref", "A", "B", "B_fx", "C", "D35", "D45", "D55", "D45_fx"]
+SHEET_COLS = ["ref", "A", "B_v1", "B2", "B2_fx"]  # B_v1 = round 1 drama compiler, read from OLD
 
 
 def seed_of(i: int) -> int:
@@ -64,7 +68,7 @@ def _prompts():
                                              gender_tag=bp.gender_tag)
         rows[bp.panel_id] = {
             "A": {"positive": a.positive, "sections": a.section_texts()},
-            "B": {"positive": b.positive, "sections": b.section_texts()},
+            "B2": {"positive": b.positive, "sections": b.section_texts()},
             "C": {"positive": pos, "negative": neg, "sections": secs},
         }
     return rows
@@ -93,7 +97,7 @@ def phase_zimage() -> None:
     rows = json.loads((OUT / "prompts.json").read_text())
     w = LocalZImageWorker()
     stats = {}
-    for arm in ("A", "B"):
+    for arm in ("A", "B2"):
         pids = list(rows)
         reqs = [ImageWorkerRequest(prompt=rows[p][arm]["positive"], width=SIZE[0], height=SIZE[1], seed=seed_of(i)) for i, p in enumerate(pids)]
         t = time.time()
@@ -128,7 +132,7 @@ def phase_i2i() -> None:
     jobs = []
     for i, p in enumerate(rows):
         for s in STRENGTHS:
-            jobs.append({"init": str(OUT / "B" / f"{p}.png"), "out": str(OUT / f"D{int(s * 100)}" / f"{p}.png"), "prompt": rows[p]["C"]["positive"],
+            jobs.append({"init": str(OUT / "B2" / f"{p}.png"), "out": str(OUT / f"D{int(s * 100)}" / f"{p}.png"), "prompt": rows[p]["C"]["positive"],
                          "negative": rows[p]["C"]["negative"], "strength": s, "seed": seed_of(i)})
     spec = OUT / "i2i_jobs.json"
     spec.write_text(json.dumps({"jobs": jobs, "stats": str(OUT / "stats_i2i.json")}))
@@ -144,7 +148,7 @@ def phase_fx() -> None:
     from PIL import Image
 
     for bp in _panels():
-        for arm in ("A", "B", "C", "D45"):
+        for arm in ("A", "B2"):
             src = OUT / arm / f"{bp.panel_id}.png"
             if src.exists():
                 dst = OUT / f"{arm}_fx" / f"{bp.panel_id}.png"
@@ -167,7 +171,7 @@ def phase_sheets() -> None:
                 im = Image.open(f).convert("RGB") if f.exists() else Image.new("RGB", (300, th), "grey")
                 label = f"ref {REFERENCE[bp.panel_id]}"
             else:
-                f = OUT / col / f"{bp.panel_id}.png"
+                f = (OLD / "B" if col == "B_v1" else OUT / col) / f"{bp.panel_id}.png"
                 im = Image.open(f).convert("RGB") if f.exists() else Image.new("RGB", (300, th), (40, 40, 40))
                 label = col
             im = ImageOps.contain(im, (int(th * 0.8), th))
@@ -190,7 +194,7 @@ def main() -> int:
     ap.add_argument("--phase", default="all", choices=["prompts", "zimage", "noobai", "i2i", "fx", "sheets", "all"])
     a = ap.parse_args()
     if a.phase == "all":
-        for ph in ("prompts", "zimage", "noobai", "i2i", "fx", "sheets"):
+        for ph in ("prompts", "zimage", "fx", "sheets"):  # v2 is Z-Image only: C is comparison-only and D is dropped
             subprocess.run([sys.executable, __file__, "--phase", ph], check=True)  # one process per model: nothing shares the card
         return 0
     {"prompts": phase_prompts, "zimage": phase_zimage, "noobai": phase_noobai, "i2i": phase_i2i, "fx": phase_fx, "sheets": phase_sheets}[a.phase]()

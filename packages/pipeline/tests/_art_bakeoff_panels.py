@@ -8,7 +8,7 @@ isolates the ART from director errors. Not a test file (leading underscore): the
 The brief asked for 12 panels but listed 13 items; all 13 are here.
 
 Flagged inventions (never plot facts): the cliff hair colour/style, the accuser's face, and Bai Ning Bing's look (no dossier look
-exists yet in this checkout, so a white-clad look with a cold glow is used and marked `invented_look=True`)."""
+exists yet in this checkout, so a white-clad look with a cold glow is used and marked `invented_look=True`). In this story time he is male (v2: the v1 fixture said female and the sheet drew a woman).."""
 
 from __future__ import annotations
 
@@ -132,7 +132,7 @@ def bakeoff_panels() -> list[BakeoffPanel]:
                "the self-detonation: a blinding burst of light erupts on the cliff, shock-wave tearing the sky and the rock",
                [], [Letter(kind=LetterKind.SFX, text="BOOM")], [29])
     add(p, _brief(p, [], "A blinding white-gold explosion of light erupts at the top of a cliff, a shock-wave tearing through the clouds "
-                  "and shattering the rock, tiny dark figures flung outward, light streaking down the mountain.",
+                  "and shattering the rock, debris flung outward, light streaking down the mountain.",
                   light="a blinding white explosion of light", mood="catastrophic", place="a cliff-top"),
         identity_tags=[], scene_tags=["explosion", "light beam", "shockwave", "cliff", "debris", "clouds", "glowing", "no humans"],
         note="self-detonation light, no identity")
@@ -177,15 +177,15 @@ def bakeoff_panels() -> list[BakeoffPanel]:
         identity_tags=["1boy", "old man", "white hair", "white beard", "white robe", "chinese clothes", "serious"],
         scene_tags=["temple", "candles", "night", "indoors"], note="dialogue, calm")
 
-    bnb = _person("Bai Ning Bing", "female", "youth", "long straight black hair", "a flowing white gown with pale sleeves",
+    bnb = _person("Bai Ning Bing", "male", "youth", "long straight black hair", "a flowing white robe with pale sleeves",
                   expr="cold and composed")
     p = _panel("p10_bainingbing", "s2", Layer.IMAGINED, Purpose.REFERENCED_INSET, Shape.INSET, Shot.MEDIUM,
-               "Bai Ning Bing, imagined: a silent young woman in white with a cold glow around her", [("Bai Ning Bing", False)], blocks=[55])
-    add(p, _brief(p, [bnb], "A young woman in a flowing white gown stands alone and silent in darkness, a cold pale glow surrounding "
-                  "her, her face calm and distant, as if pictured in someone's mind.",
+               "Bai Ning Bing, imagined: a silent young man in white with a cold glow around him", [("Bai Ning Bing", False)], blocks=[55])
+    add(p, _brief(p, [bnb], "A young man in a flowing white robe stands alone and silent in darkness, a cold pale glow surrounding "
+                  "him, his face calm and distant, as if pictured in someone's mind.",
                   light="a cold pale glow in darkness", mood="distant"),
-        identity_tags=["1girl", "solo", "long black hair", "white dress", "chinese clothes", "glowing", "cold", "expressionless"],
-        scene_tags=["dark background", "glow"], gender_tag="girl", invented_look=True,
+        identity_tags=["1boy", "solo", "long black hair", "white robe", "chinese clothes", "glowing", "cold", "expressionless"],
+        scene_tags=["dark background", "glow"], gender_tag="boy", invented_look=True,
         note="INVENTED LOOK: no dossier look exists in this checkout; white-clad, cold glow")
 
     p = _panel("p11_garret", "s2", Layer.PRESENT, Purpose.BEAT, Shape.STANDARD, Shot.MEDIUM,
